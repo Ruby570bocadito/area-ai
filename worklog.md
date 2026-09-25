@@ -284,3 +284,17 @@ Stage Summary:
 - Ficheros clave: src/hooks/use-arena-state.ts, src/components/arena/{history-panel,arena-live}.tsx, scripts/smoke-test.mjs (nuevo), package.json (+smoke), docs/agentes/z_implementaciones/ronda_2026-09-25_15h07.md (nuevo).
 - Capturas: docs/screenshots/round11-{detalle-regla,historial-objetivos,panel}.png (reubicadas según la convención del repo; /download/ ignorado)
 
+Task ID: 12 (ronda 3)
+Agent: z_director (coordinación) + z_implementaciones + z_bugs + z_pulimiento
+Task: Ronda 3 — test de humo del golden path, token opcional ADMIN_TOKEN + rate limit (R4), higiene señalada por la ronda 14h39, README vivo. Auditoría completa de 9f6e519.
+
+Work Log:
+- Implementaciones: tests/smoke.mjs (4 fases: tsc → entorno → standalone → golden path con validación de seed). Hallazgos de entorno resueltos y documentados: rutas file: relativas incoherentes entre CLI y runtime; DATABASE_URL GLOBAL del contenedor con prioridad sobre .env (causa de un P2021); build standalone obsoleto detectado por el smoke.
+- Bugs/Seguridad: src/lib/net/access.ts — ADMIN_TOKEN opcional (header X-Admin-Token o cookie admin_token) en los 4 POST de mutación + rate limit 6/min en campaigns. Verificado en caliente (401/200 header/200 cookie) y 6/6 tests del limitador (el primer fallo era del harness del test, no de la implementación).
+- Pulimiento: db.ts log de queries solo en dev; /api convertida en healthcheck real con ping a BD; metadataBase en layout; README y .env.example actualizados (features, smoke, seguridad); R9 cerrado con decisión (se mantiene shadcn/ui).
+- Director: auditoría completa de 9f6e519 (APIs correctas: Prisma parametrizado, límites 500/1000, 404 elegante); smoke 8/8 OK; tsc limpio; eslint 0; build producción OK.
+
+Stage Summary:
+- Golden path verificado automáticamente (bun tests/smoke.mjs → 8/8). Estado VERDE.
+- R4 acotado (opt-in), R9 cerrado, nuevos R10 (variables globales del entorno) y R11 (build obsoleto) registrados con mitigación.
+- Próxima ronda: smoke obligatorio al cierre de rondas con código; backlog #1 (regla de victoria en UI) y #3 (informe agregado).

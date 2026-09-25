@@ -15,6 +15,7 @@ Sandbox de autoevolución **Red Team vs Blue Team**: agentes de IA ejecutan camp
 - **Motor de campañas**: 10 agentes (5 RED / 5 BLUE), 6 escenarios con infraestructura real (e-commerce, sanidad, SaaS, banca, energía/OT, defensa) y rondas por fases tipo MITRE (RECON → ARMADO → INTRUSIÓN → ESCALADA → LATERAL → OBJETIVO).
 - **Laboratorio real**: runtime HTTP en `127.0.0.1:4403` que sirve servicios por nodo (WEB/APP/API/VPN/AD/DB/OT/BACKUP/SIEM/ENDPOINT/CDN) con política de red por niveles, sesiones con privilegios, firewall, parcheo y clasificación de firmas (SQLI, PORT_SCAN, BOLA_ENUM, PASS_THE_HASH, DATA_EXFIL, RCE…).
 - **Evidencia verificable**: cada acción RED/BLUE es una petición HTTP real contra el lab; el resultado se deriva de códigos de estado y artefactos reales, y se guarda en `CampaignEvent` (`command` + `evidence`).
+- **Histórico completo**: ficha de detalle por campaña (`/historial/[id]`) con telemetría íntegra, comandos reales e informe `.md`; archivo con búsqueda tolerante a acentos, filtros por resultado/escenario y exportación **CSV**; memoria de conocimiento completa con búsqueda, categorías y ordenación por fuerza.
 - **Bucle de evolución**: las lecciones generadas por LLM se archivan como `Knowledge` con confianza dinámica y se reinyectan en campañas siguientes; los agentes ganan XP/niveles con curva rebalanceada.
 - **Operación continua (autopiloto)**: con un interruptor, el motor encadena campañas reales en segundo plano mientras el motor está ocioso.
 - **UI profesional multi-página**: panel de mando, operaciones con mapa de red interactivo y clicables, fichas de agente con actividad real, conocimiento, historial, analítica y gestión de modelos LLM. Paleta de comandos con `⌘K` y exportación de informes `.md`.
@@ -32,11 +33,12 @@ src/
 │   ├── historial/          # Archivo de campañas
 │   ├── analitica/          # Balance, evolución, ranking XP
 │   ├── modelos/            # Gestión del proveedor LLM
-│   └── api/                # state, campaigns, autopilot, settings, models, agents/[key]/activity
+│   └── api/                # state, campaigns (GET/POST + [id]), knowledge, autopilot, settings, models, agents/[key]/activity
 ├── components/arena/       # UI del producto (mapa, feed, roster, analítica…)
 ├── lib/
 │   ├── sim/                # engine.ts (motor), roster.ts, seed.ts, llm.ts, progression.ts, autopilot.ts
-│   └── lab/                # runtime.ts (servidor HTTP del lab), ops.ts (acciones RED/BLUE), store.ts
+│   ├── lab/                # runtime.ts (servidor HTTP del lab), ops.ts (acciones RED/BLUE), store.ts
+│   └── net/                # target-guard.ts (SSRF), access.ts (token opcional + rate limit)
 └── hooks/use-arena-state.ts  # Sondeo único de /api/state compartido por toda la app
 ```
 
@@ -79,6 +81,7 @@ bun run dev                   # http://localhost:3000
 | `bun run verify` | Verificación de cierre de ronda: tipos (`tsc`) + build + arranque + golden path (`/api/state`). Usa una BD de verificación dedicada, no toca tus datos |
 | `bun run db:push` | Sincronizar el esquema Prisma con SQLite |
 | `bun run db:reset` | Resetear la base de datos |
+| `bun tests/smoke.mjs` | **Test de humo del golden path** (tsc + entorno + servidor de producción + `/api`, `/api/state`, `/api/campaigns`, `/api/knowledge` y página principal). `--build` fuerza rebuild |
 
 ## Configurar el motor LLM
 
@@ -104,8 +107,12 @@ También es posible configurarlo por variables de entorno — o directamente en 
 
 - El laboratorio hace bind **exclusivamente en `127.0.0.1`** y está pensado para ejecutarse en local.
 - `POST /api/models` valida protocolo y **bloquea destinos de red interna (loopback, RFC1918, link-local) y endpoints de metadata de nube** para conexiones no locales, mitigando SSRF.
-- **No hay autenticación**: cualquier usuario con acceso a la app puede lanzar campañas, activar el autopiloto (consumo de créditos del proveedor LLM) o cambiar la configuración. **No expongas la aplicación a Internet sin añadir una capa de auth** (proxy con login, VPN, túnel autenticado…).
+- **Token opcional de administración** (`ADMIN_TOKEN` en `.env`): si se define, los endpoints que mutan estado (`POST /api/campaigns`, `/api/autopilot`, `/api/settings`, `/api/models`) exigen el token vía cabecera `X-Admin-Token` o cookie `admin_token` (fija la cookie en el navegador con `document.cookie = "admin_token=<token>"` para seguir usando la UI). Sin definir, la app queda en modo local abierto.
+- **Rate limit** en `POST /api/campaigns` (6 lanzamientos/minuto por cliente) para frenar bucles de gasto de créditos LLM.
+- `GET /api` es un healthcheck que verifica el servicio y la base de datos.
+- **Sin autenticación por defecto**: cualquier usuario con acceso a la app puede leer datos de simulación y (sin `ADMIN_TOKEN`) lanzar campañas. **No expongas la aplicación a Internet** sin auth en el proxy o sin definir `ADMIN_TOKEN`.
 - Las claves del proveedor se guardan en la BD local y la API solo las devuelve enmascaradas.
+- La base de datos debe apuntarse con una **ruta absoluta** en `DATABASE_URL` (las relativas se resuelven distinto entre la CLI de Prisma y el runtime).
 
 ## Agentes del proyecto
 
