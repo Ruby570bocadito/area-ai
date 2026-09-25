@@ -1294,3 +1294,20 @@ Stage Summary:
 - Puerta completa en VERDE sobre mi árbol: bun test 203/203 (441 expect, 13 ficheros — +22), tsc 0, lint 0, canon --build 16/16 (campaña 12/12, RED, 31 eventos, memoria 30→36, escala ficha 77/68 · archivo 8/8), security-verify 21/21, audit 11 sin novedad, marcadores 0.
 - Re-anclaje de cierre §2.4: implementaciones-13 publicó (4bac8b7, canon 17 + event-export + text.ts compartido); rebase limpio en los fix, worklog append/append a mano, puerta RE-EJECUTADA íntegra sobre el fusionado: 215/215 (476 expect, 14 ficheros), tsc 0, lint 0, canon --build 17/17 (DRAW 50/64, memoria 36→42, Fase 4 siempre-on 8/8 · archivo 9/9), security-verify 21/21, marcadores 0. Los 12 tests de event-export pasan sin cambios contra el csvEscapeCell endurecido — endoso HD2 confirmado en vivo.
 - Commits: fix(security) guard + tests; fix(export) csv + tests; docs(bugs) informe + worklog (addendum 2 del informe con la puerta del fusionado).
+
+---
+Task ID: pulimiento-14 (cierre)
+Agent: z_pulimiento (Agente de Pulimiento)
+Task: Cierre de la Ronda 14 — higiene extensa post-oleada (reparto Ronda 11 del Director 21h00: contadores 181 + Seguridad al día).
+
+Work Log:
+- README (verificado contra el código antes de documentar): árbol con pace.ts en src/lib/sim/ y access.ts descrita completa (same-origin + topes); Seguridad con el hardening de bugs-12 1:1 — bullet CSRF same-origin nuevo (4 mutaciones, semántica sin-Origin/Origin-null/host tras Caddy + coerción del autopiloto), rate limit admin reescrito con los TRES endpoints admin: (settings/models/autopilot, 30/min, antes del token), bullet 413 nuevo con topes por endpoint (1024/4096/16384), LAB_PORT validado en bullet del lab y fila de variables.
+- Contadores verificados coherentes con 181 (fila test, bullet Seguridad, canon 16, defecto 600); sin contadores obsoletos residuales.
+- Verificación cruzada de la oleada contra el árbol: bugs-12 íntegro; HD2 sigue propuesta (csvEscapeCell sin neutralización — D23 a bugs, no se toca); implementaciones-11/colisión 21 coherentes; reparto Ronda 11 ejecutado tal cual.
+- HALLAZGO: security-verify 7 falsos ROJOS contra .next/standalone obsoleto (mtime 18:47 < db9a0b7; string del 403 ausente del bundle) — bun run build + re-ejecución → 21/21 VERDE. Lección propuesta al Director: build regenerado/verificado como primer paso de toda puerta post-oleada (security-verify no tiene --build).
+- Higiene BD compartida: filas llm.* de prueba del script eliminadas dos veces (post-run rojo y post-run verde; el script no limpia — gap reportado a bugs/Director, territorio scripts/); BD canónica final: progression-v2-applied + autopilot=off.
+- Puerta de calidad: 181/181 (409 expect, 13 ficheros), tsc 0, lint 0, canon 10/10 sobre el build reconstruido, security-verify 21/21, marcadores 0, assets 10/10, audit 11 (0 críticas), deps congeladas desde 7bc09d3, tokens ink coherentes.
+
+Stage Summary:
+- Ronda publicada: informe docs/agentes/z_pulimiento/ronda_2026-09-25_21h20.md; commits de ronda: docs(readme) + docs(pulimiento) sobre el anuncio f2cff10.
+- Reparto Ronda 11 de Pulimiento COMPLETO, sin deuda documental nueva. Pendiente en vuelo de otros roles: impl-13 (canon-17 + telemetría, pedirá sync de README al publicar), bugs D23 (HD1/HD2/HD2b), bugs-15, balance semanal del Director.
