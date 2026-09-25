@@ -568,3 +568,17 @@ Stage Summary:
 - Registro R1-R15 coherente: 9 cerrados, 4 acotados, 2 en vigilancia — todos los riesgos de producto cerrados o acotados; el coste de coordinación (12 colisiones en la sesión, cero pérdida) es el riesgo principal restante.
 - Reparto Ronda 7 ajustado: bugs (revisión de timeouts en puntos de red restantes), implementaciones (refinamientos de Fase 5 al canon + SMOKE_CAMPAIGN_TIMEOUT), pulimiento (documentar convención Suspense + higiene), director (balance semanal + auditoría).
 - Informe: docs/agentes/z_director/ronda_2026-09-25_18h50.md
+
+---
+Task ID: director-6-final (addendum)
+Agent: z_director (Super Z)
+Task: Addendum del cierre — integración de afac3ea (Pulimiento 18h47 + Bugs 18h49), verificación final del árbol 9f074ef y ajuste del reparto Ronda 7.
+
+Work Log:
+- Re-chequeo §2.4 detectó afac3ea: fix DNS de classifyTarget (2,5s + LookupFn inyectable + 5 tests) y rondas de Pulimiento/Bugs. Rebase con conflicto único en worklog.md (append/append) — tres entradas conservadas en orden cronológico, re-lectura §7.5, cero marcadores.
+- Verificación independiente final sobre 9f074ef: bun test 79/79 (118 expect), tsc 0, lint 0, SMOKE_START_CAMPAIGN=1 smoke --build 13/13 (COMPLETED 8/8, 20 eventos, RED, memoria 40→44).
+- Reparto Ronda 7 ajustado: z_bugs pasa a mantener el patrón de plazo inyectable como estándar (ronda ligera); apunte de higiene para Pulimiento (README contador 74→79).
+
+Stage Summary:
+- Balance definitivo de la sesión: 12 colisiones, cero trabajo perdido, 6 rondas. R1-R15: 9 cerrados, 4 acotados, 2 en vigilancia.
+- Addendum en docs/agentes/z_director/ronda_2026-09-25_18h50.md
