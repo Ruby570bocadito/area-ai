@@ -1143,3 +1143,23 @@ Agent: z_implementaciones (Super Z, mantenedor del canon de humo)
 Base: 09fadea (HEAD de origin/main, verificado con fetch — maniobra §2.5 indivisible D20a)
 Tareas: Ronda INTENSIVA de motor + canon + producto — recoge la deuda del propio rol y cierra backlog propio bajo la directiva del operador («rondas más largas, extensas e intensas»). (1) MOTOR — se toma el territorio que implementaciones-11 anunció canónicamente (b2f6312/9d2ad96) y nunca publicó: PHASE_ORDER 8→12, módulo puro src/lib/sim/pace.ts con suite de tests (probabilidad de encadenamiento RED por fase, amortiguación de impacto por progreso acumulado, política proactiva BLUE GARANTIZADA — cero rondas sin respuesta BLUE), integración en engine.ts y SMOKE_CAMPAIGN_TIMEOUT 240→600. (2) CANON (mantenedor) — comprobación «progreso del archivo en escala cerrada [0,100]» SIEMPRE-ON en Fase 4 del golden path (sin requerir campaña real; la Fase 5 conserva su check de ficha+archivo) — canon 16→17. (3) PRODUCTO — exportación CSV/JSON de la telemetría de eventos desde la ficha /historial/[id] (módulo puro src/lib/event-export.ts + botones en la ficha; SIN endpoint nuevo ni superficie de red) + centralización de exportFilename en src/lib/text.ts (cierra backlog #5; adoptada por history-panel, knowledge-panel y ficha). Se ENDOSA la propuesta HD2/HD2b de bugs-14 (inyección de fórmulas CSV en csvEscapeCell, fuente única): el fix futuro de bugs cubrirá automáticamente la tercera exportación.
 Sin tocar: README (pulimiento), package.json/bun.lock/deps, schema.prisma (pulimiento-13 ya publicado), API routes/lab/scripts/rate-limiter/esquema (bugs-12 extensa en vuelo), target-guard.ts (HD1/HD2 de bugs — ronda de endurecimiento propuesta por bugs-14).
+
+Task ID: bugs-12
+Agent: z_bugs (Agente de Bugs y Seguridad)
+Task: Ronda 12 EXTENSA — auditoría de 8 dominios (CSRF/acceso, rate limit, lab, scripts, límites de cuerpo, ReDoS, esquema, deps) con 5 correcciones por prioridad.
+
+Work Log:
+- §2.5: anuncio 0ae2f2c como primer commit, maniobra indivisible a la primera, base 9cc8a1a.
+- M1 MEDIA-ALTA corregida: CSRF — las 4 mutaciones aceptaban POST cross-site text/plain sin preflight (modo local: lanzar campañas, activar modo continuo, reescribir llm.base_url y exfiltrar la API key). Fix: isSameOrigin(headers) en access.ts como primera barrera (403) de campaigns/autopilot/settings/models; sin Origin pasa (curl/humo), Origin:null y host distinto → 403; compatible con Caddy (preserva Host).
+- M2 MEDIA-ALTA corregida: POST /api/autopilot acreditaba ADMIN_TOKEN sin rate limit (hueco de bugs-11 M1, que cubrió settings/models). Fix: bucket admin: 30/min ANTES del token.
+- M3 MEDIA corregida: req.json() cargaba el cuerpo íntegro antes de cualquier tope (DoS de memoria). Fix: contentLengthExceeds pre-parse — campaigns 4KB, autopilot 1KB, settings/models 16KB; chunked sin Content-Length documentado como limitación.
+- m1: coerción estricta del autopiloto (body.enabled === true) — la cadena "false" ACTIVABA el modo continuo. m2: labPort() valida rango [1,65535] con defecto 4403 (NaN/70000 estallaban en server.listen dentro del camino del motor).
+- Verificado limpio: rate limiter/cleanup, timingSafeEqual, lab bindea 127.0.0.1 (sin exec/spawn reales), scripts del repo sin inyección ni secretos, rutas GET acotadas, regex lineales (sin ReDoS), sin prototype pollution.
+- Reportes §8: deps SIN cambios (46 vulns, 2 críticas — next 16.1.3/sharp 0.34.5, bump urgente), índice Knowledge.campaignId, csvEscapeCell de implementaciones-12 debe neutralizar fórmulas (salida del LLM = entrada no fiable), propuesta de check CSRF en canon.
+- BD compartida limpiada tras la verificación (3 filas de prueba eliminadas; queda progression-v2-applied).
+
+Stage Summary:
+- Puerta completa en VERDE: bun test 151/151 (280 expect, 10 ficheros — +19: 12 same-origin/content-length + 7 lab-port), tsc 0, lint 0, canon SMOKE_START_CAMPAIGN=1 --build 15/15 (COMPLETED 8/8, BLUE, 18 eventos, memoria 22→26, cruce 4=4), security-verify ampliado 21/21 (9 checks nuevos CSRF/pre-parse), marcadores 0.
+- Commits: fix(security) 94b71f4 + docs informe/worklog.
+- Informe: docs/agentes/z_bugs/ronda_2026-09-25_20h49.md
+
