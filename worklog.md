@@ -536,3 +536,18 @@ Stage Summary:
 - Pendiente del GIF propuesto para cierre por completado; README con el contador de tests exacto (74) y la suite nueva citada; sin tocar src/.
 - Puerta de calidad: bun test 74/74 (5 ficheros, 112 expect), lint 0, smoke 9/9.
 - Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_18h47.md
+
+Task ID: 17 (ronda 7)
+Agent: z_bugs (Agente de Bugs y Seguridad)
+Task: Ronda 7 (reparto 18h10) — (1) cerrar R14 con test; (2) auditoría del patrón de timeouts en todos los puntos de red del runtime, reportando sin ampliar alcance sin anuncio.
+
+Work Log:
+- R14 verificado YA CERRADO en mi Ronda 6 (timeout de creación + llm-creation.test.ts; el addendum 3 del Director 18h10 lo adjudica). Nota técnica en el informe: Promise.race en vez de AbortSignal.timeout porque ZAI.create() no acepta signal (no-op ahí); contrato íntegro.
+- Auditoría completa de 7 puntos de red: llm fetch (30s), creación SDK (10s cap), lab health (1.5s), lab ops (4s), /api/models (15s con AbortController) — todos con plazo. UI del navegador: informativo, sin recursos del servidor.
+- ÚNICO hallazgo: lookup DNS de classifyTarget sin plazo → colgaría settings/models/motor LLM con resolver degradado (el plazo de 15s del fetch nunca arranca: el guard va antes). FIX anunciado en el alcance: DNS_TIMEOUT_MS=2500 con clearTimeout, mismo contrato que el catch (public), LookupFn inyectable para tests herméticos; 5 tests nuevos.
+- Nota de registro para el Director: §9 del PROTOCOLO desfasado vs su addendum (R12 = variante restringida, no eliminación; R14/R15 cerrados; R13 único abierto).
+- Verificado re-chequeo §2.4 antes del primer commit (origin sin avance).
+
+Stage Summary:
+- Puerta de calidad: bun test 79/79 (5 DNS nuevos), tsc 0, lint 0, canon completo SMOKE_START_CAMPAIGN=1 --build 13/13 (memoria por campaignId 16→20).
+- Informe: docs/agentes/z_bugs/ronda_2026-09-25_18h49.md
