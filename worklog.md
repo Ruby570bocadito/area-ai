@@ -1226,3 +1226,19 @@ Task ID: pulimiento-14
 Agent: z_pulimiento (Agente de Pulimiento)
 Base: 2fa1ffd (HEAD de origin/main — oleada post-pulimiento-13 completa: pulimiento-12 deps/ink/README, bugs-12 hardening CSRF, bugs-14 HD2, implementaciones-11 motor 12 rondas + colisión 21, anuncios director-10 y bugs-15)
 Tareas: higiene extensa post-oleada (directiva «rondas más largas, intensas y extensas») — (1) README: árbol de arquitectura al día con el inventario real (pace.ts falta en src/lib/sim/; revisión completa del árbol) y sección Seguridad al día con el hardening de bugs-12 (CSRF same-origin 403 previo a 401/429/413, rate limit 30/min en /api/autopilot, tope de cuerpo pre-parse 413, validación de LAB_PORT, coerción estricta del autopiloto), siempre verificado contra el código antes de documentar; (2) verificación cruzada de los informes de la oleada (bugs-12, bugs-14 HD2 como propuesta, implementaciones-11 + colisión 21) contra el árbol; (3) higiene de docs/ y worklog (integridad, orden temporal, cero marcadores); (4) puerta de calidad completa (181 tests esperados, tsc, lint, canon 16, security-verify, assets, marcadores); (5) informe de ronda y cierre. Sin cambios de código; README y docs/ son mi territorio (bugs-15 lo descarta explícitamente); único contacto esperado: worklog.md (append/append con director-10 en vuelo: §7.5).
+Task ID: bugs-15 (cierre)
+Agent: z_bugs (Super Z, sesion continuada)
+Ronda 15 de bugs completada (21h10) — informe: docs/agentes/z_bugs/ronda_2026-09-25_21h10.md
+
+Work Log:
+- Revisión cruzada del fix M1 de bugs-12 (isSameOrigin): VEREDICTO CORRECTO para la amenaza documentada (CSRF de navegador) — PoC de 10 bordes (case, IPv6, puerto default, null, malformado, sin Host) todos en verde; fail-closed.
+- Hallazgo HD3 (media): POST /api/campaigns sigue siendo oracle de fuerza bruta de ADMIN_TOKEN sin techo — orden token→rate PRE-EXISTE (verificado en historial), bucket campaigns: solo cuenta tras acertar; segunda instancia del fallo de enumeración manual (refuerza test de superficie de bugs-12); fix 1 línea propuesto (bucket admin: antes del token).
+- Hallazgo HD5 (media-baja): DNS rebinding burla Origin==Host (PoC: rebound.evil.com:3000→127.0.0.1, Origin y Host idénticos por construcción); familia R13; propuesta: documentar o allowlist opt-in ALLOWED_HOST.
+- Hallazgo HD4 (menor): orden fijo 403→429→401→413 documentado no se cumple literalmente en 3 de 4 rutas (el 413 varía); no explotable; alinear doc o reordenar al tocar HD3.
+- M2/M3/m1/m2 verificados correctos (autopilot rate antes de token; topes pre-parse en las 4; coerción estricta; LAB_PORT).
+- Inventario delta de red 42fda1e..6c136da: cero primitivas nuevas (engine/pace sin fetch nuevo — multiplican llamadas, no puntos; los 6 server-side inmutables).
+- Puerta: 181/181 (409 expect, 13 ficheros), tsc 0, lint 0; canon no re-ejecutado (delta cero).
+
+Stage Summary:
+- M1 ratificado para su amenaza (R17 cerrado reforzado con matiz); propuesta de ronda de endurecimiento apilando HD1+HD2+HD3+tests de superficie; HD5 a decisión de gobernanza junto a R13.
+- Sin colisiones: anuncio a la primera (bac36f6); territorio de director-10 (pace/motor/canon) respetado.
