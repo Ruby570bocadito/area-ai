@@ -37,11 +37,6 @@ const RESULT_FILTERS: Array<{ key: ResultFilter; label: string }> = [
   { key: 'RUNNING', label: 'En curso' },
 ]
 
-// La regla de victoria y sus textos viven en src/lib/victory.ts (fuente única
-// compartida con el banner de resolución y el toast de fin de campaña).
-function WinnerBadge({ winner, redProgress, blueProgress }: { winner: string | null; redProgress: number; blueProgress: number }) {
-  const title = `${VICTORY_RULE_SHORT} · ${decisiveProgressLabel(winner, redProgress, blueProgress)}`
-
 const RESULT_FILTER_DESC: Record<ResultFilter, string> = {
   ALL: 'todas',
   RED: 'solo victorias RED',
@@ -49,6 +44,11 @@ const RESULT_FILTER_DESC: Record<ResultFilter, string> = {
   DRAW: 'solo empates',
   RUNNING: 'solo en curso',
 }
+
+// La regla de victoria y sus textos viven en src/lib/victory.ts (fuente única
+// compartida con el banner de resolución y el toast de fin de campaña).
+function WinnerBadge({ winner, redProgress, blueProgress }: { winner: string | null; redProgress: number; blueProgress: number }) {
+  const title = `${VICTORY_RULE_SHORT} · ${decisiveProgressLabel(winner, redProgress, blueProgress)}`
 
   if (winner === 'RED')
     return (
