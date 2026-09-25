@@ -35,6 +35,7 @@ Sandbox de autoevolución **Red Team vs Blue Team**: agentes de IA ejecutan camp
 - **Operación continua (autopiloto)**: con un interruptor, el motor encadena campañas reales en segundo plano mientras el motor está ocioso.
 - **UI profesional multi-página**: panel de mando, operaciones con mapa de red interactivo y clicables, fichas de agente con actividad real, conocimiento, historial, analítica y gestión de modelos LLM. Paleta de comandos con `⌘K`, exportación de informes `.md` y aviso (toast) al terminar una campaña, con el resultado y acceso directo a la ficha.
 - **Motor LLM configurable**: por defecto usa `z-ai-web-dev-sdk`; se puede conectar cualquier proveedor compatible OpenAI (DeepSeek, Ollama, OpenRouter…) desde `/modelos`, con descarga real del catálogo `/v1/models`. Si el proveedor no responde o falla, el motor **degrada a modo determinista** y la campaña continúa en lugar de abortarse.
+- **SEO mínimo**: sitemap dinámico (`/sitemap.xml` con rutas estáticas y fichas de campañas completadas) y `robots.txt` servidos por la propia app, con degradación sin base de datos.
 
 ## Arquitectura
 
@@ -48,13 +49,14 @@ src/
 │   ├── historial/          # Archivo de campañas
 │   ├── analitica/          # Balance, evolución, ranking XP
 │   ├── modelos/            # Gestión del proveedor LLM
+│   ├── sitemap.ts/robots.ts # SEO mínimo: sitemap dinámico + robots servidos por la app
 │   └── api/                # state, campaigns (GET/POST + [id]), knowledge, autopilot, settings, models, agents/[key]/activity
 ├── components/arena/       # UI del producto (mapa, feed, roster, analítica; campaign-analysis.tsx: evolución y comparativa de la ficha)
 ├── lib/
-│   ├── sim/                # engine.ts (motor), roster.ts, seed.ts, llm.ts, progression.ts, autopilot.ts, knowledge-score.ts (fuerza del conocimiento)
+│   ├── sim/                # engine.ts (motor), roster.ts, seed.ts, llm.ts, progression.ts, autopilot.ts, knowledge-score.ts (fuerza del conocimiento), taxonomy.ts (normalización de categorías/tags de lecciones)
 │   ├── lab/                # runtime.ts (servidor HTTP del lab), ops.ts (acciones RED/BLUE), store.ts
 │   ├── net/                # target-guard.ts (SSRF), access.ts (token opcional + rate limit)
-│   └── *.ts                # módulos de raíz de lib/: victory.ts (regla de victoria, fuente única), round-progression.ts (evolución por rondas), aggregate-report.ts (informe agregado), text.ts (texto y duraciones), api-types.ts (contratos API), db.ts (cliente Prisma), utils.ts (helper de clases)
+│   └── *.ts                # módulos de raíz de lib/: victory.ts (regla de victoria, fuente única), round-progression.ts (evolución por rondas), aggregate-report.ts (informe agregado), text.ts (texto, duraciones y fechas), arena-colors.ts (tokens de color RED/BLUE), api-types.ts (contratos API), db.ts (cliente Prisma), utils.ts (helper de clases)
 └── hooks/use-arena-state.tsx  # Sondeo único de /api/state compartido por toda la app
 ```
 
@@ -98,8 +100,8 @@ bun run dev                   # http://localhost:3000
 | `bun run build` | Build de producción (standalone) |
 | `bun run start` | Servir el build de producción |
 | `bun run lint` | ESLint |
-| `bun run test` | Tests unitarios en `tests/` (runner nativo de bun): guard de destinos SSRF (`target-guard`), control de acceso/rate limit (`access`), resiliencia del motor LLM (`llm-resilience`, `llm-creation`), contrato del informe agregado (`aggregate-report`), utilidades de texto/duraciones (`text`) y evolución por rondas de la ficha (`round-progression`) — 93 tests |
-| `bun run verify` | **Verificación de cierre de ronda**: tipos (`tsc`) → unidades → entorno → servidor de producción → golden path (healthcheck `/api`, `/api/state` con seed, `/api/campaigns`, `/api/knowledge` y página principal). Delega en `tests/smoke.mjs` (canon único) y usa una BD de verificación dedicada, no toca tus datos. `--build` fuerza rebuild; flags opt-in: `SMOKE_START_CAMPAIGN=1` lanza una campaña real end-to-end (la Fase 5 valida la estructura de las lecciones archivadas y las cruza con la ficha), `SMOKE_CAMPAIGN_TIMEOUT=<seg>` fija el techo de espera de esa campaña, `SMOKE_SKIP_UNIT=1` y `SMOKE_SKIP_TSC=1` omiten fases |
+| `bun run test` | Tests unitarios en `tests/` (runner nativo de bun): guard de destinos SSRF (`target-guard`), control de acceso/rate limit (`access`), resiliencia del motor LLM (`llm-resilience`, `llm-creation`), contrato del informe agregado (`aggregate-report`), utilidades de texto/duraciones/fechas (`text`), evolución por rondas de la ficha (`round-progression`), regla de victoria acotada (`victory`) y taxonomía de lecciones (`taxonomy`) — 115 tests |
+| `bun run verify` | **Verificación de cierre de ronda**: tipos (`tsc`) → unidades → entorno → servidor de producción → golden path (healthcheck `/api`, `/api/state` con seed, `/api/campaigns`, `/api/knowledge`, página principal, `sitemap.xml` y `robots.txt`). Delega en `tests/smoke.mjs` (canon único, 15 comprobaciones) y usa una BD de verificación dedicada, no toca tus datos. `--build` fuerza rebuild; flags opt-in: `SMOKE_START_CAMPAIGN=1` lanza una campaña real end-to-end (la Fase 5 valida la estructura de las lecciones archivadas, las cruza con la ficha y comprueba su taxonomía/tags contra el esquema), `SMOKE_CAMPAIGN_TIMEOUT=<seg>` fija el techo de espera de esa campaña (mínimo 30; valores inferiores o no numéricos caen al defecto), `SMOKE_SKIP_UNIT=1` y `SMOKE_SKIP_TSC=1` omiten fases |
 | `bun run smoke` | Alias directo del test de humo: `bun tests/smoke.mjs` (mismo canon que `verify`, sin envoltorio de shell) |
 | `bun run db:push` | Sincronizar el esquema Prisma con SQLite |
 | `bun run db:generate` | Generar el cliente Prisma |
@@ -127,7 +129,7 @@ También es posible configurarlo por variables de entorno — o directamente en 
 | `OPENAI_MODEL` | No | Modelo a utilizar |
 | `NEXT_PUBLIC_SITE_URL` | No | URL pública del sitio para Open Graph/Twitter (solo en despliegue; por defecto `http://localhost:3000`) |
 | `TRUST_PROXY` | No | Solo detrás de un proxy de confianza (p. ej. el Caddyfile del repo): con `1`, la clave del rate limit usa `X-Forwarded-For`; sin él, esa cabecera se ignora (es suplantable) y el límite es global por proceso |
-| `SMOKE_CAMPAIGN_TIMEOUT` | No | Techo de espera en segundos de la campaña real de la Fase 5 del canon de humo (solo verificación, no afecta al runtime): defecto `240`, mínimo `30`; valores no numéricos caen al defecto |
+| `SMOKE_CAMPAIGN_TIMEOUT` | No | Techo de espera en segundos de la campaña real de la Fase 5 del canon de humo (solo verificación, no afecta al runtime): defecto `240`, mínimo `30`; valores inferiores a 30 o no numéricos caen al defecto |
 
 ## Seguridad
 
@@ -140,7 +142,7 @@ También es posible configurarlo por variables de entorno — o directamente en 
 - El `Caddyfile` incluido **solo proxifica al puerto de la app** (el antiguo handle `XTransformPort`, que permitía alcanzar cualquier puerto local bypasando el guard y el token, fue eliminado en la Ronda 6 — decisión documentada en el propio fichero).
 - Las claves del proveedor se guardan en la BD local y la API solo las devuelve enmascaradas.
 - La base de datos debe apuntarse con una **ruta absoluta** en `DATABASE_URL` (las relativas se resuelven distinto entre la CLI de Prisma y el runtime).
-- **Tests versionados**: 93 tests en `tests/` (`bun run test`) cubren el guard SSRF, el token/rate limit, la resiliencia del motor LLM (degradación ante proveedor caído y creación colgada), el contrato del informe agregado, las utilidades de texto/duraciones y la evolución por rondas (`round-progression`).
+- **Tests versionados**: 115 tests en `tests/` (`bun run test`) cubren el guard SSRF, el token/rate limit, la resiliencia del motor LLM (degradación ante proveedor caído y creación colgada), el contrato del informe agregado, las utilidades de texto/duraciones/fechas, la evolución por rondas (`round-progression`), la regla de victoria acotada (`victory`) y la taxonomía de lecciones (`taxonomy`).
 
 ## Agentes del proyecto
 
