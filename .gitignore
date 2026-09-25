@@ -44,13 +44,12 @@ next-env.d.ts
 local-*
 .claude
 .z-ai-config
+# (todos los ficheros de registro quedan cubiertos por *.log:
+# dev.log, server.log, dev.out.log, etc.)
 *.log
-dev.log
-dev.out.log
 test
 prompt
 
-server.log
 # Skills directory
 /skills/
 # local database
