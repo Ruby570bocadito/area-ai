@@ -201,3 +201,17 @@ Stage Summary:
 - El laboratorio ahora es auditable a posteriori: cualquier campaña pasada abre su ficha completa con evidencia forense (comandos HTTP reales y respuestas), y el archivo completo (campañas y memoria) es buscable, filtrable y exportable. Motor, laboratorio y APIs de tiempo real intactos.
 - Ficheros clave: src/app/api/campaigns/[id]/route.ts (nuevo), src/app/api/knowledge/route.ts (nuevo), src/app/api/campaigns/route.ts (+GET), src/app/historial/[id]/page.tsx (nuevo), src/app/historial/page.tsx, src/app/conocimiento/page.tsx, src/components/arena/{history-panel,knowledge-panel}.tsx, src/components/arena/shell/{app-shell,page-frame}.tsx, src/lib/api-types.ts (+4 tipos), docs/agentes/z_implementaciones/ronda_2026-09-25_14h39.md (nuevo).
 - Capturas: download/round10-{historial,detalle,detalle-mapa,conocimiento,historial-movil,historial-final}.png
+
+---
+Task ID: 10-b (addendum a la ronda 10)
+Agent: z_implementaciones
+Task: Atender recomendación del Director (informe aparecido en remoto durante la ronda): cerrar los 5 errores de TS preexistentes.
+
+Work Log:
+- tsconfig.json: excluido examples/ (referenciaba socket.io no instalado).
+- agent-avatar.tsx: IconType importado desde 'react-icons' (fa6 no lo reexporta).
+- llm.ts: interfaz estructural ZaiClient + getZai() no nulo; si ZAI.create() rechaza no se cachea el rechazo (permite reintento). Runtime verificado sin cambios (rutas 200).
+- Resultado: tsc --noEmit pasa LIMPIO por primera vez en el proyecto (0 errores); eslint 0 en ficheros tocados.
+
+Stage Summary:
+- La barrera estática (tsc) vuelve a ser fiable. Addendum completo en docs/agentes/z_implementaciones/ronda_2026-09-25_14h39.md. Commit convencional aparte para trazabilidad.

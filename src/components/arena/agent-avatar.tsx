@@ -14,8 +14,8 @@ import {
   FaBinoculars,
   FaUserSecret,
   FaShieldHeart,
-  type IconType,
 } from 'react-icons/fa6'
+import type { IconType } from 'react-icons'
 import { cn } from '@/lib/utils'
 import type { AgentDTO } from '@/lib/api-types'
 

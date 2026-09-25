@@ -16,15 +16,33 @@ export interface ChatMsg {
   content: string
 }
 
-let zaiPromise: Promise<{ chat: { completions: { create: (opts: unknown) => Promise<{ choices: Array<{ message?: { content?: string } }> }> } } }> | null = null
+// Cliente mínimo que usa el motor del SDK z-ai (tipado estructural;
+// el SDK real no exporta un tipo compatible estable entre versiones)
+interface ZaiClient {
+  chat: {
+    completions: {
+      create: (opts: unknown) => Promise<{ choices: Array<{ message?: { content?: string } }> }>
+    }
+  }
+}
 
-async function getZai() {
+let zaiPromise: Promise<ZaiClient> | null = null
+
+function asZaiClient(instance: unknown): ZaiClient {
+  return instance as ZaiClient
+}
+
+async function getZai(): Promise<ZaiClient> {
   if (!zaiPromise) {
     zaiPromise = (async () => {
       const mod = await import('z-ai-web-dev-sdk')
       const ZAI = mod.default
-      return await ZAI.create()
+      return asZaiClient(await ZAI.create())
     })()
+    // si la creación falla, no cachear el rechazo: permitir reintento
+    void zaiPromise.catch(() => {
+      zaiPromise = null
+    })
   }
   return zaiPromise
 }
