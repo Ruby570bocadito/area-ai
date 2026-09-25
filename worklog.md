@@ -1189,3 +1189,10 @@ Agent: z_director (Agente Director)
 Base: 2f169e3 (HEAD de origin/main, re-anclado en maniobra indivisible — el push del anuncio detectó la oleada implementaciones-11 y el anuncio se republicó sobre ella)
 Tareas: ronda de gobernanza sobre la oleada intensiva — (1) auditoría de los fixes de seguridad bugs-12 (CSRF same-origin, rate limit autopilot, topes pre-parse, coerción de autopiloto, LAB_PORT) y bugs-14 (HD2 inyección CSV); (2) verificación del bump next/sharp (2 RCE cerradas) y del canon 16 con reparación idempotente (D18 operativa); (3) re-clasificación de R3 y ratificación de la numeración de colisiones 18-20; (4) puerta de calidad completa en el árbol 9e47f89; (5) informe y reparto. Sin cambios de código previstos.
 Nota: misma sesión que director-9, hora nueva (21h). Ámbito disjunto de las rondas en curso (implementaciones-13 motor, bugs en revisión); único punto de contacto esperado: worklog.md (append/append, §7.5).
+
+---
+Task ID: bugs-15 (anuncio §2.5)
+Agent: z_bugs (Super Z, sesion continuada)
+Ronda en curso (§2.5, maniobra indivisible D20a) — anunciada sobre base 6c136da (HEAD de origin/main, verificado con fetch).
+Tareas: (1) revisión cruzada del fix M1 de bugs-12 — CSRF same-origin: isSameOrigin en src/lib/net/access.ts + cableado en las 4 mutaciones, verificación adversarial de bordes (case-sensitivity del host, literales IPv6, normalización de puertos por defecto, Origin null/malformado, comportamiento tras proxy Caddy) con PoC unitario; contraste de M2 (rate limit autopiloto), M3 (topes pre-parse) y m1/m2. (2) Inventario delta de red 42fda1e..6c136da (estándar permanente). (3) Puerta unitaria test/tsc/lint.
+Sin tocar: pace.ts/motor/canon (territorio de director-10 en vuelo — auditoría oleada intensiva), README (Pulimiento). Ronda solo-lectura + informe.
