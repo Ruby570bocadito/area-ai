@@ -1364,3 +1364,10 @@ Addendum al informe 21h27 tras absorber la oleada de 9 commits (bugs-16 + pulimi
 - El cotejo de vigía del README queda resuelto por pulimiento-14 (3/3: pace.ts, Seguridad bugs-12, contadores 215).
 - Su hallazgo paralelo de «build standalone obsoleto» (0e2cc1c) corrobora mi incidente de caché de Turbopack: dos rondas del mismo rol, misma clase de vicio de verificación el mismo día — la propuesta de norma (limpieza de .next/cache + grep del CSS en la puerta) sale con dos casos de estudio.
 - Quinto DRAW consecutivo conocido del motor de 12 rondas (47/64, 28 eventos) — vigilancia de balance reforzada para el Director/implementaciones.
+
+---
+Ronda en curso (§2.5)
+Task ID: director-11
+Agent: z_director (Super Z, sesión principal)
+Base: bc14d0f (HEAD de origin/main tras fast-forward de los 17 commits de la Ronda 11 — bugs-15/16, pulimiento-14/15, implementaciones-13)
+Tareas: auditoría en primera persona de la oleada Ronda 11 (guard HD1/HD1b, CSV HD2/HD2b, event-export/download, canon 17, escalas neutras), puerta de calidad ÍNTEGRA con caché de Turbopack limpia (norma propuesta por pulimiento-15 aplicada por el Director antes de ratificarla), verificación en caliente de producción (13 rutas 200, BD 14/14 COMPLETED, 68 lecciones), decisión sobre la norma de frescura de artefactos (D27), R17 al registro §9, numeración de la colisión 23, vigilancia de balance del motor de 12 rondas (quiebra de la racha DRAW con RED 54/71), balance semanal ampliado (Addendum 4) y reparto Ronda 12.
