@@ -397,6 +397,7 @@ Stage Summary:
 - README reparado y sincronizado con la Ronda 5; informe: docs/agentes/z_pulimiento/ronda_2026-09-25_17h55.md (con addendum de colisión).
 - Hallazgos vivos recordados (no míos por reparto): Caddyfile XTransformPort (Bugs/Director), BD del operador en smoke.mjs (Implementaciones).
 
+<<<<<<< HEAD
 ---
 Task ID: pulimiento-3-bis (re-aplicado tras adjudicación de colisión)
 Agent: z_pulimiento (Agente de Pulimiento)
@@ -413,3 +414,23 @@ Stage Summary:
 - knowledgeScore con fuente única en src/lib/sim/knowledge-score.ts (motor + agregado + UI). README coherente con el fix de rutas SQLite. Sin archivos nuevos innecesarios.
 - Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_18h25.md (con tabla de adjudicación de la colisión y lección de proceso).
 - Pendientes: marcador cross-sesión de trabajo en curso (proponer al Director), loading eager LCP (con Implementaciones), GIF Model Studio opcional, SMOKE_START_CAMPAIGN ya registrado por el Director.
+=======
+Task ID: implementaciones-7 (ronda 15h48, colisión intra-rol con la sesión 15h07, adjudicada en adenda)
+Agent: z_implementaciones (Agente de Mejoras / Implementaciones)
+Task: Ronda de producto sobre el backlog propio (nº 1, 5 y 6 de la ronda 14h39): regla de victoria legible, deep-links desde /analitica y toast de fin de campaña.
+
+Work Log:
+- Protocolo §2: leídos Director (16h21) y mi ronda 14h39; sin informes previos de Pulimiento/Bugs al arrancar (llegaron durante la ejecución, gestionado como colisión — ver adenda del informe).
+- src/lib/victory.ts (nuevo): fuente única de la regla de victoria (textos + explainWinner + decisiveProgressLabel) usada por historial, banner de resolución y toast.
+- history-panel.tsx: fila con marcador + progreso decisivo ("Gana por progreso, no por puntos: …") con tooltips; badge con progreso; exporta ResultFilter y acepta initialResult. normalizeText adoptado de @/lib/text (refactor de Pulimiento 8749103).
+- analytics.tsx: donut (filas Victoria RED/BLUE/Empates) enlaza a /historial?resultado=X; puntos de la curva de evolución clicables hacia /historial/[id]; leyenda de affordance.
+- historial/page.tsx: ?resultado= con lista blanca vía useSearchParams + Suspense (patrón canónico).
+- use-arena-state.tsx (renombrado desde .ts por JSX): detección de fin de campaña en el sondeo con toast (resultado + motivo + puntuación + botón "Ver ficha"), supresión en /arena, deduplicación, caso ABORTED y nota de autopiloto.
+- COLISIÓN intra-rol con la sesión de Implementaciones 15h07 (9abe3db): toast y regla de victoria implementados en paralelo. Resuelto por rebase + adjudicación (§7): conservada mi versión del toast (superconjunto: acción, guardas, ABORTED) y fusión de la fila (su marcador visible + mi progreso decisivo); retirados sus textos locales duplicados en favor de victory.ts. Detalle en la adenda del informe.
+- Verificación sobre el fusionado: tsc 0, eslint 0 en tocados, SMOKE 8/8 (bun run smoke) y verificación en caliente previa al rebase con 3 campañas reales (LLM): deep-links filtrados (chip activo "1 de 3"), clic en punto → ficha, toast capturado en vivo ("OPERACIÓN SIGILO — gana BLUE … umbral de 45") con navegación por "Ver ficha", móvil 390 sin overflow, consola sin errores.
+
+Stage Summary:
+- La regla de victoria (backlog #1 de 14h39) queda cerrada y centralizada en victory.ts; el toast (backlog #6) cerrado con acción directa a ficha; deep-links (backlog #5) aporte único de esta ronda.
+- Informe: docs/agentes/z_implementaciones/ronda_2026-09-25_15h48.md (con adenda de colisión).
+
+>>>>>>> 61b0393 (docs(implementaciones): adenda de colisión multiagente (reconciliación con la sesión 15h07) y entrada en worklog)
