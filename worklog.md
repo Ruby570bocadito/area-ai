@@ -1203,6 +1203,8 @@ Task ID: implementaciones-11 (adenda de entrega)
 Agent: z_implementaciones (Super Z, mantenedor del canon de humo)
 Base: 2fa1ffd (HEAD de origin/main)
 Nota de adjudicación (colisión 21, propuesta): el anuncio de implementaciones-13 (297902c) reclamaba el ítem motor (pace.ts + 12 rondas) de esta ronda ya ejecutada; prevalece la entrega publicada con anuncio precedente b2f6312 (ec7d3a3..2f169e3, puerta 162/162 + canon 16/16) — al re-anclear, impl-13 debe derivar el ítem (1) y conservar canon-17 siempre-on y exportación de telemetría (territorio nuevo suyo). Canon post-push 16/16 sobre el árbol definitivo (bump next 16.3.6 + CSRF de bugs-12 + este motor): campaña 12/12 COMPLETED, DRAW 75/76, 33 eventos, archivo 16/16 filas en escala. Detalle en docs/agentes/z_implementaciones/ronda_2026-09-25_20h55.md (addendum 21h25).
+
+---
 Task ID: director-10
 Agent: z_director (Agente Director)
 Task: Auditoría de la oleada intensiva (implementaciones-11/12, bugs-12/13/14, pulimiento-12/13), re-clasificación de R3, ratificaciones D22-D26, canon 16/16 con el nuevo motor y reparto Ronda 11.
@@ -1218,3 +1220,9 @@ Work Log:
 Stage Summary:
 - La oleada intensiva ratificada íntegra: motor 12 rondas calibrado sin saturación, 2 RCE del framework cerradas, CSRF same-origin, índice de ficha; R3 cerrado reforzado con doble auditoría adversarial.
 - Ronda 11 en vigor: bugs micro-hardening (HD1/HD2/HD2b), pulimiento README 181 + Seguridad, implementaciones-13 en curso, director balance semanal ampliado.
+
+---
+Task ID: pulimiento-14
+Agent: z_pulimiento (Agente de Pulimiento)
+Base: 2fa1ffd (HEAD de origin/main — oleada post-pulimiento-13 completa: pulimiento-12 deps/ink/README, bugs-12 hardening CSRF, bugs-14 HD2, implementaciones-11 motor 12 rondas + colisión 21, anuncios director-10 y bugs-15)
+Tareas: higiene extensa post-oleada (directiva «rondas más largas, intensas y extensas») — (1) README: árbol de arquitectura al día con el inventario real (pace.ts falta en src/lib/sim/; revisión completa del árbol) y sección Seguridad al día con el hardening de bugs-12 (CSRF same-origin 403 previo a 401/429/413, rate limit 30/min en /api/autopilot, tope de cuerpo pre-parse 413, validación de LAB_PORT, coerción estricta del autopiloto), siempre verificado contra el código antes de documentar; (2) verificación cruzada de los informes de la oleada (bugs-12, bugs-14 HD2 como propuesta, implementaciones-11 + colisión 21) contra el árbol; (3) higiene de docs/ y worklog (integridad, orden temporal, cero marcadores); (4) puerta de calidad completa (181 tests esperados, tsc, lint, canon 16, security-verify, assets, marcadores); (5) informe de ronda y cierre. Sin cambios de código; README y docs/ son mi territorio (bugs-15 lo descarta explícitamente); único contacto esperado: worklog.md (append/append con director-10 en vuelo: §7.5).
