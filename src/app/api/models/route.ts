@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProviderConfig } from '@/lib/sim/provider-config'
+import { classifyTarget, isLocalRequest } from '@/lib/net/target-guard'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,6 +50,28 @@ export async function POST(req: NextRequest) {
     }
     if (url.protocol !== 'http:' && url.protocol !== 'https:') {
       return NextResponse.json({ ok: false, error: 'El protocolo debe ser http(s)' }, { status: 400 })
+    }
+
+    // ── Guard SSRF: el servidor no es un proxy hacia redes internas ──
+    const local = isLocalRequest(req.headers)
+    if (!local && url.protocol !== 'https:') {
+      return NextResponse.json(
+        { ok: false, error: 'Desde una conexión remota el proveedor debe usar https' },
+        { status: 400 }
+      )
+    }
+    const target = await classifyTarget(url.hostname)
+    if (target === 'metadata') {
+      return NextResponse.json(
+        { ok: false, error: 'Destino bloqueado: endpoint de metadata de nube' },
+        { status: 403 }
+      )
+    }
+    if (target === 'private' && !local) {
+      return NextResponse.json(
+        { ok: false, error: 'Destino bloqueado: no se permite alcanzar redes internas desde una conexión remota' },
+        { status: 403 }
+      )
     }
 
     const controller = new AbortController()
