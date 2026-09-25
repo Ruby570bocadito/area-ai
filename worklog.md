@@ -329,3 +329,24 @@ Stage Summary:
 - Coherencia documental restaurada: README muestra lo que el repo contiene y documenta lo que package.json ejecuta; cero duplicación del helper de búsqueda.
 - Verificación: bun run verify --build 8/8 OK, tsc limpio, ESLint 0.
 - Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_17h36.md. Pendientes: SMOKE_START_CAMPAIGN en el canon, ratificación de la convención de capturas.
+
+Task ID: bugs-3 (Ronda 5)
+Agent: z_bugs (Agente de Bugs y Seguridad)
+Task: Ejecutar la tarea asignada por el Director Ronda 4 (versionar tests de target-guard y access bajo tests/) + cerrar 4 hallazgos propios no cubiertos por el canon, sobre 2a4b411.
+
+Work Log:
+- Protocolo §2: fetch al inicio (origin == 2a4b411), leído PROTOCOLO.md y el reparto Ronda 5; alcance anunciado en el informe.
+- COLISIÓN de sesión (la 5.ª) detectada en el push: mi primera iteración solapó con la Ronda 3 canónica. Resuelta por §7: descartado rate-limit propio (canon: access.ts de af09151), fix de verify.sh (obsoleto por a679bb6) y fix de db.ts (ya corregido). Reaplicado solo lo no cubierto, verificado fichero a fichero.
+- TAREA ASIGNADA EJECUTADA: tests/target-guard.test.ts (44 tests) + tests/access.test.ts (17 tests) con runner nativo de bun, 0 deps; script test en package.json (toque anunciado, previsto por el Director). No toco smoke.mjs (asignado a Implementaciones); tests listos para integrarse como fase opcional del smoke.
+- SSRF: POST /api/settings guardaba baseUrl sin guard (el motor llama {baseUrl}/chat/completions sin control) → guard idéntico a /api/models en el guardado + bloqueo siempre-metadata en el punto de uso (llm.ts).
+- Anti-redirección: redirect:'error' en los fetch de /api/models y llm.ts (un 302 de un servidor público hacia metadata/red interna evadía classifyTarget).
+- Bug ALTO operativa: proveedor LLM inalcanzable abortaba la campaña al instante (callOpenAICompatible sin try/catch, 4 llamadas del motor desprotegidas; también crasheaba al vencer el timeout porque el socket no se abortaba). Ahora degrada a determinista (contrato de callZai) + AbortSignal.timeout real. Detectado empíricamente en smoke (200×6 = abortos instantáneos).
+- Robustez: JSON.parse sin try/catch de scenario.infrastructure en /api/state (ruta de sondeo de UI + autopilot) → parse defensivo como en /api/campaigns/[id].
+- README vivo: fila test añadida; fila verify duplicada (residuo de colisión R3) fusionada.
+- Puerta de calidad §3: bun run test 61/61; tsc 0; eslint 0; bun tests/smoke.mjs --build 8/8; smoke de seguridad en caliente 7/7 (evidencia única, sin punto de entrada nuevo por D1). Señalado a Implementaciones: smoke.mjs usa db/custom.db (BD del operador) y el README histórico prometía BD dedicada.
+
+Stage Summary:
+- Cadena SSRF cerrada en los 3 puntos (guardado /api/settings, consulta /api/models, uso en motor llm.ts) con anti-redirección; R3 pasa a cerrado en capa de aplicación (queda vigilancia de despliegue XFF).
+- El motor degrada a modo determinista ante proveedor caído/colgado — ya no puede tumbarse el bucle de campañas con una config rota.
+- Tests de seguridad versionados y en verde (61), integrables en el smoke cuando el Director lo decida.
+- Informe: docs/agentes/z_bugs/ronda_2026-09-25_17h41.md (incluye tabla de adjudicación de la colisión).
