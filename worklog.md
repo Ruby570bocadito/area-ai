@@ -1047,5 +1047,5 @@ Work Log:
 - Puerta sobre el árbol fusionado: tsc 0, lint 0, 153/153 (331 expect), canon 16/16 con rebuild + campaña real (RED 100/62 — clamp vivo; archivo 6/6 en escala).
 
 Stage Summary:
-- Colisión 16 propuesta → renumerada: pulimiento-11 tomó 16/17; esta adjudicación se propone como colisión 18.
+- Colisión 16 propuesta → renumerada: pulimiento-11 tomó 16/17; esta adjudicación se propone como colisión 19 (18 tomado por bugs-12/13).
 - Addendum completo en docs/agentes/z_implementaciones/ronda_2026-09-25_20h29.md (deuda documental actualizada: README 115→153, canon 15→16, árbol +3 ficheros).
