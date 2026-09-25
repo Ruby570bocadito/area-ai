@@ -2,9 +2,20 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { Play, Loader2, RadioTower, Building2, Cpu, ShieldAlert, Swords, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ScenarioDTO } from '@/lib/api-types'
+
+// Ilustraciones generadas para cada infraestructura objetivo
+const SCENARIO_IMG: Record<string, string> = {
+  novaretail: '/scenario-novaretail.png',
+  'hospital-vitalis': '/scenario-hospital-vitalis.png',
+  'technova-saas': '/scenario-technova-saas.png',
+  'fincorp-bank': '/scenario-fincorp-bank.png',
+  'enermax-grid': '/scenario-enermax-grid.png',
+  'aerodefense-labs': '/scenario-aerodefense-labs.png',
+}
 
 function DifficultyDots({ level }: { level: number }) {
   return (
@@ -99,9 +110,9 @@ export function ControlCenter({
               onMouseMove={SPOTLIGHT_MOVE}
               disabled={running}
               className={cn(
-                'spot-card group relative overflow-hidden rounded-xl border p-4 text-left transition-all disabled:opacity-50',
+                'group relative overflow-hidden rounded-xl border text-left transition-all disabled:opacity-50',
                 isSel
-                  ? 'border-white/35 bg-white/[0.05]'
+                  ? 'edge-glow border-transparent bg-white/[0.05]'
                   : 'border-white/[0.07] bg-white/[0.015] hover:border-white/20 hover:bg-white/[0.035]'
               )}
             >
@@ -109,32 +120,46 @@ export function ControlCenter({
               {isSel && (
                 <motion.span
                   layoutId="sel-halo"
-                  className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-white/25"
+                  className="pointer-events-none absolute inset-0 z-20 rounded-xl ring-1 ring-white/25"
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 />
               )}
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-mono-tight text-[11px] font-bold tracking-[0.14em] text-foreground/90">
-                  {s.codename}
-                </span>
-                <DifficultyDots level={s.difficulty} />
+              {/* ilustración de la infraestructura */}
+              <div className="scenario-media h-24 sm:h-28">
+                <Image
+                  src={SCENARIO_IMG[s.key] ?? '/og.png'}
+                  alt=""
+                  fill
+                  sizes="(min-width:1280px) 33vw, (min-width:640px) 50vw, 100vw"
+                  className="object-cover"
+                />
+                <div className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-between gap-2 p-2.5">
+                  <span className="font-mono-tight truncate text-[11px] font-bold tracking-[0.14em] text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
+                    {s.codename}
+                  </span>
+                  <DifficultyDots level={s.difficulty} />
+                </div>
+                {isSel && (
+                  <motion.span
+                    layoutId="sel-check"
+                    initial={{ scale: 0.6, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="absolute right-2.5 top-2.5 z-10 flex items-center gap-1 rounded-full bg-white px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#0a0b0f] shadow-lg"
+                  >
+                    <Check className="h-2.5 w-2.5" /> SELECCIONADO
+                  </motion.span>
+                )}
               </div>
-              <p className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-foreground">
-                <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                {s.company}
-              </p>
-              <p className="mt-0.5 font-mono-tight text-[10px] uppercase tracking-wider text-muted-foreground">
-                {s.industry}
-              </p>
-              <p className="mt-2 line-clamp-2 text-[11.5px] leading-relaxed text-muted-foreground">{s.description}</p>
-              {isSel && (
-                <motion.span
-                  layoutId="sel-check"
-                  className="absolute bottom-3 right-3 flex items-center gap-1 rounded-full bg-white px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#0a0b0f]"
-                >
-                  <Check className="h-2.5 w-2.5" /> SELECCIONADO
-                </motion.span>
-              )}
+              <div className="p-3.5">
+                <p className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                  <Building2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <span className="truncate">{s.company}</span>
+                </p>
+                <p className="mt-0.5 font-mono-tight text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {s.industry}
+                </p>
+                <p className="mt-2 line-clamp-2 text-[11.5px] leading-relaxed text-muted-foreground">{s.description}</p>
+              </div>
             </motion.button>
           )
         })}

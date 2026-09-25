@@ -96,3 +96,20 @@ Work Log:
 Stage Summary:
 - Nueva capa de producto sobre el motor: analítica agregada, profundidad interactiva (fichas de agente), atajos de power-user (⌘K) y exportación de informes. Todo el combate/evolución verificado funcionando.
 - Ficheros clave: src/components/arena/{analytics,agent-detail,command-palette}.tsx (nuevos), {roster,arena-live,chrome,model-studio}.tsx (editados), src/app/page.tsx.
+
+---
+Task ID: 6
+Agent: Super Z (main agent)
+Task: Ronda visual y de marca — imágenes IA de escenarios, favicon/emblema hexagonal, OG image, refinado de tipografía y paleta. Motor intacto.
+
+Work Log:
+- scripts/generate-visuals.mjs: generación por IA de 7 assets con estilo de marca unificado (dark cinematic, rojo/cian sobre #08090d, sin texto): 6 ilustraciones de escenario (novaretail datacenter con carritos holográficos, hospital con cruz cian, SaaS cloud isométrico, bóveda bancaria con gráfico ámbar, SCADA de red eléctrica con turbina, war room aeroespacial con mapa mundial) + og.png 1440x704 para OpenGraph. Fix: tamaño OG a múltiplo de 32 (704 en vez de 720).
+- Marca: src/app/icon.svg nuevo — hexágono con mitad roja (ofensiva) y mitad cian (defensiva) + interpunct con gradiente, sirve como favicon. Navbar de page.tsx actualizada con el mismo emblema en SVG inline (identidad consistente). Eliminado public/logo.svg (sin referencias).
+- layout.tsx: openGraph.images + twitter card (summary_large_image) apuntando a /og.png.
+- globals.css: .font-mono-tight con font-variant-numeric: tabular-nums (datos alineados); text-wrap: balance en h1-h3; body con tercer glow ambiental violeta en la base; nuevas utilidades .scenario-media (velo de legibilidad + zoom 1.06 y saturación al hover) y .edge-glow (borde cónico animado rojo→ámbar→cian con @property --edge-angle, desactivado con prefers-reduced-motion).
+- control-center.tsx: tarjetas de escenario rehechas con imagen (next/image fill + sizes responsive), codename y dificultad sobre la imagen con velo, badge SELECCIONADO sobre la esquina de la imagen, borde edge-glow animado al seleccionar. Mapa scenario.key → ilustración.
+- Verificación en caliente: las 6 ilustraciones renderizan (desktop 1440 y móvil 390 sin h-scroll), selección con borde animado OK, consola sin errores, eslint/tsc limpios (solo errores preexistentes). El usuario lanzó OPERACIÓN CENTINELA desde el preview durante la ronda: completó 8/8 en EMPATE 65-100, conocimiento 38→42, campañas 8→9 — motor y evolución intactos con la nueva UI.
+
+Stage Summary:
+- Identidad visual completa: ilustraciones por escenario, emblema hexagonal rojo/cian en favicon+navbar, OG/Twitter card, tipografía con datos tabulares y paleta con profundidad ambiental. El motor de campañas sigue evolucionando el conocimiento en producción con usuarios reales.
+- Ficheros clave: public/scenario-*.png + public/og.png (nuevos), src/app/icon.svg (nuevo), scripts/generate-visuals.mjs (nuevo), src/app/{globals.css,layout.tsx,page.tsx}, src/components/arena/control-center.tsx.

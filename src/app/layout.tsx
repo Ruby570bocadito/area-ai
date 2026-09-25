@@ -50,6 +50,13 @@ export const metadata: Metadata = {
     description:
       "Red Team vs Blue Team con agentes de IA en evolución continua.",
     type: "website",
+    images: [{ url: "/og.png", width: 1440, height: 704, alt: "area·ai — laboratorio adversarial" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "area·ai — Simulador adversarial autónomo",
+    description: "Red Team vs Blue Team con agentes de IA en evolución continua.",
+    images: ["/og.png"],
   },
 };
 

@@ -97,8 +97,9 @@ html {
 
 body {
   background:
-    radial-gradient(1100px 520px at 12% -8%, rgba(244, 83, 110, 0.055), transparent 60%),
-    radial-gradient(1100px 520px at 88% -8%, rgba(65, 192, 239, 0.05), transparent 60%),
+    radial-gradient(1100px 520px at 12% -8%, rgba(244, 83, 110, 0.065), transparent 60%),
+    radial-gradient(1100px 520px at 88% -8%, rgba(65, 192, 239, 0.06), transparent 60%),
+    radial-gradient(900px 500px at 50% 118%, rgba(167, 139, 250, 0.045), transparent 62%),
     var(--background);
   min-height: 100vh;
   font-family: var(--font-body), system-ui, sans-serif;
@@ -136,6 +137,62 @@ body {
 }
 .panel-hover:hover {
   border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* ───────── Tarjetas de escenario con imagen ───────── */
+.scenario-media {
+  position: relative;
+  overflow: hidden;
+}
+.scenario-media::after {
+  /* velo inferior para legibilidad del texto sobre la imagen */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8, 9, 13, 0.14), rgba(8, 9, 13, 0.1) 40%, rgba(8, 9, 13, 0.82) 100%);
+  transition: opacity 0.35s ease;
+}
+.scenario-media img {
+  filter: saturate(0.82) contrast(1.04) brightness(0.9);
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), filter 0.45s ease;
+  will-change: transform;
+}
+.group:hover .scenario-media img {
+  transform: scale(1.06);
+  filter: saturate(1.05) contrast(1.05) brightness(1);
+}
+
+/* Borde con gradiente animado para el escenario seleccionado */
+@property --edge-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+.edge-glow {
+  position: relative;
+}
+.edge-glow::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--edge-angle),
+    rgba(244, 83, 110, 0.85),
+    rgba(232, 182, 76, 0.35),
+    rgba(65, 192, 239, 0.85),
+    rgba(244, 83, 110, 0.85)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: edge-rotate 3.2s linear infinite;
+  pointer-events: none;
+}
+@keyframes edge-rotate {
+  to { --edge-angle: 360deg; }
 }
 
 /* Estados activos por equipo — sutiles, sin neón */
@@ -285,7 +342,11 @@ body {
 .font-mono-tight {
   font-family: var(--font-jetbrains), var(--font-geist-mono), ui-monospace, monospace;
   letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
 }
+
+/* Titulares con equilibrio óptico de líneas */
+h1, h2, h3 { text-wrap: balance; }
 
 /* Índice de sección en contorno */
 .section-index {
@@ -499,6 +560,7 @@ body {
   html { scroll-behavior: auto; }
   .gsap-reveal { opacity: 1; transform: none; }
   .anim-float, .anim-blink, .conic-ring, .pulse-red, .pulse-blue,
+  .edge-glow::before,
   .attack-beam, .flow-line, .svg-pulse { animation: none !important; }
   .scroll-progress, .cursor-glow, .noise-overlay { display: none; }
   .scan-sweep::before, .marquee-track, .radar-sweep,
