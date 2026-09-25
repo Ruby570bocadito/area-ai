@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// AEGIS ARENA — Sandbox de autoevolución Red Team vs Blue Team
+// ─────────────────────────────────────────────────────────────
+
+model Agent {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  codename    String
+  team        String // RED | BLUE
+  role        String
+  specialty   String
+  icon        String
+  description String
+  xp          Int      @default(0)
+  level       Int      @default(1)
+  campaigns   Int      @default(0)
+  victories   Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model Scenario {
+  id             String   @id @default(cuid())
+  key            String   @unique
+  codename       String
+  company        String
+  industry       String
+  difficulty     Int // 1-5
+  description    String
+  infrastructure String // JSON: { nodes: [{ id, name, type, ip, criticality, vulnerabilities[], controls[] }] }
+  redObjective   String
+  blueObjective  String
+  createdAt      DateTime @default(now())
+
+  campaigns Campaign[]
+}
+
+model Campaign {
+  id           String    @id @default(cuid())
+  status       String    @default("RUNNING") // RUNNING | COMPLETED | ABORTED
+  phase        String    @default("RECON")
+  round        Int       @default(0)
+  maxRounds    Int       @default(8)
+  redScore     Int       @default(0)
+  blueScore    Int       @default(0)
+  redProgress  Int       @default(0) // 0-100 avance del objetivo rojo
+  blueProgress Int       @default(0) // 0-100 endurecimiento de la postura azul
+  winner       String? // RED | BLUE | DRAW
+  narrative    String?
+  engineMode   String    @default("LLM") // LLM | SIM (fallback)
+  startedAt    DateTime  @default(now())
+  endedAt      DateTime?
+
+  scenarioId String
+  scenario   Scenario @relation(fields: [scenarioId], references: [id])
+
+  events    CampaignEvent[]
+  knowledges Knowledge[]
+
+  @@index([status])
+}
+
+model CampaignEvent {
+  id            String   @id @default(cuid())
+  campaignId    String
+  seq           Int // orden global dentro de la campaña
+  round         Int
+  phase         String
+  team          String // RED | BLUE | SYSTEM
+  agentKey      String?
+  agentCodename String?
+  action        String
+  detail        String
+  result        String? // EXITO | FALLO | PARCIAL | DETECTADO | BLOQUEADO | CONTENIDO
+  impact        Int      @default(0)
+  severity      String   @default("INFO") // INFO | LOW | MEDIUM | HIGH | CRITICAL
+  targetNode    String?
+  createdAt     DateTime @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId, seq])
+}
+
+model Knowledge {
+  id            String   @id @default(cuid())
+  team          String // RED | BLUE
+  campaignId    String?
+  campaign      Campaign? @relation(fields: [campaignId], references: [id])
+  agentKey      String?
+  agentCodename String?
+  category      String // TACTICA | TECNICA | DEFENSA | VULNERABILIDAD | LECCION | INTELIGENCIA
+  title         String
+  content       String
+  tags          String // separado por comas
+  confidence    Float    @default(0.5)
+  timesUsed     Int      @default(0)
+  timesWorked   Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  @@index([team])
+}
