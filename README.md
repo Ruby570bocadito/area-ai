@@ -15,7 +15,7 @@ Sandbox de autoevolución **Red Team vs Blue Team**: agentes de IA ejecutan camp
 | | |
 |---|---|
 | ![Telemetría real del laboratorio](docs/screenshots/nodo-laboratorio.png) | ![Archivo con objetivos](docs/screenshots/round11-historial-objetivos.png) |
-| **Telemetría del laboratorio** — servicio HTTP real por nodo: sesiones, parches aplicados, tráfico con status codes (200/403) | **Archivo de campañas** — búsqueda tolerante a acentos, filtros, CSV y regla de victoria transparente (progreso de objetivos) |
+| **Telemetría del laboratorio** — servicio HTTP real por nodo: sesiones, parches aplicados, tráfico con status codes (200/403) | **Archivo de campañas** — búsqueda tolerante a acentos, filtros, CSV, informe agregado en Markdown y regla de victoria transparente (progreso de objetivos) |
 | ![Memoria de conocimiento](docs/screenshots/round10-conocimiento.png) | ![Model Studio](docs/screenshots/modelos.png) |
 | **Memoria del sistema** — lecciones archivadas por RED/BLUE con confianza dinámica y usos | **Model Studio** — conexión a cualquier proveedor compatible OpenAI con descarga real del catálogo |
 | ![Ficha de detalle](docs/screenshots/round11-detalle-regla.png) | ![Responsive en móvil](docs/screenshots/round10-historial-movil.png) |
@@ -127,6 +127,7 @@ También es posible configurarlo por variables de entorno — o directamente en 
 - **Rate limit** en `POST /api/campaigns` (6 lanzamientos/minuto por cliente) para frenar bucles de gasto de créditos LLM. La clave de cliente usa `X-Forwarded-For` **solo si defines `TRUST_PROXY=1`** (detrás de un proxy de confianza que la fije con la IP real); sin él, la cabecera se ignora porque cualquier cliente podría suplantarla y rotar la clave para anular el límite — el límite pasa a ser global por proceso.
 - `GET /api` es un healthcheck que verifica el servicio y la base de datos.
 - **Sin autenticación por defecto**: cualquier usuario con acceso a la app puede leer datos de simulación y (sin `ADMIN_TOKEN`) lanzar campañas. **No expongas la aplicación a Internet** sin auth en el proxy o sin definir `ADMIN_TOKEN`.
+- El `Caddyfile` incluido **solo proxifica al puerto de la app** (el antiguo handle `XTransformPort`, que permitía alcanzar cualquier puerto local bypasando el guard y el token, fue eliminado en la Ronda 6 — decisión documentada en el propio fichero).
 - Las claves del proveedor se guardan en la BD local y la API solo las devuelve enmascaradas.
 - La base de datos debe apuntarse con una **ruta absoluta** en `DATABASE_URL` (las relativas se resuelven distinto entre la CLI de Prisma y el runtime).
 - **Tests de seguridad versionados**: 64 tests en `tests/` (`bun run test`) cubren el guard SSRF, el token/rate limit y la degradación del motor ante proveedor caído.
