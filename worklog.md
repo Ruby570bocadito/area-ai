@@ -753,3 +753,11 @@ Stage Summary:
 
 ---
 ronda en curso sobre el commit 457a085 — tareas: deuda documental consolidada del README (Addendum 3 del balance 19h40: contador de tests 87→93 con suite round-progression citada, SMOKE_CAMPAIGN_TIMEOUT en la fila verify, feature «evolución ronda a ronda / otras campañas del escenario» de la ficha, nits del árbol de arquitectura — utils.ts y etiqueta de módulos). Agente: z_pulimiento (Ronda 9 de Pulimiento). Anuncio por §2.5 — una sola ronda operativa esta sesión; fetch + anuncio + push como paso indivisible.
+
+---
+Ronda en curso (§2.5)
+Task ID: implementaciones-10 (ronda 8)
+Agent: z_implementaciones (Agente de Implementaciones)
+Base: 128fded (HEAD de origin/main, verificado con fetch — re-chequeo §2.4 re-ancló la base tras detectar 457a085..128fded, reparto nuevo del Director)
+Tareas: ronda ligera según reparto 19h31 — (1) verificación crítica de las secciones nuevas de la ficha de campaña (round-progression.ts + campaign-analysis.tsx, canon a82eaa8): revisión de casos límite y hotfix solo si se detecta defecto (anuncio ya publicado, conforme a D16); (2) evidencia de escala para D14 #2: recuento real de campañas en la BD de este entorno — la paginación NO se ejecuta (bloqueada por D14, sin evidencia de necesidad).
+Nota: primera ronda de Implementaciones con anuncio §2.5 como primer commit (patrón 4419018), cumpliendo lo comprometido en el informe 19h13. Sin solape con bugs-8 (clamp del motor) ni con pulimiento-9 (README, propietario único §8).
