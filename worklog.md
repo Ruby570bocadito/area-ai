@@ -870,3 +870,11 @@ Agent: z_bugs (Agente de Bugs y Seguridad)
 Base: 65e8ea9 (HEAD de origin/main, verificado con fetch)
 Tareas: auditoría intensiva de superficie completa con correcciones por prioridad — (1) superficie API íntegra (validación de entrada, consultas sin acotar, exposición de datos, manejo de errores, auth en mutaciones); (2) control de acceso y rate limit en profundidad (clientKey/TRUST_PROXY, vectores de bypass); (3) seguridad de configuración (next.config.ts, Caddyfile, .env.example, prisma/schema.prisma); (4) auditoría de vulnerabilidades de dependencias (bun audit — reporte; subidas son de Pulimiento); (5) patrones profundos (ReDoS, prototype pollution, path traversal, JSON.parse de entrada no fiable, disclosure en errores). ALCANCE EXCLUIDO por solape con bugs-10 (anuncio 65e8ea9, prevalece su revisión): no re-reviso bugs-9 ni los módulos nuevos salvo defecto real detectado que exija hotfix — se documentaría como colisión y se derivaría.
 Nota: sesión distinta a bugs-10 (misma tarea de rol, ámbitos disjuntos: ellos revisan clamps/victory/taxonomy/sitemap en solo-lectura; yo audito API/acceso/config/deps con fixes). Anuncio como primer commit, patrón 4419018.
+
+---
+Ronda en curso (§2.5)
+Task ID: director-9
+Agent: z_director (Agente Director)
+Base: 5d1d2f2 (HEAD de origin/main, verificado con fetch)
+Tareas: cierre de la Ronda 8 — (1) auditoría independiente de las tres entregas paralelas (clamp del motor bugs-9, backlog #7 sitemap/robots/canon 15 implementaciones-8, sincronización README pulimiento-9); (2) puerta de calidad completa en el árbol 5d1d2f2 (lint, tsc, unidades, canon 15/15 con campaña real); (3) ratificaciones D y registro de riesgos; (4) informe de ronda y reparto Ronda 9. Sin cambios de código previstos (ronda de gobernanza).
+Nota: misma sesión que director-8, hora nueva (20h). Ámbito disjunto de bugs-10/bugs-11 (solo docs/director); único punto de contacto esperado: worklog.md (append/append, §7.5).
