@@ -215,3 +215,21 @@ Work Log:
 
 Stage Summary:
 - La barrera estática (tsc) vuelve a ser fiable. Addendum completo en docs/agentes/z_implementaciones/ronda_2026-09-25_14h39.md. Commit convencional aparte para trazabilidad.
+
+---
+Task ID: 11 (ronda 2 del Director)
+Agent: z_director
+Task: Ronda 2 — ejecutar la ronda operativa priorizada (Pulimiento, Implementaciones-TS, Bugs/Seguridad) y auditar el resultado. Detectada y resuelta una colisión multiagente en paralelo.
+
+Work Log:
+- Sin trabajo nuevo que auditar al inicio (origin en bfc2530): se ejecutó la ronda operativa según las recomendaciones priorizadas de la Ronda 1.
+- Pulimiento: README.md completo + .env.example + 5 capturas verificadas visualmente en docs/screenshots/; desrastreados download/, tool-results/, .zscripts/, mini-services/ (~24 MB); retiradas 9 dependencias muertas; UI intacta.
+- Implementaciones (paralelo, otra sesión): cerró también los 5 errores de TS con una variante de llm.ts mejor (reintento si ZAI.create() falla, sin cachear el rechazo) + ronda de features (ficha /historial/[id], filtros/CSV, memoria de conocimiento con búsqueda).
+- Bugs/Seguridad: guard SSRF en src/lib/net/target-guard.ts + integración en POST /api/models. 20/20 tests unitarios y 5 smoke tests contra el build de producción (metadata 403, privado remoto bloqueado, Ollama local permitido, http remoto 400, DeepSeek público atraviesa con 401 real).
+- COLISIÓN al pushear: origin avanzó a 04938e1 en paralelo con el mismo fix de TS. Resuelto con rebase: mi commit de fix TS quedó vacío y fue descartado automáticamente (la variante paralela es equivalente/mejor y ya estaba en la historia); sin duplicidad residual. tsc y build re-verificados sobre el código fusionado.
+- Capturas round10-* reubicadas de download/ a docs/screenshots/ para coherencia con la política del repo (/download/ ignorado).
+
+Stage Summary:
+- Estado VERDE con reserva documentada (sin auth, solo-local). Riesgos R1, R2, R5, R6, R8 cerrados con evidencia; R3 mitigado-en-vigilancia; R4 y R9 abiertos con plan.
+- Informes de los cuatro roles en docs/agentes/ (pulimiento, implementaciones, bugs: 16h40; director: 16h42 + addendum de colisión).
+- Lección de coordinación: dos sesiones ejecutaron la misma recomendación del Director en paralelo. A partir de ahora, cada agente debe anunciar en su informe la recomendación que va a tomar ANTES de ejecutarla, y el Director verificara origin/main al inicio y al final de cada ronda.
