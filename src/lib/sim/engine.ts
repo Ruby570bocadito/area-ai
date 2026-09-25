@@ -3,6 +3,7 @@ import { llmJson } from './llm'
 import { ensureSeed } from './seed'
 import { ensureProgressionMigration, levelForXp } from './progression'
 import { knowledgeScore } from './knowledge-score'
+import { normalizeLessonCategory, normalizeLessonTags } from './taxonomy'
 import { RED_AGENTS, BLUE_AGENTS } from './roster'
 import {
   PHASE_ORDER,
@@ -629,10 +630,10 @@ Extrae 2 lecciones por equipo: qué funcionó, qué falló y cómo aplicarlo la 
         data: {
           team,
           campaignId,
-          category: l.category ?? 'LECCION',
+          category: normalizeLessonCategory(l.category),
           title: String(l.title).slice(0, 140),
           content: String(l.content).slice(0, 900),
-          tags: Array.isArray(l.tags) ? l.tags.join(',').slice(0, 200) : 'general',
+          tags: normalizeLessonTags(l.tags),
           confidence: clamp(Number(l.confidence) || 0.55, 0.2, 0.95),
         },
       })

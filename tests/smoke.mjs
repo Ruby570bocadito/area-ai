@@ -11,6 +11,8 @@
 //                                   escribe en la BD objetivo)
 //   SMOKE_CAMPAIGN_TIMEOUT=<seg>  → techo de espera de la campaña real (segundos;
 //                                   por defecto 240 — el motor completo ronda los ~40 s)
+// Ronda 8: Fase 4 añade /sitemap.xml + /robots.txt (backlog #7) y Fase 5
+// valida taxonomía de categorías y tags de las lecciones (R8).
 //
 // Fases: (0) bun test tests/ — guard SSRF + token/rate limit  (1) tsc --noEmit
 // (2) entorno (.env, prisma db push)  (3) servidor de producción standalone
@@ -181,6 +183,19 @@ if (up) {
   const home = await fetch(`${BASE}/`)
   const html = await home.text().catch(() => '')
   record('GET / (panel de mando)', home.ok && html.includes('area'), `HTTP ${home.status}`)
+
+  // Ronda 8 (backlog #7): el sitemap y el robots forman parte del golden
+  // path de despliegue. El sitemap es dinámico (degrada a rutas estáticas
+  // si la BD no responde), así que aquí solo se exige un documento válido.
+  const sitemapRes = await fetch(`${BASE}/sitemap.xml`)
+  const sitemapBody = await sitemapRes.text().catch(() => '')
+  const robotsRes = await fetch(`${BASE}/robots.txt`)
+  const robotsBody = await robotsRes.text().catch(() => '')
+  record(
+    'GET /sitemap.xml y /robots.txt (SEO)',
+    sitemapRes.ok && /<urlset[\s>]/.test(sitemapBody) && robotsRes.ok && robotsBody.toLowerCase().includes('sitemap:'),
+    `sitemap HTTP ${sitemapRes.status} · robots HTTP ${robotsRes.status}`
+  )
 }
 
 // ── Fase 5 (opt-in): campaña real end-to-end ────────────────
@@ -258,22 +273,30 @@ if (process.env.SMOKE_START_CAMPAIGN === '1' && up) {
     // join Knowledge → Campaign → Scenario del endpoint no se rompa en silencio;
     // el cruce exige que la ficha (/api/campaigns/[id]) archive exactamente
     // las mismas lecciones que la memoria global atribuye a esta campaña.
+    // Ronda 8: la categoría debe pertenecer a la taxonomía del esquema
+    // (TACTICA|TECNICA|DEFENSA|VULNERABILIDAD|LECCION|INTELIGENCIA) y los tags
+    // ser una lista no vacía de tokens no vacíos — el motor normaliza en la
+    // escritura (src/lib/sim/taxonomy.ts) y el canon lo comprueba en lectura
+    // sobre datos reales archivados.
+    const CATEGORIES = ['TACTICA', 'TECNICA', 'DEFENSA', 'VULNERABILIDAD', 'LECCION', 'INTELIGENCIA']
     const structurallyValid =
       Array.isArray(lessons) &&
       lessons.length > 0 &&
       lessons.every(
         (k) =>
           (k.team === 'RED' || k.team === 'BLUE') &&
-          typeof k.category === 'string' && k.category.trim() !== '' &&
+          CATEGORIES.includes(k.category) &&
           typeof k.title === 'string' && k.title.trim() !== '' &&
           typeof k.content === 'string' && k.content.trim() !== '' &&
-          typeof k.campaignCodename === 'string' && k.campaignCodename.trim() !== ''
+          typeof k.campaignCodename === 'string' && k.campaignCodename.trim() !== '' &&
+          typeof k.tags === 'string' && k.tags.trim() !== '' &&
+          k.tags.split(',').every((t) => t.trim() !== '')
       )
     const fichaMatches = Array.isArray(detail?.knowledge) && detail.knowledge.length === lessons.length
     record(
       'lecciones estructuralmente válidas y cruce con la ficha',
       structurallyValid && fichaMatches,
-      `estructura ${structurallyValid ? 'válida' : 'inválida'} · ficha ${detail?.knowledge?.length ?? '?'} vs memoria ${lessons.length}`
+      `estructura ${structurallyValid ? 'válida (taxonomía y tags incluidos)' : 'inválida'} · ficha ${detail?.knowledge?.length ?? '?'} vs memoria ${lessons.length}`
     )
   }
 } else if (process.env.SMOKE_START_CAMPAIGN === '1') {

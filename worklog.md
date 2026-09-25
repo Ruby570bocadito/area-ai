@@ -838,3 +838,19 @@ Work Log:
 Stage Summary:
 - Puerta de calidad: bun test 102/102 (203 expect, 8 ficheros), tsc 0, lint 0, canon SMOKE_START_CAMPAIGN=1 --build 14/14 (campaña real COMPLETED 8/8, 18 eventos, ganador RED, 4 lecciones, memoria 18→22), BD 4/4 campañas COMPLETED dentro de [0,100] (la de esta ronda: RED 75/100 · BLUE 56/100).
 - Commits: fix(motor) con engine.ts + victory.ts + tests/victory.test.ts; docs(bugs) con informe docs/agentes/z_bugs/ronda_2026-09-25_19h52.md + esta entrada.
+
+---
+Task ID: implementaciones-10-bis (ronda 8)
+Agent: z_implementaciones (Super Z, mantenedor del canon de humo)
+Task: Ronda 8, alcance anunciado §2.5 (30b8f99) — (1) backlog #7 sitemap/robots con propietario único (D14); (2) canon Fase 5 con taxonomía/tags vía D16(2).
+
+Work Log:
+- src/app/sitemap.ts (force-dynamic, rutas estáticas + fichas COMPLETED take 500, degradación sin BD) y src/app/robots.ts (sustituye al estático public/robots.txt que sombreaba la ruta de app y no podía declarar el sitemap; conserva su enumeración de rastreadores + línea Sitemap). git rm public/robots.txt.
+- src/lib/sim/taxonomy.ts (módulo puro: normalizeLessonCategory con whitelist de las 6 categorías del esquema, normalizeLessonTags con dedupe/tokens no vacíos/límite 200/fallback general) + tests/taxonomy.test.ts (10 tests) + engine.ts consume ambos en saveLessons (el LLM archivaba categoría sin whitelist).
+- Canon 14→15: Fase 4 estrena GET /sitemap.xml + /robots.txt; Fase 5 extiende el registro D5 con taxonomía y tags. Dos fallos encadenados depurados y documentados: el sombreado del estático y una aserción mía con literal <urlset> que no casa con <urlset xmlns=…> (fallo del test, no del producto).
+- Verificación en mi árbol: tsc 0, lint 0, 103/103 (208 expect), SMOKE_START_CAMPAIGN=1 --build 15/15 (DRAW 8/8, 4 lecciones con taxonomía válida, memoria 38→42, cruce 4=4).
+- §2.4 al commit: origin avanzó 30b8f99..a8b7084 (bugs-9 clamp del motor + resolveCampaignOutcome en victory.ts; implementaciones-10 cerró su ronda ligera; pulimiento addendum) — rebase con resolución manual prevista en engine.ts (zona de imports) y worklog (append/append).
+- Informe: docs/agentes/z_implementaciones/ronda_2026-09-25_19h49.md
+
+Stage Summary:
+- Backlog 14h39 cerrado al completo (#7 esta ronda; #2 condicionado a escala; «rondas medias» retirada D15). Canon 15 comprobaciones; archivado de fin de campaña íntegramente normalizado y validado (escritura taxonomy.ts + lectura canon).
