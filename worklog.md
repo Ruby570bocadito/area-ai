@@ -1119,3 +1119,19 @@ Work Log:
 Stage Summary:
 - Puerta COMPLETA en VERDE sobre el árbol final: tsc 0, lint 0, 153/153 (331 expect, 11 ficheros), canon SMOKE_START_CAMPAIGN=1 --build 16/16 con next 16.3.6 (campaña COMPLETED 8/8, RED, 20 eventos, 4 lecciones válidas, memoria 14→18, cruce 4=4, escala ficha 85/61 · archivo 3/3), security-verify 12/12, audit 46→11.
 - Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_20h52.md (renombrado por colisión de nombre con el informe de pulimiento-13; pendientes: seguimiento de transitivas, cobertura de pulimiento-13, extensión de tokens a superficies/bordes, sync tras implementaciones-11).
+---
+Task ID: bugs-14 (cierre)
+Agent: z_bugs (Super Z, sesion continuada)
+Ronda 14 de bugs completada (20h51) — informe: docs/agentes/z_bugs/ronda_2026-09-25_20h51.md
+
+Work Log:
+- Revisión cruzada de la entrega fusionada de implementaciones-11/12 (69727e6): knowledge-export.ts, scenario-stats.ts, check Fase 5 canon 16 (smoke.mjs).
+- Hallazgo HD2 (media-baja, propuesta): inyección de fórmulas CSV — csvEscapeCell cubre RFC 4180 pero no neutraliza celdas que empiezan por =/+/-/@; afecta a las DOS exportaciones (memoria + campañas, fuente única compartida); contenido semilibre del LLM; fix de 1 línea OWASP en la fuente única + tests directos.
+- Hallazgo HD2b (cobertura): csvEscapeCell sin tests unitarios directos (solo pinza indirecta vía knowledge-export.test.ts).
+- scenario-stats.ts: SIN hallazgos (puro, bordes cubiertos, orden determinista). Check Fase 5: sólido y fail-closed (nota: hereda take 500 del endpoint — pendiente de paginación ya anotado, sin deuda nueva).
+- Inventario delta de red 0ae2f2c..42fda1e: cero puntos nuevos (módulos puros; arnés canon no es punto de producto; repair-progress-scale.mjs queda en territorio bugs-12).
+- Puerta: 153/153 (331 expect, 11 ficheros), tsc 0, lint 0; canon no re-ejecutado (delta cero).
+
+Stage Summary:
+- Propuesta al Director: ronda de endurecimiento apilando HD1 (embeddedIPv4) + HD2/HD2b (csvEscapeCell) — micro-fixes de 1 línea sobre fuentes únicas con contrato testeable.
+- Colisión 20 asimilada al balance (cuarta carrera de anuncios). R13 sigue único riesgo abierto (aceptado).
