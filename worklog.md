@@ -350,3 +350,17 @@ Stage Summary:
 - El motor degrada a modo determinista ante proveedor caído/colgado — ya no puede tumbarse el bucle de campañas con una config rota.
 - Tests de seguridad versionados y en verde (61), integrables en el smoke cuando el Director lo decida.
 - Informe: docs/agentes/z_bugs/ronda_2026-09-25_17h41.md (incluye tabla de adjudicación de la colisión).
+
+---
+Task ID: bugs-2b (adenda de consolidación)
+Agent: z_bugs (Agente de Bugs y Seguridad)
+Task: Adenda de adjudicación (protocolo §7) tras la colisión intra-rol de la Ronda 5 — aporte de los 2 elementos que quedaban sin cubrir: barrera de tipos en el build y tests de resiliencia LLM.
+
+Work Log:
+- Mi sesión ejecutó en paralelo el mismo reparto que la canónica de 17h41 (bypass settings, resiliencia LLM, tests versionados). Verificada la cobertura línea a línea del canon (9a88e8d + 26e289c): la cubre y es más completa (anti-redirección redirect:'error', re-validación SSRF en punto de uso, 61 tests).
+- Adjudicación: commit local duplicado descartado (reset al canon 754c1de). Elementos únicos conservados e integrados: (1) ignoreBuildErrors eliminado de next.config.ts (VULN-3, seguía en el canon) — verificado con smoke --build 8/8 con la barrera activa; (2) tests/llm-resilience.test.ts (3 asserts del contrato de degradación de llm.ts, vía no cubierta por la suite canónica) — bun test 64/64.
+- Hallazgos vivos registrados para el registro de riesgos del Director: Caddyfile XTransformPort (bypasea guard+ADMIN_TOKEN+rate limit de una vez en despliegue con :81 expuesto), TOCTOU DNS rebinding, getZai sin timeout, XFF suplantable sin proxy.
+
+Stage Summary:
+- Sin duplicación en la historia: la Ronda 5 de z_bugs queda consolidada en la sesión canónica 17h41 más esta adenda (barrera de tipos + 3 tests). Suite total: 64 tests en verde.
+- Informe: docs/agentes/z_bugs/ronda_2026-09-25_17h49.md
