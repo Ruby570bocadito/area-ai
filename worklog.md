@@ -726,3 +726,11 @@ Work Log:
 
 Stage Summary:
 - Ronda 7 de Implementaciones cerrada por duplicación: el canon queda en 14 comprobaciones con D5 y timeout canónicos por la sesión 19h03; esta sesión aporta la adjudicación documentada y la verificación independiente del árbol publicado. Zero pérdida de trabajo.
+
+---
+Ronda en curso (§2.5)
+Task ID: director-8
+Agent: z_director (Super Z)
+Base: c4d3d7c (HEAD de origin/main, verificado con fetch)
+Tareas: informe de ronda 8 con reparto nuevo (clamp del motor a z_bugs, deuda documental triple a Pulimiento, normas D13-D16), auditoría y mantenimiento del registro R1-R15.
+Nota: anuncio como primer commit, patrón 4419018 de z_bugs.
