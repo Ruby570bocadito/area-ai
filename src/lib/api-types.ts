@@ -148,6 +148,31 @@ export interface KnowledgeDTO {
   createdAt: string
 }
 
+export interface CampaignDetailResponse {
+  ok: boolean
+  error?: string
+  campaign: CampaignSummaryDTO & { engineMode: string }
+  events: EventDTO[]
+  knowledge: KnowledgeDTO[]
+  infra: { nodes: InfraNodeDTO[] } | null
+}
+
+export interface CampaignsListResponse {
+  ok: boolean
+  error?: string
+  campaigns: CampaignListItemDTO[]
+}
+
+export interface KnowledgeListItemDTO extends KnowledgeDTO {
+  campaignCodename: string | null
+}
+
+export interface KnowledgeListResponse {
+  ok: boolean
+  error?: string
+  knowledge: KnowledgeListItemDTO[]
+}
+
 export interface StateResponse {
   ok: boolean
   provider: string

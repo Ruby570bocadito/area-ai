@@ -50,6 +50,14 @@ const PAGE_TITLES: Record<string, { title: string; sub: string }> = {
   '/modelos': { title: 'Model Studio', sub: 'Motor LLM de los agentes' },
 }
 
+function pageMeta(pathname: string): { title: string; sub: string } {
+  if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname]
+  // Rutas anidadas conocidas (p. ej. ficha de campaña /historial/[id])
+  if (pathname.startsWith('/historial/'))
+    return { title: 'Detalle de campaña', sub: 'Ficha completa del enfrentamiento' }
+  return { title: 'area·ai', sub: '' }
+}
+
 function SideNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
   const { state, running } = useArena()
@@ -65,7 +73,9 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
 
       <nav aria-label="Navegación principal" className="flex-1 space-y-0.5 px-3">
         {NAV_ITEMS.map((item) => {
-          const active = pathname === item.href
+          const active =
+            pathname === item.href ||
+            (item.href !== '/' && pathname.startsWith(item.href + '/'))
           return (
             <Link
               key={item.href}
@@ -127,7 +137,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const { running } = useArena()
-  const meta = PAGE_TITLES[pathname] ?? { title: 'area·ai', sub: '' }
+  const meta = pageMeta(pathname)
 
   return (
     <div className="flex min-h-screen">

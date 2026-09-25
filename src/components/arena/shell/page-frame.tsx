@@ -29,7 +29,7 @@ export function PageHeader({
   subtitle,
   actions,
 }: {
-  kicker?: string
+  kicker?: React.ReactNode
   title: string
   subtitle?: string
   actions?: React.ReactNode

@@ -181,3 +181,23 @@ Stage Summary:
 - Paleta clara coherente de principio a fin, dashboard con profundidad, niveles creíbles y cadencia de turnos irregular e impredecible.
 - Ficheros clave: src/lib/lab/{types,store,runtime,ops}.ts (nuevos), src/lib/sim/{engine,progression}.ts, prisma/schema.prisma (+command/evidence), src/app/api/state/route.ts, src/app/page.tsx, shell/app-shell.tsx, globals.css, arena/{event-feed,arena-live,network-map}.tsx.
 - Capturas: download/round9-{panel,panel2,panel-light,arena-live1,arena-live2,arena-map,arena-feed,node-lab,mobile-panel,mobile-arena,agentes}.png
+
+---
+Task ID: 10
+Agent: z_implementaciones (Agente de Implementaciones)
+Task: Ronda 1 de implementaciones — "Abrir el histórico completo del laboratorio": ficha de detalle de campaña, historial completo con filtros/CSV y memoria completa con búsqueda. Sin tocar el motor.
+
+Work Log:
+- Contexto: no existía docs/agentes/ (primer informe de todos los agentes); se usó worklog.md (Tasks 1-9) y lectura directa del código como fuente. Hallazgo clave: /api/state limita a 15 campañas y 24 lecciones/equipo — el histórico, la evidencia real de campañas pasadas y las lecciones antiguas eran inaccesibles desde la UI.
+- APIs nuevas: GET /api/campaigns/[id] (ficha completa: campaña+escenario+500 eventos con command/evidence+lecciones+infra), GET /api/campaigns (archivo completo hasta 500; POST intacto), GET /api/knowledge (hasta 1000 lecciones con codename de campaña de origen).
+- /historial/[id] (nueva): ficha de cualquier campaña reutilizando ArenaLive (mapa, comandos reales, informe .md descargable, resolución) + métricas (modo motor, eventos, lecciones, duración) + sección "Memoria archivada por esta campaña" + banner EN CURSO → /arena + estado 404 elegante. page-frame.PageHeader acepta kicker ReactNode; app-shell con pageMeta() para rutas anidadas y sidebar activa por prefijo.
+- /historial: toolbar con búsqueda normalizada sin acentos ("abaco"→"ÁBACO"), filtros de resultado (Todas/Gana RED/Gana BLUE/Empates/En curso), filtro por escenario, contador X de Y, exportación CSV (BOM + ';', nombre con fecha) y filas clicables. Carga completa desde /api/campaigns con fallback al sondeo.
+- /conocimiento: toolbar con búsqueda (título/contenido/tags/agente, sin acentos), chips de categoría autogenerados, ordenación (fuerza con la fórmula del motor / confianza / usos / recientes), contadores X/Y en pestañas y línea "originada en <codename>" + fecha en cada tarjeta. Carga completa desde /api/knowledge.
+- Fixes durante verificación: regla eslint react-hooks/set-state-in-effect (setState solo en callbacks .then con guardia de desmontaje); búsqueda hecha tolerante a diacríticos tras detectar el caso "abaco" vs "ÁBACO" en caliente.
+- Verificado en caliente (Agent Browser, desktop 1440 + móvil 390): 2 campañas reales end-to-end generadas; /api/campaigns[/id] y /api/knowledge devuelven datos completos (16-20 eventos con curl reales y evidencia, 4 lecciones, 6 nodos); ficha con 8 comandos curl visibles, mapa con carriles/estados y memoria archivada; filtros (Empates→1, Gana BLUE→0 con mensaje vacío), búsqueda y ordenación funcionando; 404 elegante en /historial/xxx; consola sin errores de cliente; móvil 390px sin h-scroll; eslint 0 en ficheros tocados; tsc sin errores nuevos.
+- Observación para Director/backlog: el ganador se decide por progreso de objetivos (no por puntuación) y la fila "resultado 78–104" con badge GANA RED puede confundir — propuesta de aclaración en UI (no implementada). Otros hallazgos y backlog completo en el informe de ronda.
+
+Stage Summary:
+- El laboratorio ahora es auditable a posteriori: cualquier campaña pasada abre su ficha completa con evidencia forense (comandos HTTP reales y respuestas), y el archivo completo (campañas y memoria) es buscable, filtrable y exportable. Motor, laboratorio y APIs de tiempo real intactos.
+- Ficheros clave: src/app/api/campaigns/[id]/route.ts (nuevo), src/app/api/knowledge/route.ts (nuevo), src/app/api/campaigns/route.ts (+GET), src/app/historial/[id]/page.tsx (nuevo), src/app/historial/page.tsx, src/app/conocimiento/page.tsx, src/components/arena/{history-panel,knowledge-panel}.tsx, src/components/arena/shell/{app-shell,page-frame}.tsx, src/lib/api-types.ts (+4 tipos), docs/agentes/z_implementaciones/ronda_2026-09-25_14h39.md (nuevo).
+- Capturas: download/round10-{historial,detalle,detalle-mapa,conocimiento,historial-movil,historial-final}.png
