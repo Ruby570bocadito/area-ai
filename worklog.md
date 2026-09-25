@@ -1089,3 +1089,19 @@ Agent: z_bugs (Super Z, sesion continuada)
 Ronda en curso (§2.5, maniobra indivisible D20a) — anunciada sobre base 42fda1e (HEAD de origin/main, verificado con fetch).
 Tareas: (1) revisión cruzada de la entrega de implementaciones-11/12 (69727e6, ya fusionada — territorio libre): src/lib/knowledge-export.ts con foco de seguridad en exportación CSV/JSON (inyección de fórmulas CSV =/+/−/@ en contenido de lecciones, separadores, saltos de línea) y csvEscapeCell como fuente única; src/lib/scenario-stats.ts (módulo puro, agregaciones); y el check de escala [0,100] de la Fase 5 del canon 16 en tests/smoke.mjs (solo-lectura). (2) Inventario delta de red 0ae2f2c..42fda1c (estándar permanente). (3) Puerta de calidad unitaria test/tsc/lint.
 Sin tocar (territorios anunciados activos): scripts/*.mjs y superficie API/lab/ReDoS/esquema (bugs-12 extensa), package.json/lock/README/globals.css (pulimiento-12), schema.prisma + db push + higiene (pulimiento-13), sim/pace (implementaciones-11). Ronda solo-lectura + informe.
+
+Task ID: pulimiento-13 (cierre)
+Agent: z_pulimiento (Agente de Pulimiento)
+Task: Ronda 13 (renumerada por colisión 20) — índice Knowledge.campaignId + reparación D18 por-entorno forzada por el canon nuevo + higiene extensa + puerta de verificación completa. Alcance disjunto del anuncio canónico pulimiento-12 (347f78e), que mantiene bump de deps, tokens ink-* y sync README.
+
+Work Log:
+- §2.5: cinco maniobras indivisibles — cuatro rechazos de push detectaron en paralelo bugs-12/13, la publicación de implementaciones-12 (canon 16) y el anuncio canónico de la otra sesión de pulimiento; colisión 20 adjudicada §7.1 (prevalece 347f78e), renumeración 12→13, anuncio canónico 42fda1e sobre 9e8c9ba. Tres worklog append/append resueltos a mano (§7.5), marcadores 0 como último paso en los tres.
+- Índice @@index([campaignId]) en Knowledge (propuesta bugs-11 pendiente 4, diferida por pulimiento-12 a «la ronda siguiente»): schema.prisma 19fc615, db push 13 ms, sqlite_master verifica Knowledge_campaignId_idx y EXPLAIN QUERY PLAN de la ficha pasa de SCAN a SEARCH USING INDEX. Setting.value sin límite de esquema: NO aplicable en SQLite (TEXT sin longitud) — el tope real es el 413 de la ruta; porqué documentado.
+- El canon 16 surfaceó en su estreno local la fila histórica cmuh678t8 RED=114 de ESTA BD compartida (la original documentada por pulimiento-11; la reparación de implementaciones-12 fue por-entorno). Reparada con el script canónico idempotente (dry-run → apply: RED 114→100, BLUE 59 intacto, ganador RED preservado); verificación directa 0 filas fuera de escala; canon pasó de 15/16 a 16/16. Tercera ejecución documentada del script en tercer entorno — evidencia para su ratificación pendiente.
+- Higiene extensa: assets 10/10 con GIFs <5MB, marcadores 0 en todo el repo, docs/agentes íntegros (10/15/17/13), .env.example coherente con la convención SMOKE_*, inventario árbol/scripts verificado contra el anuncio de pulimiento-12 (cubre el 100 %, cero residuales nuevos), bun audit de contexto 46 vulns (instantánea «antes» del bump en curso).
+- Reportes al Director: ADMIN_TOKEN falta en la tabla de variables del README (observación para la sync de pulimiento-12); ratificación del script de reparación favorecida por tercera ejecución; BD efímera por corrida como candidato de gobernanza; HD1 de bugs-13 registrado como leído.
+
+Stage Summary:
+- Puerta COMPLETA en VERDE sobre 19fc615: 153/153 (331 expect, 11 ficheros), tsc 0, lint 0, canon SMOKE_START_CAMPAIGN=1 --build 16/16 con campaña real (RED 85/59, archivo 6/6 en escala), security-verify 12/12, marcadores 0.
+- Un solo cambio de repo (schema.prisma) para convivir con tres rondas paralelas: cero ficheros comunes con pulimiento-12 y bugs-12.
+- Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_20h48.md
