@@ -17,7 +17,7 @@ import {
   ShieldCheck,
   Swords,
 } from 'lucide-react'
-import { normalizeText } from '@/lib/text'
+import { normalizeText, csvEscapeCell } from '@/lib/text'
 import { buildAggregateReport } from '@/lib/aggregate-report'
 import { decisiveProgressLabel, VICTORY_RULE_DETAIL, VICTORY_RULE_SHORT } from '@/lib/victory'
 import type { CampaignListItemDTO } from '@/lib/api-types'
@@ -27,6 +27,9 @@ import type { CampaignListItemDTO } from '@/lib/api-types'
 // resultado y escenario, exportación CSV, informe agregado en
 // Markdown (descarga o copia al portapapeles) y acceso a la
 // ficha completa de cada campaña (/historial/[id]).
+// Acepta deep-links prefiltrados: initialResult (query ?resultado=
+// de /analitica) e initialScenario (query ?escenario= del balance
+// por escenario, Ronda 12).
 // ─────────────────────────────────────────────────────────────
 
 type ResultFilter = 'ALL' | 'RED' | 'BLUE' | 'DRAW' | 'RUNNING'
@@ -82,10 +85,8 @@ function WinnerBadge({ winner, redProgress, blueProgress }: { winner: string | n
   )
 }
 
-function csvCell(v: string | number): string {
-  const s = String(v)
-  return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
-}
+// El escapado CSV (RFC 4180) vive en src/lib/text.ts como fuente única
+// compartida con el exportador de conocimiento (knowledge-export.ts).
 
 function downloadBlob(content: string, mime: string, filename: string) {
   const blob = new Blob([content], { type: mime })
@@ -127,7 +128,7 @@ function exportCsv(campaigns: CampaignListItemDTO[]) {
     c.redProgress,
     c.blueProgress,
   ])
-  const csv = '\uFEFF' + [header, ...rows].map((r) => r.map(csvCell).join(';')).join('\n')
+  const csv = '\uFEFF' + [header, ...rows].map((r) => r.map(csvEscapeCell).join(';')).join('\n')
   downloadBlob(
     csv,
     'text/csv;charset=utf-8',
@@ -182,13 +183,16 @@ async function copyToClipboard(text: string): Promise<boolean> {
 export function HistoryPanel({
   campaigns,
   initialResult = 'ALL',
+  initialScenario = 'ALL',
 }: {
   campaigns: CampaignListItemDTO[]
   initialResult?: ResultFilter
+  /** Escenario preseleccionado por deep-link (?escenario=CODENAME). */
+  initialScenario?: string
 }) {
   const [query, setQuery] = useState('')
   const [result, setResult] = useState<ResultFilter>(initialResult)
-  const [scenario, setScenario] = useState('ALL')
+  const [scenario, setScenario] = useState(initialScenario)
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle')
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -203,10 +207,22 @@ export function HistoryPanel({
     [campaigns]
   )
 
+  // Deep-link de escenario validado como ESTADO DERIVADO (sin efectos:
+  // evita react-hooks/set-state-in-effect). Mientras el archivo no está
+  // cargado (opciones vacías) se respeta el valor del enlace; en cuanto
+  // hay opciones, un codename inexistente (enlace viejo, escenario
+  // renombrado) degrada a «Todos los escenarios» sin tocar el estado
+  // interno — el usuario puede seguir filtrando normalmente.
+  const scenarioLinkValid =
+    initialScenario === 'ALL' ||
+    scenarioOptions.length === 0 ||
+    scenarioOptions.includes(initialScenario)
+  const effectiveScenario = scenarioLinkValid ? scenario : 'ALL'
+
   const filtered = useMemo(() => {
     const q = normalizeText(query.trim())
     return campaigns.filter((c) => {
-      if (scenario !== 'ALL' && c.scenario.codename !== scenario) return false
+      if (effectiveScenario !== 'ALL' && c.scenario.codename !== effectiveScenario) return false
       if (result === 'RED' && c.winner !== 'RED') return false
       if (result === 'BLUE' && c.winner !== 'BLUE') return false
       if (result === 'RUNNING' && c.status !== 'RUNNING') return false
@@ -217,16 +233,16 @@ export function HistoryPanel({
       }
       return true
     })
-  }, [campaigns, query, result, scenario])
+  }, [campaigns, query, result, effectiveScenario])
 
   // Descripción legible de los filtros activos, para la cabecera del informe agregado
   const filtersDesc = useMemo(() => {
     const parts: string[] = []
     if (query.trim()) parts.push(`búsqueda «${query.trim()}»`)
     if (result !== 'ALL') parts.push(RESULT_FILTER_DESC[result])
-    if (scenario !== 'ALL') parts.push(`escenario ${scenario}`)
+    if (effectiveScenario !== 'ALL') parts.push(`escenario ${effectiveScenario}`)
     return parts.length > 0 ? parts.join(' · ') : 'ninguno (archivo completo)'
-  }, [query, result, scenario])
+  }, [query, result, effectiveScenario])
 
   // Copia el informe de la selección filtrada al portapapeles (mismo texto
   // que la descarga). Definido tras los useMemo de los que depende para
@@ -289,7 +305,7 @@ export function HistoryPanel({
         </div>
 
         <select
-          value={scenario}
+          value={effectiveScenario}
           onChange={(e) => setScenario(e.target.value)}
           aria-label="Filtrar por escenario"
           className="rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-[#475467] focus:border-[#d0d5dd] focus:outline-none"

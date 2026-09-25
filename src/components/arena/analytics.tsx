@@ -4,10 +4,11 @@ import { useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { ChevronRight, Trophy, TrendingUp, BrainCircuit, Crown, Target, Sparkles } from 'lucide-react'
+import { ChevronRight, Trophy, TrendingUp, BrainCircuit, Crown, Target, Sparkles, Map } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ARENA_BLUE as BLUE, ARENA_RED as RED } from '@/lib/arena-colors'
 import { AgentAvatar } from './agent-avatar'
+import { buildScenarioStats } from '@/lib/scenario-stats'
 import type { AgentDTO, CampaignListItemDTO, KnowledgeDTO } from '@/lib/api-types'
 
 // ─────────────────────────────────────────────────────────────
@@ -346,6 +347,84 @@ function KnowledgeEffectiveness({ items, team }: { items: KnowledgeDTO[]; team: 
   )
 }
 
+/* ---------- Balance por escenario (Ronda 12) ---------- */
+// Agregación por escenario con deep-link al historial prefiltrado:
+// cada fila enlaza a /historial?escenario=<codename> (el panel de
+// historial valida el codename al cargar y degrada a «Todos» si el
+// enlace es viejo). La lógica vive en src/lib/scenario-stats.ts
+// (módulo puro, contrato fijado en tests/scenario-stats.test.ts).
+function ScenarioMatrix({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
+  const rows = useMemo(() => buildScenarioStats(campaigns), [campaigns])
+
+  if (rows.length === 0) {
+    return (
+      <div className="flex h-[100px] items-center justify-center text-[12px] text-[#98a2b3]">
+        Lanza campañas para ver el balance por escenario.
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid gap-2.5 md:grid-cols-2 xl:grid-cols-3">
+      {rows.map((s, i) => {
+        const drawPct = Math.max(0, 100 - s.redPct - s.bluePct)
+        return (
+          <motion.div
+            key={s.codename}
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-30px' }}
+            transition={{ delay: Math.min(i * 0.06, 0.3), duration: 0.4 }}
+          >
+            <Link
+              href={`/historial?escenario=${encodeURIComponent(s.codename)}`}
+              className="group flex h-full flex-col gap-2.5 rounded-xl border border-[#f2f4f7] bg-[#f9fafb] p-3 transition-colors hover:border-[#e4e7ec] hover:bg-white"
+              aria-label={`Abrir el historial filtrado por el escenario ${s.codename}`}
+              title={`Abrir el historial prefiltrado: ${s.codename}`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate font-mono-tight text-[11.5px] font-bold tracking-wide text-[#101828] group-hover:underline group-hover:underline-offset-2">
+                    {s.codename}
+                  </p>
+                  <p className="truncate text-[10px] text-[#667085]">
+                    {s.company} · dificultad {s.difficulty}/5
+                  </p>
+                </div>
+                <span className="shrink-0 font-mono-tight text-[9.5px] text-[#98a2b3]">
+                  {s.total} campaña{s.total === 1 ? '' : 's'}
+                </span>
+              </div>
+
+              {/* Barra apilada del balance sobre finalizadas */}
+              <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-[#f2f4f7]">
+                {s.redPct > 0 && <div style={{ width: `${s.redPct}%`, background: RED }} />}
+                {s.bluePct > 0 && <div style={{ width: `${s.bluePct}%`, background: BLUE }} />}
+                {drawPct > 0 && <div style={{ width: `${drawPct}%`, background: AMBER }} />}
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5 font-mono-tight text-[10px]">
+                  <span className="font-bold text-[#b42318]" title="Victorias RED">R {s.red}</span>
+                  <span className="font-bold text-[#026aa2]" title="Victorias BLUE">B {s.blue}</span>
+                  <span className="font-bold text-[#b54708]" title="Empates">E {s.draws}</span>
+                  {s.running > 0 && (
+                    <span className="text-[#98a2b3]" title="En curso">· {s.running} en curso</span>
+                  )}
+                </div>
+                <span className="flex shrink-0 items-center font-mono-tight text-[9px] text-[#98a2b3]">
+                  {s.completed > 0 ? `${s.redPct}% RED` : 'sin datos'}
+                  <ChevronRight className="h-3 w-3 text-[#d0d5dd] transition-all group-hover:translate-x-0.5 group-hover:text-[#98a2b3]" />
+                </span>
+              </div>
+            </Link>
+          </motion.div>
+        )
+      })}
+    </div>
+  )
+}
+
 /* ---------- Sección completa ---------- */
 export function Analytics({
   agents,
@@ -434,6 +513,26 @@ export function Analytics({
           </h3>
         </div>
         <Leaderboard agents={agents} />
+      </motion.div>
+
+      {/* Balance por escenario — ancho completo (Ronda 12) */}
+      <motion.div
+        initial={{ opacity: 0, y: 22 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-40px' }}
+        transition={{ duration: 0.55, delay: 0.18 }}
+        className="panel relative overflow-hidden rounded-2xl p-5 lg:col-span-3"
+      >
+        <div className="mb-4 flex items-center gap-2">
+          <Map className="h-3.5 w-3.5 text-[#667085]" />
+          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-[#475467]">
+            Balance por escenario
+          </h3>
+          <span className="font-mono-tight text-[9.5px] normal-case tracking-normal text-[#98a2b3]">
+            — clic en un escenario para abrir el historial prefiltrado
+          </span>
+        </div>
+        <ScenarioMatrix campaigns={campaigns} />
       </motion.div>
 
       {/* Efectividad del conocimiento — ancho completo */}

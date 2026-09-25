@@ -58,3 +58,16 @@ export function formatDateTime(d: string | null): string {
   if (Number.isNaN(date.getTime())) return '—'
   return date.toLocaleString('es-ES')
 }
+
+/**
+ * Celda CSV segura según RFC 4180 — fuente única del dialecto CSV de
+ * la app (exportadores de campañas en history-panel.tsx y de
+ * conocimiento en knowledge-export.ts): envuelve entre comillas dobles
+ * toda celda que contenga el separador («;»), comillas o salto de
+ * línea, duplicando las comillas internas. Así los títulos con
+ * «;», comillas o saltos no rompen la columna ni la fila.
+ */
+export function csvEscapeCell(v: string | number): string {
+  const s = String(v)
+  return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+}

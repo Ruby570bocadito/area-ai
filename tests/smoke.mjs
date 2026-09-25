@@ -13,6 +13,10 @@
 //                                   por defecto 240 — el motor completo ronda los ~40 s)
 // Ronda 8: Fase 4 añade /sitemap.xml + /robots.txt (backlog #7) y Fase 5
 // valida taxonomía de categorías y tags de las lecciones (R8).
+// Ronda 12 (implementaciones): Fase 5 añade la comprobación «progreso
+// archivado en escala cerrada [0,100]» (ficha de la campaña + archivo
+// completo) — canon 15→16; adopción de la propuesta de Bugs 19h52,
+// secundada por bugs-10 (fila histórica 102/100 en otro entorno).
 //
 // Fases: (0) bun test tests/ — guard SSRF + token/rate limit  (1) tsc --noEmit
 // (2) entorno (.env, prisma db push)  (3) servidor de producción standalone
@@ -297,6 +301,31 @@ if (process.env.SMOKE_START_CAMPAIGN === '1' && up) {
       'lecciones estructuralmente válidas y cruce con la ficha',
       structurallyValid && fichaMatches,
       `estructura ${structurallyValid ? 'válida (taxonomía y tags incluidos)' : 'inválida'} · ficha ${detail?.knowledge?.length ?? '?'} vs memoria ${lessons.length}`
+    )
+
+    // Ronda 12 (implementaciones, adopción de la propuesta de Bugs 19h52
+    // recomendación 1, secundada por bugs-10 20h04): el progreso archivado
+    // vive en la escala cerrada [0, 100]. El motor lo garantiza en la
+    // escritura (clamp en acumulación RED y fila final, bugs-9); el canon
+    // lo comprueba EN LECTURA sobre datos reales: la ficha de ESTA campaña
+    // y TODAS las filas del archivo servidas por /api/campaigns (cualquier
+    // estado — una fila histórica pre-fix como la 102/100 de bugs-10
+    // salpicaría aquí).
+    const inScale = (v) => Number.isFinite(v) && v >= 0 && v <= 100
+    const fichaInScale =
+      detail?.campaign != null &&
+      inScale(detail.campaign.redProgress) &&
+      inScale(detail.campaign.blueProgress)
+    const archiveRes = await fetch(`${BASE}/api/campaigns`).catch(() => null)
+    const archiveBody = archiveRes?.ok ? await archiveRes.json().catch(() => null) : null
+    const archiveRows = Array.isArray(archiveBody?.campaigns) ? archiveBody.campaigns : null
+    const archiveInScale = archiveRows
+      ? archiveRows.filter((c) => inScale(c.redProgress) && inScale(c.blueProgress)).length
+      : 0
+    record(
+      'progreso archivado en escala cerrada [0,100]',
+      fichaInScale && archiveRows !== null && archiveInScale === archiveRows.length,
+      `ficha ${detail?.campaign ? `${detail.campaign.redProgress}/${detail.campaign.blueProgress}` : 'sin detalle'} · archivo ${archiveRows ? `${archiveInScale}/${archiveRows.length} filas` : 'no legible'}`
     )
   }
 } else if (process.env.SMOKE_START_CAMPAIGN === '1') {

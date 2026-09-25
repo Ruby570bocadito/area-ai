@@ -12,8 +12,9 @@ import type { CampaignListItemDTO } from '@/lib/api-types'
 // /historial — Archivo completo de enfrentamientos: carga el
 // listado íntegro desde /api/campaigns (el sondeo /api/state
 // solo trae las 15 más recientes) con búsqueda, filtros y
-// exportación CSV. Acepta ?resultado=RED|BLUE|DRAW|RUNNING
-// para llegar prefiltrado desde los deep-links de /analitica.
+// exportación CSV. Acepta deep-links prefiltrados:
+//   · ?resultado=RED|BLUE|DRAW|RUNNING (desde /analitica)
+//   · ?escenario=CODENAME (desde el balance por escenario, R12)
 // ─────────────────────────────────────────────────────────────
 
 const VALID_RESULT: ResultFilter[] = ['ALL', 'RED', 'BLUE', 'DRAW', 'RUNNING']
@@ -22,7 +23,9 @@ function FilteredHistoryPanel({ campaigns }: { campaigns: CampaignListItemDTO[] 
   const searchParams = useSearchParams()
   const raw = searchParams.get('resultado')?.toUpperCase() ?? 'ALL'
   const initialResult = VALID_RESULT.includes(raw as ResultFilter) ? (raw as ResultFilter) : 'ALL'
-  return <HistoryPanel campaigns={campaigns} initialResult={initialResult} />
+  const rawScenario = searchParams.get('escenario')?.trim() ?? ''
+  const initialScenario = rawScenario !== '' ? rawScenario : 'ALL'
+  return <HistoryPanel campaigns={campaigns} initialResult={initialResult} initialScenario={initialScenario} />
 }
 
 function HistorialPage() {

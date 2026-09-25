@@ -1019,3 +1019,20 @@ Ronda en curso (§2.5, maniobra indivisible D20a) — anunciada a las 20h35 Euro
 Colisión 18 (carrera de anuncios, patrón 15/17): mi anuncio bugs-12 (7cfa71c) no llegó a push — prevalece el anuncio canónico 0ae2f2c de la sesión extensa (§7.1); mi anuncio local se descarta sin publicar (coste cero). Numeración 18 la fijaré en el informe por ser el primer commit canónico que la propone (D21).
 Tareas derivadas (disjuntas del anuncio bugs-12 extenso): (1) revisión cruzada del fix C1 de bugs-11 en src/lib/net/target-guard.ts — normalización de hostname, embeddedIPv4, classifyIp, camino DNS y los 12 tests de regresión que fijan el contrato (verificación adversarial de bypasses residuales, solo-lectura); (2) verificación ligera de M1/M2/M3 sobre el árbol fusionado; (3) inventario delta de red 06a5f1e..0ae2f2c (estándar permanente); (4) puerta de calidad test/tsc/lint.
 Sin tocar (territorio del anuncio bugs-12): API routes, lab/, scripts/*.mjs, rate limiter, esquema Prisma, deps; ni sim/pace (implementaciones-11), smoke.mjs (impl-11/12), README (Pulimiento).
+
+---
+Task ID: implementaciones-12 (cierre)
+Agent: z_implementaciones (Super Z, mantenedor del canon de humo)
+Task: Ronda INTENSIVA de producto — (1) canon 15→16 (escala [0,100] en Fase 5), (2) exportación de conocimiento CSV/JSON, (3) balance por escenario + deep-links ?escenario=, (4) reparación de datos históricos fuera de escala (habilitador del canon).
+
+Work Log:
+- §2.5: anuncio publicado (9d2ad96) tras dos re-anclajes §2.4; colisión intra-rol 16 adjudicada renumerando a implementaciones-12 (el anuncio paralelo b2f6312 del motor prevalece §7.1 para su alcance; alcances disjuntos y complementarios documentados en ambos worklogs).
+- M1: tests/smoke.mjs Fase 5 estrena «progreso archivado en escala cerrada [0,100]» (ficha + archivo /api/campaigns completo, cualquier estado) — canon 15→16.
+- M2: src/lib/knowledge-export.ts (puro, 13 tests), csvEscapeCell en text.ts como fuente única del dialecto CSV (history-panel la adopta), botones CSV/JSON en knowledge-panel con exportación de la selección filtrada de ambos equipos.
+- M3: src/lib/scenario-stats.ts (puro, 8 tests), matriz «Balance por escenario» en analytics.tsx con deep-links, ?escenario= en historial/page.tsx, prop initialScenario + estado derivado effectiveScenario en history-panel (rediseñado por la regla nueva react-hooks/set-state-in-effect: sin setState en efectos).
+- Hallazgo en el estreno del canon: la comprobación nueva FALLÓ (archivo 3/4) — fila histórica cmuh7gmwi (humo 19h03 que expuso el clamp) con redProgress 114, anterior al fix 879b46c. Reparada con scripts/repair-progress-scale.mjs (idempotente, dry-run por defecto, trazable, reversible; resolución de BD replicando parseEnvFile del smoke tras detectar que bun auto-carga .env del PADRE). Ratificación del Director solicitada en el informe.
+- Puerta de calidad final: tsc 0, lint 0, 133/133 unidades (305 expect, 11 ficheros), canon SMOKE_START_CAMPAIGN=1 --build 16/16 (rebuild + campaña real COMPLETED 8/8 DRAW 19 eventos, 4 lecciones, memoria 22→26, cruce 4=4, escala ficha 65/49 · archivo 5/5).
+
+Stage Summary:
+- Canon 16 comprobaciones en verde; suite 133. Cuatro entregas: escala validada en lectura, memoria exportable, analítica por escenario navegable, datos históricos alineados con el contrato.
+- Informe: docs/agentes/z_implementaciones/ronda_2026-09-25_20h29.md

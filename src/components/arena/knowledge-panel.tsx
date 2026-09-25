@@ -6,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Brain,
   CalendarClock,
+  FileJson,
+  FileSpreadsheet,
   Flame,
   Search,
   Sparkles,
@@ -14,6 +16,7 @@ import {
 import { cn } from '@/lib/utils'
 import { normalizeText } from '@/lib/text'
 import { knowledgeScore } from '@/lib/sim/knowledge-score'
+import { buildKnowledgeCsv, buildKnowledgeJson } from '@/lib/knowledge-export'
 import type { KnowledgeDTO } from '@/lib/api-types'
 
 // ─────────────────────────────────────────────────────────────
@@ -24,6 +27,29 @@ import type { KnowledgeDTO } from '@/lib/api-types'
 
 type KnowledgeItem = KnowledgeDTO & { campaignCodename?: string | null }
 type SortKey = 'FUERZA' | 'CONFIANZA' | 'USOS' | 'RECIENTES'
+
+// ─────────────────────────────────────────────────────────────
+// Transporte de las exportaciones (Ronda 12): la generación vive
+// en src/lib/knowledge-export.ts (módulo puro testeado) y aquí
+// solo queda la descarga al navegador. El patrón de fichero es el
+// mismo que el del exportador de campañas (history-panel).
+// ─────────────────────────────────────────────────────────────
+
+function downloadBlob(content: string, mime: string, filename: string) {
+  const blob = new Blob([content], { type: mime })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+function exportFilename(ext: 'csv' | 'json'): string {
+  const now = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `area-ai-conocimiento-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.${ext}`
+}
 
 const CATEGORY_LABEL: Record<string, string> = {
   TACTICA: 'Táctica',
@@ -163,6 +189,43 @@ export function KnowledgePanel({
     [red, blue]
   )
 
+  // Descripción legible de los filtros activos, para el metadato
+  // «filters» del JSON exportado y los titles de los botones.
+  const filtersDesc = useMemo(() => {
+    const parts: string[] = []
+    if (query.trim()) parts.push(`búsqueda «${query.trim()}»`)
+    if (category !== 'ALL') parts.push(`categoría ${CATEGORY_LABEL[category] ?? category}`)
+    parts.push(`orden ${SORT_OPTIONS.find((o) => o.key === sort)?.label ?? sort}`)
+    return parts.join(' · ')
+  }, [query, category, sort])
+
+  // Selección exportada: los dos equipos ya filtrados y ordenados
+  // (RED primero, luego BLUE), reflejando exactamente lo que el
+  // usuario ve en las pestañas con los filtros activos.
+  const exportSelection = useMemo(() => [...redFiltered, ...blueFiltered], [redFiltered, blueFiltered])
+  const hasMemory = red.length > 0 || blue.length > 0
+
+  const handleExportCsv = () => {
+    if (exportSelection.length === 0) return
+    downloadBlob(
+      buildKnowledgeCsv(exportSelection),
+      'text/csv;charset=utf-8',
+      exportFilename('csv')
+    )
+  }
+  const handleExportJson = () => {
+    if (exportSelection.length === 0) return
+    downloadBlob(
+      buildKnowledgeJson(exportSelection, {
+        filtersDesc,
+        red: redFiltered.length,
+        blue: blueFiltered.length,
+      }),
+      'application/json;charset=utf-8',
+      exportFilename('json')
+    )
+  }
+
   return (
     <div className="space-y-3.5">
       {/* Barra de herramientas: búsqueda + categorías + orden */}
@@ -199,11 +262,35 @@ export function KnowledgePanel({
           ))}
         </div>
 
+        <div className="ml-auto flex items-center gap-2">
+          <span className="font-mono-tight text-[10px] text-[#98a2b3]">
+            {exportSelection.length} de {red.length + blue.length}
+          </span>
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            disabled={!hasMemory || exportSelection.length === 0}
+            className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-[#667085] shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-[#101828] disabled:cursor-not-allowed disabled:opacity-50"
+            title={`Descargar la selección filtrada (${filtersDesc}) en CSV — mismo dialecto que el exportador de campañas: BOM UTF-8, separador «;», escapado RFC 4180`}
+          >
+            <FileSpreadsheet className="h-3 w-3" /> CSV
+          </button>
+          <button
+            type="button"
+            onClick={handleExportJson}
+            disabled={!hasMemory || exportSelection.length === 0}
+            className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-[#667085] shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-[#101828] disabled:cursor-not-allowed disabled:opacity-50"
+            title={`Descargar la selección filtrada (${filtersDesc}) en JSON con metadatos: instante, filtros, recuento por equipo, tasa de éxito precalculada y tags como lista`}
+          >
+            <FileJson className="h-3 w-3" /> JSON
+          </button>
+        </div>
+
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
           aria-label="Ordenar lecciones"
-          className="ml-auto rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-[#475467] focus:border-[#d0d5dd] focus:outline-none"
+          className="rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-[#475467] focus:border-[#d0d5dd] focus:outline-none"
         >
           {SORT_OPTIONS.map((o) => (
             <option key={o.key} value={o.key}>{o.label}</option>
