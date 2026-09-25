@@ -81,3 +81,37 @@ describe('classifyTarget — casos sin DNS', () => {
   test('trailing dot de FQDN se normaliza', async () =>
     expect(await classifyTarget('169.254.169.254.')).toBe('metadata'))
 })
+
+describe('classifyTarget — DNS con plazo (lookup inyectado, hermético)', () => {
+  // Auditoría de timeouts de la Ronda 7: el lookup del guard tiene plazo
+  // propio (DNS_TIMEOUT_MS = 2500). El lookupFn se inyecta para no
+  // depender de DNS real — mismo enfoque hermético del resto del fichero.
+  const ADDR = (ip: string) => [{ address: ip, family: ip.includes(':') ? 6 : 4 }]
+
+  test('lookup resuelve dirección privada → private', async () =>
+    expect(await classifyTarget('proveedor.example', async () => ADDR('10.1.2.3'))).toBe('private'))
+
+  test('lookup resuelve dirección pública → public', async () =>
+    expect(await classifyTarget('proveedor.example', async () => ADDR('93.184.216.34'))).toBe('public'))
+
+  test('direcciones mixtas: si UNA es privada → private (mitigación rebinding)', async () =>
+    expect(
+      await classifyTarget('rebind.example', async () => [...ADDR('93.184.216.34'), ...ADDR('192.168.0.7')])
+    ).toBe('private'))
+
+  test('lookup que rechaza (NXDOMAIN simulado) → public, mismo contrato que hoy', async () =>
+    expect(
+      await classifyTarget('proveedor.example', async () => {
+        throw new Error('NXDOMAIN')
+      })
+    ).toBe('public'))
+
+  test('lookup que CUELGA → public dentro del plazo (no arrastra al llamador)', async () => {
+    const t0 = performance.now()
+    const out = await classifyTarget('proveedor.example', () => new Promise(() => {}))
+    const ms = performance.now() - t0
+    expect(out).toBe('public')
+    // plazo 2500 ms + margen holgado para CI lento; sin el fix, no termina
+    expect(ms).toBeLessThan(4000)
+  })
+})
