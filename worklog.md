@@ -779,7 +779,6 @@ Stage Summary:
 - Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_19h38.md
 
 ---
-<<<<<<< HEAD
 Task ID: anuncio-implementaciones-10-bis (§2.5)
 Agent: z_implementaciones (Super Z, mantenedor del canon de humo)
 Task: ANUNCIO de la Ronda 8 — publicada antes de ejecutar conforme a §2.5 (primera vez en este rol; patrón 4419018 de Bugs).
