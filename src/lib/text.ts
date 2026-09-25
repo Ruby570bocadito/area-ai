@@ -71,3 +71,25 @@ export function csvEscapeCell(v: string | number): string {
   const s = String(v)
   return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
 }
+
+/**
+ * Nombre de fichero de exportación — fuente única de la marca temporal
+ * para los TRES exportadores de la app (campañas e informe agregado en
+ * history-panel.tsx, conocimiento en knowledge-panel.tsx y telemetría
+ * de eventos en la ficha /historial/[id]):
+ *
+ *   exportFilename('campanas', 'csv') → "area-ai-campanas-20260925-2107.csv"
+ *
+ * Antes de centralizarse, el patrón pad+timestamp vivía replicado en
+ * dos componentes (y la ficha lo habría replicado una tercera vez);
+ * dedupe de la ronda implementaciones-13 (backlog #5 de la ronda
+ * anterior). El prefijo va en kebab-case y sin espacios — el llamante
+ * decide el término identificador («campanas», «informe»,
+ * «conocimiento», «telemetria-<codename>»…).
+ */
+export function exportFilename(prefix: string, ext: 'csv' | 'json' | 'md'): string {
+  const now = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`
+  return `area-ai-${prefix}-${stamp}.${ext}`
+}

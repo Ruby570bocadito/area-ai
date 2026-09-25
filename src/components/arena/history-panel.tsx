@@ -17,7 +17,8 @@ import {
   ShieldCheck,
   Swords,
 } from 'lucide-react'
-import { normalizeText, csvEscapeCell } from '@/lib/text'
+import { normalizeText, csvEscapeCell, exportFilename } from '@/lib/text'
+import { downloadBlob } from '@/lib/download'
 import { buildAggregateReport } from '@/lib/aggregate-report'
 import { decisiveProgressLabel, VICTORY_RULE_DETAIL, VICTORY_RULE_SHORT } from '@/lib/victory'
 import type { CampaignListItemDTO } from '@/lib/api-types'
@@ -85,27 +86,12 @@ function WinnerBadge({ winner, redProgress, blueProgress }: { winner: string | n
   )
 }
 
-// El escapado CSV (RFC 4180) vive en src/lib/text.ts como fuente única
-// compartida con el exportador de conocimiento (knowledge-export.ts).
-
-function downloadBlob(content: string, mime: string, filename: string) {
-  const blob = new Blob([content], { type: mime })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
-}
-
-// Marca temporal compartida por los nombres de fichero de exportación
-// (CSV e informe Markdown): area-ai-<prefijo>-YYYYMMDD-HHMM.<ext>
-function exportFilename(prefix: string, ext: 'csv' | 'md'): string {
-  const now = new Date()
-  const pad = (n: number) => String(n).padStart(2, '0')
-  const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`
-  return `area-ai-${prefix}-${stamp}.${ext}`
-}
+// El escapado CSV (RFC 4180) y la marca temporal de los nombres de
+// fichero (exportFilename) viven en src/lib/text.ts como fuente única
+// compartida con el exportador de conocimiento (knowledge-export.ts) y
+// el de telemetría de la ficha (event-export.ts). El transporte de
+// descarga (downloadBlob) vive en src/lib/download.ts — utilidad de
+// cliente única para los tres exportadores.
 
 function exportCsv(campaigns: CampaignListItemDTO[]) {
   const header = [

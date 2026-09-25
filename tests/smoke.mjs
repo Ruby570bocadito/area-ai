@@ -18,11 +18,18 @@
 // archivado en escala cerrada [0,100]» (ficha de la campaña + archivo
 // completo) — canon 15→16; adopción de la propuesta de Bugs 19h52,
 // secundada por bugs-10 (fila histórica 102/100 en otro entorno).
+// Ronda 13 (implementaciones-13): Fase 4 estrena la comprobación de
+// escala SIEMPRE-ON (sin requerir campaña real; la Fase 5 reutiliza el
+// mismo ayudante para el lado del archivo) — canon 16→17. El motor de
+// 12 rondas (implementaciones-11, colisión 21) queda ratificado; esta
+// comprobación es el verificador en lectura de sus impactos
+// recalibrados.
 //
 // Fases: (0) bun test tests/ — guard SSRF + token/rate limit  (1) tsc --noEmit
 // (2) entorno (.env, prisma db push)  (3) servidor de producción standalone
-// (4) golden path: /api, /api/state (con seed), /api/campaigns,
-// /api/knowledge, página principal.  (5, opt-in) campaña end-to-end.
+// (4) golden path: /api, /api/state (con seed), /api/campaigns (con el
+// invariante de escala siempre-on), /api/knowledge, página principal.
+// (5, opt-in) campaña end-to-end.
 // Exit 0 = todo verde.
 // ─────────────────────────────────────────────────────────────
 
@@ -171,6 +178,20 @@ for (let i = 0; i < 60 && !up; i++) {
 record('servidor responde', up, up ? BASE : `no arrancó en 30s\n${serverLog.slice(-800)}`)
 
 // ── Fase 4: golden path ──────────────────────────────────────
+// Cotejo de la escala cerrada sobre el archivo servido por /api/campaigns
+// (compartido por la Fase 4 siempre-on y la Fase 5). Fail-closed: archivo
+// ilegible → comprobación fallida, nunca silencio (mismo criterio que el
+// check de Fase 5 ratificado por bugs-14).
+const inScale = (v) => Number.isFinite(v) && v >= 0 && v <= 100
+async function archiveScaleCheck() {
+  const res = await fetch(`${BASE}/api/campaigns`).catch(() => null)
+  const body = res?.ok ? await res.json().catch(() => null) : null
+  const rows = Array.isArray(body?.campaigns) ? body.campaigns : null
+  if (!rows) return { ok: false, detail: 'archivo no legible' }
+  const inOrder = rows.filter((c) => inScale(c.redProgress) && inScale(c.blueProgress)).length
+  return { ok: inOrder === rows.length, detail: `${inOrder}/${rows.length} filas en escala` }
+}
+
 if (up) {
   console.log('── Fase 4: golden path')
   record('GET /api (healthcheck + BD)', (await checkJson('/api')).ok)
@@ -184,6 +205,16 @@ if (up) {
 
   record('GET /api/campaigns (archivo)', (await checkJson('/api/campaigns')).ok)
   record('GET /api/knowledge (memoria completa)', (await checkJson('/api/knowledge')).ok)
+
+  // Ronda 13 (implementaciones-13, mantenedor del canon): el invariante
+  // de escala cerrada [0,100] se comprueba SIEMPRE en el golden path —
+  // no solo en la Fase 5 con campaña real. Una fila histórica fuera de
+  // escala (patrón D18) rompe el despliegue en la verificación básica,
+  // sin necesidad de lanzar campaña — y con el motor recalibrado de 12
+  // rondas (colisión 21), cada campaña nueva pasa por esta barrera.
+  // Canon 16→17.
+  const scale4 = await archiveScaleCheck()
+  record('progreso del archivo en escala cerrada [0,100] (siempre-on)', scale4.ok, scale4.detail)
 
   const home = await fetch(`${BASE}/`)
   const html = await home.text().catch(() => '')
@@ -307,26 +338,23 @@ if (process.env.SMOKE_START_CAMPAIGN === '1' && up) {
     // Ronda 12 (implementaciones, adopción de la propuesta de Bugs 19h52
     // recomendación 1, secundada por bugs-10 20h04): el progreso archivado
     // vive en la escala cerrada [0, 100]. El motor lo garantiza en la
-    // escritura (clamp en acumulación RED y fila final, bugs-9); el canon
-    // lo comprueba EN LECTURA sobre datos reales: la ficha de ESTA campaña
-    // y TODAS las filas del archivo servidas por /api/campaigns (cualquier
-    // estado — una fila histórica pre-fix como la 102/100 de bugs-10
-    // salpicaría aquí).
-    const inScale = (v) => Number.isFinite(v) && v >= 0 && v <= 100
+    // escritura (clamp en acumulación RED y fila final, bugs-9; impactos
+    // recalibrados en pace.ts, colisión 21); el canon lo comprueba EN
+    // LECTURA sobre datos reales: la ficha de ESTA campaña y TODAS las
+    // filas del archivo servidas por /api/campaigns (cualquier estado —
+    // una fila histórica pre-fix como la 102/100 de bugs-10 salpicaría
+    // aquí). Ronda 13: el lado del ARCHIVO reutiliza archiveScaleCheck
+    // (la misma comprobación que la Fase 4 ejecuta siempre-on) y añade
+    // el cotejo de la ficha.
     const fichaInScale =
       detail?.campaign != null &&
       inScale(detail.campaign.redProgress) &&
       inScale(detail.campaign.blueProgress)
-    const archiveRes = await fetch(`${BASE}/api/campaigns`).catch(() => null)
-    const archiveBody = archiveRes?.ok ? await archiveRes.json().catch(() => null) : null
-    const archiveRows = Array.isArray(archiveBody?.campaigns) ? archiveBody.campaigns : null
-    const archiveInScale = archiveRows
-      ? archiveRows.filter((c) => inScale(c.redProgress) && inScale(c.blueProgress)).length
-      : 0
+    const archive = await archiveScaleCheck()
     record(
       'progreso archivado en escala cerrada [0,100]',
-      fichaInScale && archiveRows !== null && archiveInScale === archiveRows.length,
-      `ficha ${detail?.campaign ? `${detail.campaign.redProgress}/${detail.campaign.blueProgress}` : 'sin detalle'} · archivo ${archiveRows ? `${archiveInScale}/${archiveRows.length} filas` : 'no legible'}`
+      fichaInScale && archive.ok,
+      `ficha ${detail?.campaign ? `${detail.campaign.redProgress}/${detail.campaign.blueProgress}` : 'sin detalle'} · archivo ${archive.detail}`
     )
   }
 } else if (process.env.SMOKE_START_CAMPAIGN === '1') {

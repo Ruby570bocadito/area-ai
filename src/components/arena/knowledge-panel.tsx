@@ -14,7 +14,8 @@ import {
   TrendingUp,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { normalizeText } from '@/lib/text'
+import { normalizeText, exportFilename } from '@/lib/text'
+import { downloadBlob } from '@/lib/download'
 import { knowledgeScore } from '@/lib/sim/knowledge-score'
 import { buildKnowledgeCsv, buildKnowledgeJson } from '@/lib/knowledge-export'
 import type { KnowledgeDTO } from '@/lib/api-types'
@@ -29,27 +30,13 @@ type KnowledgeItem = KnowledgeDTO & { campaignCodename?: string | null }
 type SortKey = 'FUERZA' | 'CONFIANZA' | 'USOS' | 'RECIENTES'
 
 // ─────────────────────────────────────────────────────────────
-// Transporte de las exportaciones (Ronda 12): la generación vive
-// en src/lib/knowledge-export.ts (módulo puro testeado) y aquí
-// solo queda la descarga al navegador. El patrón de fichero es el
-// mismo que el del exportador de campañas (history-panel).
+// Transporte de las exportaciones (Ronda 12, dedupe Ronda 13):
+// la generación vive en src/lib/knowledge-export.ts (módulo puro
+// testeado); la descarga (downloadBlob) y la marca temporal de los
+// nombres de fichero (exportFilename) viven como fuente única en
+// src/lib/download.ts y src/lib/text.ts — compartidas con los
+// exportadores de campañas y de telemetría de la ficha.
 // ─────────────────────────────────────────────────────────────
-
-function downloadBlob(content: string, mime: string, filename: string) {
-  const blob = new Blob([content], { type: mime })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
-}
-
-function exportFilename(ext: 'csv' | 'json'): string {
-  const now = new Date()
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `area-ai-conocimiento-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.${ext}`
-}
 
 const CATEGORY_LABEL: Record<string, string> = {
   TACTICA: 'Táctica',
@@ -210,7 +197,7 @@ export function KnowledgePanel({
     downloadBlob(
       buildKnowledgeCsv(exportSelection),
       'text/csv;charset=utf-8',
-      exportFilename('csv')
+      exportFilename('conocimiento', 'csv')
     )
   }
   const handleExportJson = () => {
@@ -222,7 +209,7 @@ export function KnowledgePanel({
         blue: blueFiltered.length,
       }),
       'application/json;charset=utf-8',
-      exportFilename('json')
+      exportFilename('conocimiento', 'json')
     )
   }
 

@@ -8,12 +8,16 @@ import {
   ArrowLeft,
   BrainCircuit,
   Building2,
+  FileJson,
+  FileSpreadsheet,
   FileWarning,
   Radio,
   Swords,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { formatDuration } from '@/lib/text'
+import { formatDuration, exportFilename } from '@/lib/text'
+import { downloadBlob } from '@/lib/download'
+import { buildEventsCsv, buildEventsJson } from '@/lib/event-export'
 import { useArena } from '@/components/arena/shell/arena-provider'
 import { ArenaGate, PageContainer } from '@/components/arena/shell/page-frame'
 import { PageHeader } from '@/components/arena/shell/page-frame'
@@ -115,6 +119,32 @@ function DetailPage() {
       ? 'En curso'
       : '—'
 
+  // ── Exportación de la telemetría (implementaciones-13, backlog #2
+  // de la ronda anterior): la ficha mostraba la telemetría íntegra
+  // pero no permitía llevársela. La generación vive en
+  // src/lib/event-export.ts (módulo puro testeado); aquí solo el
+  // transporte (downloadBlob/exportFilename, fuentes únicas). El
+  // prefijo incluye el codename para que el fichero se identifique
+  // sin abrirlo; SIN endpoint nuevo — los datos ya están cargados.
+  const hasEvents = detail.events.length > 0
+  const telemetryPrefix = `telemetria-${campaign.scenario.codename.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+  const handleExportEventsCsv = () => {
+    if (!hasEvents) return
+    downloadBlob(
+      buildEventsCsv(detail.events),
+      'text/csv;charset=utf-8',
+      exportFilename(telemetryPrefix, 'csv')
+    )
+  }
+  const handleExportEventsJson = () => {
+    if (!hasEvents) return
+    downloadBlob(
+      buildEventsJson(detail),
+      'application/json;charset=utf-8',
+      exportFilename(telemetryPrefix, 'json')
+    )
+  }
+
   return (
     <PageContainer>
       <PageHeader
@@ -129,6 +159,29 @@ function DetailPage() {
         title={`Campaña ${campaign.scenario.codename}`}
         subtitle={`${campaign.scenario.company} · ${campaign.scenario.industry}. Ficha completa con el registro íntegro de acciones, comandos reales contra el laboratorio, evidencia HTTP y las lecciones que archivó esta campaña en la memoria del sistema.`}
       />
+
+      {/* Exportación de la telemetría (mismo dialecto que las otras
+          exportaciones del producto: BOM UTF-8, «;», RFC 4180). */}
+      {hasEvents && (
+        <div className="mb-4 flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            onClick={handleExportEventsCsv}
+            className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-ink-900"
+            title={`Descargar los ${detail.events.length} eventos de la campaña en CSV — mismo dialecto que las demás exportaciones: BOM UTF-8, separador «;», escapado RFC 4180 (seq, ronda, fase, equipo, agente, acción, resultado, impacto, severidad, nodo, comando y detalle)`}
+          >
+            <FileSpreadsheet className="h-3 w-3" /> CSV
+          </button>
+          <button
+            type="button"
+            onClick={handleExportEventsJson}
+            className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-ink-900"
+            title={`Descargar la telemetría en JSON con metadatos de la campaña: ganador, progresos, modo del motor, objetivos del escenario y los ${detail.events.length} eventos íntegros (evidencia y comandos incluidos)`}
+          >
+            <FileJson className="h-3 w-3" /> JSON
+          </button>
+        </div>
+      )}
 
       {isRunning && (
         <Link
