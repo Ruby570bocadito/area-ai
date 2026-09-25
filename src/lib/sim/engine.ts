@@ -35,6 +35,7 @@ import {
   type OpOutcome,
 } from '@/lib/lab/ops'
 import { SIGNATURE_LABEL, type LabCampaignState, type Signature } from '@/lib/lab/types'
+import { resolveCampaignOutcome } from '@/lib/victory'
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))
@@ -332,7 +333,11 @@ Elige el targetNode más lógico para la fase ${PHASE_LABEL[phase]}.`, 22000)
     if (outcome.result === 'EXITO') impact = Math.round(sevImpact[severity] * critFactor * (1 - blueProgress / 160))
     else if (outcome.result === 'PARCIAL') impact = Math.round(sevImpact[severity] * 0.45)
     impact = clamp(impact, 0, 20)
-    redProgress += impact
+    // Escala cerrada [0, 100]: acumulación RED acotada en memoria (simétrica a
+    // blueProgress más abajo), para que el ganador, la narrativa, las lecciones
+    // y la fila final compartan el mismo valor sin desbordamiento (Ronda 9 de
+    // bugs: la evidencia "114/100" provenía de acumular aquí sin acotar).
+    redProgress = clamp(redProgress + impact, 0, 100)
     redScore += impact + (outcome.result === 'FALLO' ? 1 : 0)
     trackKnowledge(redTurnIds, outcome.result !== 'FALLO')
     xpDelta.set(agent.key, (xpDelta.get(agent.key) ?? 0) + 6 + Math.round(impact / 3))
@@ -586,8 +591,10 @@ Contexto: fase ${PHASE_LABEL[phase]}, ronda ${round}.`,
   // ─────────────────────────────────────────────────────────
   // Cierre: ganador, narrativa, lecciones y evolución
   // ─────────────────────────────────────────────────────────
-  const winner: 'RED' | 'BLUE' | 'DRAW' =
-    redProgress >= 70 && redProgress > blueProgress ? 'RED' : redProgress < 45 ? 'BLUE' : 'DRAW'
+  // Resolución canónica: regla de victoria aplicada sobre el progreso acotado
+  // (fuente única en src/lib/victory.ts, compartida con la UI; contrato fijado
+  // en tests/victory.test.ts).
+  const { winner } = resolveCampaignOutcome(redProgress, blueProgress)
 
   const allEvents = await db.campaignEvent.findMany({ where: { campaignId }, orderBy: { seq: 'asc' } })
   const compact = allEvents
@@ -677,8 +684,10 @@ Extrae 2 lecciones por equipo: qué funcionó, qué falló y cómo aplicarlo la 
       status: 'COMPLETED',
       winner,
       narrative,
-      redProgress,
-      blueProgress,
+      // Defensa en profundidad: la fila final respeta la escala cerrada aunque
+      // un valor en memoria llegase desbordado (recomendación del reparto 19h31).
+      redProgress: clamp(redProgress, 0, 100),
+      blueProgress: clamp(blueProgress, 0, 100),
       redScore,
       blueScore,
       endedAt: new Date(),

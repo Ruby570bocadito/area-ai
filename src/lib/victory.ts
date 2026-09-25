@@ -19,6 +19,49 @@ export const VICTORY_RULE_DETAIL =
   'RED gana si alcanza ≥70 de progreso y supera la postura BLUE. ' +
   'BLUE gana si RED se queda por debajo de 45. En cualquier otro caso, empate táctico.'
 
+// ─────────────────────────────────────────────────────────────
+// Resolución canónica del desenlace (fuente única para motor y UI)
+//
+// El progreso de objetivos es una escala CERRADA [0, 100]: los
+// updates intermedios del motor ya acotan, y desde la Ronda 9 de
+// bugs la acumulación RED y la escritura final también (el exceso
+// archivado como "114/100" era un artefacto de desbordamiento, no
+// métrica). La regla de victoria se aplica SIEMPRE sobre el
+// progreso acotado: si ambos equipos saturan la escala, el
+// desenlace es empate a 100/100 — nunca gana el mayor
+// desbordamiento.
+// ─────────────────────────────────────────────────────────────
+
+/** Límite inferior de la escala de progreso de objetivos. */
+export const PROGRESS_MIN = 0
+/** Límite superior de la escala de progreso de objetivos. */
+export const PROGRESS_MAX = 100
+
+/** Acota un valor de progreso a la escala cerrada [0, 100]; no finitos degradan a 0. */
+export function clampProgress(value: number): number {
+  if (!Number.isFinite(value)) return PROGRESS_MIN
+  return Math.min(PROGRESS_MAX, Math.max(PROGRESS_MIN, value))
+}
+
+export type CampaignOutcome = {
+  winner: 'RED' | 'BLUE' | 'DRAW'
+  redProgress: number
+  blueProgress: number
+}
+
+/**
+ * Regla de victoria del motor aplicada sobre el progreso ACOTADO.
+ * Fuente única del cómputo (engine.ts la consume en la resolución
+ * final; la UI ya compartía este módulo para la explicación).
+ */
+export function resolveCampaignOutcome(redProgress: number, blueProgress: number): CampaignOutcome {
+  const red = clampProgress(redProgress)
+  const blue = clampProgress(blueProgress)
+  const winner: CampaignOutcome['winner'] =
+    red >= 70 && red > blue ? 'RED' : red < 45 ? 'BLUE' : 'DRAW'
+  return { winner, redProgress: red, blueProgress: blue }
+}
+
 export type VictoryReason = string
 
 /** Frase que explica POR QUÉ se ganó, según la regla del motor. */
