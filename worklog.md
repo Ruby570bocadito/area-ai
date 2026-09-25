@@ -936,3 +936,20 @@ Stage Summary:
 - Puerta COMPLETA en VERDE sobre el árbol final: tsc 0, lint 0, 115/115 (239 expect, 9 ficheros), SMOKE_START_CAMPAIGN=1 --build 15/15 (COMPLETED 8/8, BLUE, taxonomía válida, memoria 10→14, cruce 4=4).
 - Sin features, sin bugs tocados, sin deps cambiadas; 5 commits de contenido + informe.
 - Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_20h14.md
+
+---
+Task ID: pulimiento-11
+Agent: z_pulimiento (Agente de Pulimiento / sesión CLI)
+Task: Ronda 11 — adjudicación de la colisión 16 (carrera de anuncios contra 0ea5aa4, misma base 65e8ea9 y mismo alcance núcleo; mi anuncio nunca llegó a commit, detectado pre-publicación por la maniobra §2.5 indivisible) + verificación independiente completa + auditoría profunda del README + paquete de evidencia sobre la BD compartida. Directiva del operador: rondas más largas, intensas y extensas.
+
+Work Log:
+- Derivación §7.1 del sync README a la sesión prevaleciente (pulimiento-10, 0ea5aa4); traza local revertida con checkout --, cero residuos; tomo numeración Ronda 11.
+- Puerta de calidad sobre 06a5f1e: 112/112 (234 expect, 9 ficheros), tsc 0, lint 0, marcadores 0, assets 10/10, scripts 11/11 mapeados, deps sin cambios.
+- Canon COMPLETO first-hand: SMOKE_START_CAMPAIGN=1 --build 15/15 (Fase 4 estreno SEO en verde; campaña COMPLETED 8/8, 19 eventos, 4 lecciones con taxonomía y tags válidos) — fila post-fix RED 87/100, tercer entorno confirmando el clamp.
+- Auditoría README de 6 dominios (scripts, variables, assets, motor, árbol, cifras): motor/roster/escenarios/fases verificados 1:1 contra el código; desfasos = alcance derivado; 4 RESIDUALES detectados que el anuncio 0ea5aa4 no lista (provider-config.ts y types.ts de sim/, types.ts de lab/, segundo contador 93 del bullet Seguridad, taxonomía no mencionada en el bullet Bucle de evolución).
+- HALLAZGO: el contenedor comparte una única BD de verificación fuera del repo (DATABASE_URL global → /home/z/my-project/db/custom.db); en ella conviven las 4 campañas de humo de la jornada — incluida la fila 114/100 ORIGINAL (18h23) — y mi fila post-fix 87/100. El caveat de datos históricos tiene instancia viva y compartida; taxonomía empírica 22/22 dentro de la whitelist.
+- Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_20h20.md
+
+Stage Summary:
+- Colisión 16 documentada (tercera carrera de anuncios del día; coste: un checkout --); propuesta §8: ratificar el §2.5 indivisible y decidir la gobernanza de la BD compartida.
+- README SIN CAMBIOS por esta ronda (derivado); residuales vigilados para verificación de cobertura cuando la ronda prevaleciente publique.
