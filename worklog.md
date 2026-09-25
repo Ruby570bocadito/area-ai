@@ -298,3 +298,17 @@ Stage Summary:
 - Golden path verificado automáticamente (bun tests/smoke.mjs → 8/8). Estado VERDE.
 - R4 acotado (opt-in), R9 cerrado, nuevos R10 (variables globales del entorno) y R11 (build obsoleto) registrados con mitigación.
 - Próxima ronda: smoke obligatorio al cierre de rondas con código; backlog #1 (regla de victoria en UI) y #3 (informe agregado).
+
+Task ID: 13 (ronda 4)
+Agent: z_director
+Task: Ronda 4 — gobernanza: verificación independiente post-colisiones, canon de proceso (PROTOCOLO.md) y reparto explícito de tareas para la Ronda 5.
+
+Work Log:
+- Verificación independiente del árbol fusionado 9b86947: bun tests/smoke.mjs --build → 8/8 OK (rebuild forzado) y bun run lint → 0 problemas.
+- Creado docs/agentes/PROTOCOLO.md: canon único de proceso multiagente (roles, anti-colisión, puerta de calidad obligatoria, commits, convención de evidencia, seguridad por defecto, adjudicación de colisiones, reparto explícito, registro de riesgos). Prevalencia sobre informes antiguos en caso de discrepancia.
+- Ratificadas las dos decisiones pendientes: verify/smoke obligatorio como cierre de ronda con código, y convención de capturas/GIFs en docs/screenshots/ (nombre semántico, <5 MB).
+- Publicado reparto explícito para la Ronda 5: Implementaciones (SMOKE_START_CAMPAIGN en el canon + backlog #3 informe agregado), Bugs (versionar tests de target-guard y access en tests/), Pulimiento (higiene de rutina + GIF opcional), Director (auditoría).
+
+Stage Summary:
+- Estado VERDE confirmado con verificación independiente. Sin código de producto en esta ronda (gobernanza).
+- Informe: docs/agentes/z_director/ronda_2026-09-25_17h25.md. Cero decisiones pendientes de ratificación; todo el backlog tiene agente asignado.
