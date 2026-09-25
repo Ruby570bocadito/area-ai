@@ -53,9 +53,9 @@ src/
 │   └── api/                # state, campaigns (GET/POST + [id]), knowledge, autopilot, settings, models, agents/[key]/activity
 ├── components/arena/       # UI del producto (mapa, feed, roster, analítica; campaign-analysis.tsx: evolución y comparativa de la ficha)
 ├── lib/
-│   ├── sim/                # engine.ts (motor), roster.ts, seed.ts, llm.ts, progression.ts, autopilot.ts, knowledge-score.ts (fuerza del conocimiento), taxonomy.ts (normalización de categorías/tags de lecciones), provider-config.ts (configuración del proveedor LLM), types.ts (tipos compartidos del motor)
+│   ├── sim/                # engine.ts (motor), roster.ts, seed.ts, llm.ts, progression.ts, pace.ts (ritmo e intensidad: impactos por ronda, cadencia y encadenamiento RED), autopilot.ts, knowledge-score.ts (fuerza del conocimiento), taxonomy.ts (normalización de categorías/tags de lecciones), provider-config.ts (configuración del proveedor LLM), types.ts (tipos compartidos del motor)
 │   ├── lab/                # runtime.ts (servidor HTTP del lab), ops.ts (acciones RED/BLUE), store.ts, types.ts (tipos del lab)
-│   ├── net/                # target-guard.ts (SSRF), access.ts (token opcional + rate limit)
+│   ├── net/                # target-guard.ts (SSRF), access.ts (token opcional, rate limits, same-origin de mutaciones y topes de cuerpo)
 │   └── *.ts                # módulos de raíz de lib/: victory.ts (regla de victoria, fuente única), round-progression.ts (evolución por rondas), aggregate-report.ts (informe agregado), text.ts (texto, duraciones y fechas), knowledge-export.ts (exportación CSV/JSON de la memoria), scenario-stats.ts (balance por escenario), arena-colors.ts (tokens de color RED/BLUE), api-types.ts (contratos API), db.ts (cliente Prisma), utils.ts (helper de clases)
 └── hooks/use-arena-state.tsx  # Sondeo único de /api/state compartido por toda la app
 ```
@@ -126,7 +126,7 @@ También es posible configurarlo por variables de entorno — o directamente en 
 | Variable | Obligatoria | Descripción |
 |---|---|---|
 | `DATABASE_URL` | Sí | Ruta de la base de datos SQLite — usa **ruta absoluta** (p. ej. `file:/ruta/a/area-ai/db/custom.db`); las relativas se resuelven de forma distinta entre la CLI de Prisma y el runtime |
-| `LAB_PORT` | No | Puerto del laboratorio HTTP (por defecto `4403`, bind en `127.0.0.1`) |
+| `LAB_PORT` | No | Puerto del laboratorio HTTP (por defecto `4403`, bind en `127.0.0.1`); valores no enteros o fuera de 1-65535 caen al defecto |
 | `OPENAI_API_KEY` | No | API key del proveedor LLM (alternativa a la configuración desde `/modelos`) |
 | `OPENAI_BASE_URL` | No | Endpoint compatible con la API de OpenAI |
 | `OPENAI_MODEL` | No | Modelo a utilizar |
@@ -136,11 +136,13 @@ También es posible configurarlo por variables de entorno — o directamente en 
 
 ## Seguridad
 
-- El laboratorio hace bind **exclusivamente en `127.0.0.1`** y está pensado para ejecutarse en local.
+- El laboratorio hace bind **exclusivamente en `127.0.0.1`** y está pensado para ejecutarse en local. El puerto (`LAB_PORT`, defecto `4403`) se valida al leerse: cualquier valor no entero o fuera de 1-65535 cae al defecto en lugar de romper la primera campaña.
 - **Barrera SSRF en las URL de proveedor** (guard `src/lib/net/target-guard.ts`): se aplica al guardar (`POST /api/models` y `POST /api/settings`) y **en el punto de uso** (cada llamada del motor), bloqueando destinos de red interna (loopback, RFC1918, link-local) y endpoints de metadata de nube para conexiones no locales. Los `fetch` a URL de usuario abortan ante redirecciones (`redirect: 'error'`), cerrando el vector `302 → red interna`.
 - **Token opcional de administración** (`ADMIN_TOKEN` en `.env`): si se define, los endpoints que mutan estado (`POST /api/campaigns`, `/api/autopilot`, `/api/settings`, `/api/models`) exigen el token vía cabecera `X-Admin-Token` o cookie `admin_token` (fija la cookie en el navegador con `document.cookie = "admin_token=<token>"` para seguir usando la UI). Sin definir, la app queda en modo local abierto.
 - **Rate limit** en `POST /api/campaigns` (6 lanzamientos/minuto por cliente) para frenar bucles de gasto de créditos LLM. La clave de cliente usa `X-Forwarded-For` **solo si defines `TRUST_PROXY=1`** (detrás de un proxy de confianza que la fije con la IP real); sin él, la cabecera se ignora porque cualquier cliente podría suplantarla y rotar la clave para anular el límite — el límite pasa a ser global por proceso.
-- **Rate limit de mutaciones admin**: los endpoints que acreditan el token (`POST /api/settings`, `POST /api/models`) llevan su propio bucket de **30 intentos/minuto** (compartido entre ambos, clave `admin:`), aplicado **antes** de verificar el token, para frenar la fuerza bruta de `ADMIN_TOKEN`; los intentos fallidos no consumen el bucket de campañas.
+- **Rate limit de mutaciones admin**: los endpoints que acreditan el token (`POST /api/settings`, `POST /api/models`, `POST /api/autopilot`) llevan su propio bucket de **30 intentos/minuto** (compartido entre los tres, clave `admin:`), aplicado **antes** de verificar el token, para frenar la fuerza bruta de `ADMIN_TOKEN`; los intentos fallidos no consumen el bucket de campañas. El de `/api/autopilot` cierra el hueco del tercer endpoint que dispara gasto LLM (el interruptor del modo continuo).
+- **CSRF same-origin en las mutaciones** (`isSameOrigin` en `src/lib/net/access.ts`): las 4 mutaciones (`POST /api/campaigns`, `/api/autopilot`, `/api/settings`, `/api/models`) rechazan con 403 los POST cross-site «simples» (`text/plain` sin preflight) antes de cualquier otra comprobación — el vector permitía lanzar campañas o activar el modo continuo desde una página ajena, y redirigir el proveedor LLM para exfiltrar la API key. Semántica compatible con clientes no-navegador: sin cabecera `Origin` se permite (humo, curl, scripts), `Origin: null` se rechaza y se compara el host del `Origin` con el `Host` de la petición — comparación válida tras el Caddyfile del repo, que lo preserva. La activación del autopiloto, además, exige el booleano `true` explícito (la cadena `"false"` ya no activa el modo continuo).
+- **Tope de cuerpo pre-parse en las mutaciones** (413): con `Content-Length` presente, el cuerpo se rechaza antes de parsear si supera el tope del endpoint (1024 bytes en `/api/autopilot`, 4096 en `/api/campaigns`, 16384 en `/api/settings` y `/api/models`) — un POST gigante ya no puede agotar la memoria del proceso único. Limitación documentada: peticiones `chunked` sin `Content-Length` no son acotables sin consumir el stream.
 - **Cabeceras de seguridad en todas las respuestas** (`next.config.ts`): `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin` y `Permissions-Policy` restrictiva (cámara, micro y geolocalización desactivadas). Una CSP estricta queda como paso siguiente: exige verificación de hidratación en navegador real.
 - `GET /api` es un healthcheck que verifica el servicio y la base de datos.
 - **Sin autenticación por defecto**: cualquier usuario con acceso a la app puede leer datos de simulación y (sin `ADMIN_TOKEN`) lanzar campañas. **No expongas la aplicación a Internet** sin auth en el proxy o sin definir `ADMIN_TOKEN`.
