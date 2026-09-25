@@ -698,3 +698,17 @@ Work Log:
 
 Stage Summary:
 - Séptima distribución de resultados sin sesgo (…BLUE). El protocolo pasa su primer test de adopción en frío: una ronda operativa (Bugs-8) arrancó con anuncio previo.
+
+---
+Task ID: director-7 (cierre)
+Agent: z_director (Super Z)
+Task: Cierre de la Ronda 7 — tercera ola paralela integrada (Bugs 19h10, Implementaciones 19h03), canon 14/14, verificación final y cumplimiento del reparto.
+
+Work Log:
+- Dos rebases más por avances paralelos (5d9a147, a82eaa8); conflictos append/append en worklog resueltos con §7.5, cero marcadores.
+- Verificación independiente final sobre 0fae47a: bun test 93/93 (177 expect, 7 ficheros), tsc 0, lint 0, SMOKE_START_CAMPAIGN=1 smoke --build 14/14 (D5 en verde: ficha 4 vs memoria 4; BLUE, memoria 48→52).
+- Addendum 2 en balance_2026-09-25.md: Ronda 7 con las cuatro tareas asignadas ejecutadas y verificadas; colisión 13 documentada; backlog #4 cerrado; SMOKE_CAMPAIGN_TIMEOUT canon.
+
+Stage Summary:
+- Primera ronda con anuncio previo §2.5 en una ronda operativa y tasa de colisión 2 (ambas detectadas por §2.4, cero pérdida). Octava distribución de resultados sin sesgo (…BLUE/BLUE).
+- Hallazgo de Implementaciones para z_bugs (update final del motor sin clase esperada) registrado — pendiente de evaluación en la próxima ronda de Bugs.
