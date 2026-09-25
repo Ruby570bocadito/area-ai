@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import NumberFlow from '@number-flow/react'
-import { Building2, Crown, Swords, ShieldCheck, Trophy } from 'lucide-react'
+import { Building2, Crown, Download, Swords, ShieldCheck, Trophy } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { AgentDTO, CampaignSummaryDTO, EventDTO, InfraNodeDTO } from '@/lib/api-types'
 import { AgentCard } from './agent-avatar'
@@ -72,6 +72,46 @@ export function ArenaLive({
   const phaseIdx = PHASES.indexOf(campaign.phase as (typeof PHASES)[number])
   const winner = campaign.winner
 
+  // Exporta el informe de campaña como Markdown descargable
+  const downloadReport = () => {
+    const res = winner === 'RED' ? 'VICTORIA RED' : winner === 'BLUE' ? 'VICTORIA BLUE' : winner == null && !running ? 'EMPATE' : 'EN CURSO'
+    const lines = [
+      `# Informe de campaña — ${campaign.scenario.codename}`,
+      '',
+      `- **Empresa:** ${campaign.scenario.company} (${campaign.scenario.industry})`,
+      `- **Dificultad:** ${campaign.scenario.difficulty}/5`,
+      `- **Estado:** ${res} · Ronda ${campaign.round}/${campaign.maxRounds}`,
+      `- **Inicio:** ${new Date(campaign.startedAt).toLocaleString('es-ES')}`,
+      campaign.endedAt ? `- **Fin:** ${new Date(campaign.endedAt).toLocaleString('es-ES')}` : null,
+      '',
+      `## Resultado`,
+      `| Métrica | RED | BLUE |`,
+      `| --- | --- | --- |`,
+      `| Progreso objetivo | ${campaign.redProgress}/100 | ${campaign.blueProgress}/100 |`,
+      `| Puntuación | ${campaign.redScore} | ${campaign.blueScore} |`,
+      '',
+      `## Objetivos`,
+      `- **RED:** ${campaign.scenario.redObjective}`,
+      `- **BLUE:** ${campaign.scenario.blueObjective}`,
+      '',
+      `## Registro de acciones (${events.length} eventos)`,
+      ...events.map(
+        (e) =>
+          `### R${e.round} · [${e.team}] ${e.agentCodename ?? 'SISTEMA'} — ${e.action}\n\n${e.detail}${e.result ? `\n\n> Resultado: ${e.result} (impacto ${e.impact > 0 ? '+' : ''}${e.impact})` : ''}`
+      ),
+      '',
+      `---`,
+      `Generado por area·ai — laboratorio adversarial de agentes IA.`,
+    ].filter((l): l is string => l != null)
+    const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `informe-${campaign.scenario.key}-${campaign.id.slice(0, 8)}.md`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="space-y-4">
       {/* Cabecera de campaña */}
@@ -98,23 +138,32 @@ export function ArenaLive({
               {campaign.scenario.company} · {campaign.scenario.industry} · dificultad {campaign.scenario.difficulty}/5
             </p>
           </div>
-          {/* progreso de rondas */}
-          <div className="flex items-center gap-1">
-            {Array.from({ length: campaign.maxRounds }).map((_, i) => (
-              <motion.span
-                key={i}
-                initial={false}
-                animate={{
-                  backgroundColor: i < campaign.round ? (i % 2 === 0 ? '#f4536e' : '#41c0ef') : 'rgba(255,255,255,0.08)',
-                  scale: running && i === campaign.round - 1 ? 1.25 : 1,
-                }}
-                className="h-2 w-4 rounded-sm"
-                title={`Ronda ${i + 1}`}
-              />
-            ))}
-            <span className="ml-2 font-mono-tight text-[11px] text-muted-foreground">
-              Ronda {campaign.round}/{campaign.maxRounds}
-            </span>
+          {/* acciones + progreso de rondas */}
+          <div className="flex flex-col items-end gap-2">
+            <button
+              onClick={downloadReport}
+              className="nav-link flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-1 font-mono-tight text-[10px] font-bold text-muted-foreground transition-colors hover:border-white/20 hover:text-foreground"
+              title="Descargar informe de la campaña en Markdown"
+            >
+              <Download className="h-3 w-3" /> Informe
+            </button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: campaign.maxRounds }).map((_, i) => (
+                <motion.span
+                  key={i}
+                  initial={false}
+                  animate={{
+                    backgroundColor: i < campaign.round ? (i % 2 === 0 ? '#f4536e' : '#41c0ef') : 'rgba(255,255,255,0.08)',
+                    scale: running && i === campaign.round - 1 ? 1.25 : 1,
+                  }}
+                  className="h-2 w-4 rounded-sm"
+                  title={`Ronda ${i + 1}`}
+                />
+              ))}
+              <span className="ml-2 font-mono-tight text-[11px] text-muted-foreground">
+                Ronda {campaign.round}/{campaign.maxRounds}
+              </span>
+            </div>
           </div>
         </div>
         {/* fases */}

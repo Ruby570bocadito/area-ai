@@ -77,3 +77,22 @@ Work Log:
 Stage Summary:
 - UI con capa de "feel premium": progreso de scroll, cursor glow, grano, parallax, radares, paquetes, scanlines, ticker en vivo, sheens y spotlights; motor de campañas/conocimiento intacto.
 - Ficheros clave: src/app/globals.css, src/app/page.tsx, src/components/arena/{chrome,hero,network-map,arena-live,agent-avatar,control-center,roster,event-feed}.tsx
+
+---
+Task ID: 5
+Agent: Super Z (main agent)
+Task: "Sigue mejorando y añadiendo" — nuevas capacidades sobre la base premium: sección Analítica, fichas de agente, paleta de comandos e informe exportable. Motor intacto.
+
+Work Log:
+- analytics.tsx (nuevo): sección 06 "Analítica del laboratorio" — donut SVG animado de balance de victorias (RED/BLUE/empates) con tarjeta MVP, curva de evolución de puntuaciones (áreas con gradiente + dots spring, últimas 10 campañas, tooltips), ranking de agentes por XP con barras animadas, y "conocimiento más efectivo" por equipo (tasa de éxito vecesTrabajó/vecesUsado).
+- agent-detail.tsx (nuevo): dialog premium al hacer clic en cualquier tarjeta del roster — avatar grande con anillo activo, stats (campañas/victorias/nivel), progreso XP al siguiente nivel, tasa de victorias, descripción. Roster ahora es clicable (role=button, accesible por teclado, indicador hover Maximize2).
+- command-palette.tsx (nuevo): paleta ⌘K/Ctrl+K con cmdk — lanzar campaña por escenario (6), navegar a las 6 secciones, abrir Model Studio vía evento window "area-ai:open-model-studio" (ModelStudio lo escucha). Botón ⌘K en navbar.
+- arena-live.tsx: botón "Informe" en cabecera — descarga informe .md de la campaña (resultado, tabla de puntuaciones, objetivos, registro completo de eventos con impactos). Verificado: blob 5,3 KB generado y descargado.
+- chrome.tsx: BackToTop — botón flotante que aparece tras pasar el hero (AnimatePresence, spring en hover/tap).
+- page.tsx: nav con 6 enlaces (+Analítica), sección 06 integrada tras Historial, CommandPalette y BackToTop montados.
+- Fix a11y: aria-describedby={undefined} en el DialogContent del agent-detail (elimina warning de consola).
+- Verificación en caliente (Agent Browser): sección Analítica renderiza con datos reales (donut 8 campañas, MVP HYDRA 267 XP, curva, ranking, efectividad); ficha de agente abre con stats y progreso 77/80 XP; ⌘K abre paleta con los 6 escenarios; campaña OPERACIÓN CENTINELA lanzada DESDE LA PALETA y completada end-to-end (8/8 rondas, 27-96 BLUE), conocimiento 34→38, agentes subieron XP/nivel (HYDRA Nv4) — bucle de evolución intacto; informe .md descargable; móvil 390px sin scroll horizontal; consola sin errores; eslint limpio en los 8 ficheros tocados; tsc sin errores nuevos (los de engine/llm son preexistentes).
+
+Stage Summary:
+- Nueva capa de producto sobre el motor: analítica agregada, profundidad interactiva (fichas de agente), atajos de power-user (⌘K) y exportación de informes. Todo el combate/evolución verificado funcionando.
+- Ficheros clave: src/components/arena/{analytics,agent-detail,command-palette}.tsx (nuevos), {roster,arena-live,chrome,model-studio}.tsx (editados), src/app/page.tsx.

@@ -11,9 +11,11 @@ import { ArenaLive } from '@/components/arena/arena-live'
 import { KnowledgePanel } from '@/components/arena/knowledge-panel'
 import { Roster } from '@/components/arena/roster'
 import { HistoryPanel } from '@/components/arena/history-panel'
+import { Analytics } from '@/components/arena/analytics'
 import { ModelStudio } from '@/components/arena/model-studio'
+import { CommandPalette } from '@/components/arena/command-palette'
 import { SectionTitle, Reveal } from '@/components/arena/section'
-import { ScrollProgress, CursorGlow } from '@/components/arena/chrome'
+import { ScrollProgress, CursorGlow, BackToTop } from '@/components/arena/chrome'
 
 const NAV_LINKS = [
   { href: '#mando', label: 'Escenarios' },
@@ -21,6 +23,7 @@ const NAV_LINKS = [
   { href: '#conocimiento', label: 'Conocimiento' },
   { href: '#agentes', label: 'Agentes' },
   { href: '#historial', label: 'Historial' },
+  { href: '#analitica', label: 'Analítica' },
 ]
 
 export default function Home() {
@@ -119,6 +122,7 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-2.5">
+            {state && <CommandPalette scenarios={state.scenarios} running={running} onStart={handleStart} />}
             <span className="nav-link hidden font-mono-tight text-[11px] xl:inline">
               {state?.stats.totalCampaigns ?? 0} campañas · {state?.stats.knowledgeCount ?? 0} conocimientos
             </span>
@@ -215,10 +219,23 @@ export default function Home() {
                   index="05"
                   kicker="Archivo"
                   title="Historial de campañas"
-                  subtitle="Archivo completo de enfrentamientos: marcador, duración, escenario y resultado. Cada registro alimenta las métricas de evolución de ambos equipos."
+                  subtitle="Archivo completo de enfrentamientos: marcador, duración, escenario y resultado. Descarga el informe de cualquier campaña y revisa cómo evolucionan ambos equipos."
                 />
                 <Reveal className="mt-6">
                   <HistoryPanel campaigns={state.campaigns} />
+                </Reveal>
+              </section>
+
+              {/* 06 — Analítica */}
+              <section aria-label="Analítica" id="analitica" className="scroll-mt-20">
+                <SectionTitle
+                  index="06"
+                  kicker="Inteligencia de datos"
+                  title="Analítica del laboratorio"
+                  subtitle="Lectura agregada de todas las campañas: balance de victorias, evolución de puntuaciones, ranking de agentes por experiencia y qué lecciones del conocimiento funcionan mejor en combate."
+                />
+                <Reveal className="mt-6">
+                  <Analytics agents={state.agents} campaigns={state.campaigns} knowledge={state.knowledge} stats={state.stats} />
                 </Reveal>
               </section>
             </div>
@@ -238,6 +255,8 @@ export default function Home() {
           </div>
         )}
       </main>
+
+      <BackToTop />
 
       <footer className="mt-auto border-t border-white/[0.06] bg-black/20">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-6 sm:px-6">

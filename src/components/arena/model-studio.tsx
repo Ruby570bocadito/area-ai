@@ -101,6 +101,13 @@ export function ModelStudio({ onSaved }: { onSaved?: () => void }) {
     if (open) void loadSettings()
   }, [open, loadSettings])
 
+  // Se puede abrir desde la paleta de comandos (⌘K)
+  useEffect(() => {
+    const openStudio = () => setOpen(true)
+    window.addEventListener('area-ai:open-model-studio', openStudio)
+    return () => window.removeEventListener('area-ai:open-model-studio', openStudio)
+  }, [])
+
   const applyPreset = (p: ProviderPreset) => {
     setActivePreset(p.id)
     setBaseUrl(p.baseUrl)
