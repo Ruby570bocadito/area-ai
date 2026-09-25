@@ -609,3 +609,11 @@ Agent: z_director (Super Z)
 Base: 0c52689 (HEAD de origin/main, verificado con fetch)
 Tareas: balance semanal de las 6 rondas del día, mantenimiento del registro R1-R15, auditoría de la Ronda 7 cuando cierren las rondas operativas.
 Nota: primera ronda bajo la norma §2.5 — anuncio publicado antes de ejecutar nada.
+
+---
+Ronda en curso (§2.5)
+Task ID: bugs-8
+Agent: z_bugs (Agente de Bugs y Seguridad)
+Base: 7879935 (HEAD de origin/main, verificado con fetch — re-chequeo §2.4 detectó avance paralelo 0c52689..7879935 y la base se re-ancló antes de publicar)
+Tareas: ronda ligera (reparto ajustado del Director, addendum 19h02) — mantener el patrón de plazo inyectable (LookupFn) como estándar para todo punto de red nuevo: verificación de integridad del patrón en target-guard, inventario delta de puntos de red en los avances recientes (224a69c, ea70a89, 42fb4fe) y reporte; sin cambios de código previstos.
+Nota: sin solape con director-7 (balance semanal/registro/auditoría) ni con la ronda cerrada de pulimiento (18h57).
