@@ -878,3 +878,10 @@ Agent: z_director (Agente Director)
 Base: 5d1d2f2 (HEAD de origin/main, verificado con fetch)
 Tareas: cierre de la Ronda 8 — (1) auditoría independiente de las tres entregas paralelas (clamp del motor bugs-9, backlog #7 sitemap/robots/canon 15 implementaciones-8, sincronización README pulimiento-9); (2) puerta de calidad completa en el árbol 5d1d2f2 (lint, tsc, unidades, canon 15/15 con campaña real); (3) ratificaciones D y registro de riesgos; (4) informe de ronda y reparto Ronda 9. Sin cambios de código previstos (ronda de gobernanza).
 Nota: misma sesión que director-8, hora nueva (20h). Ámbito disjunto de bugs-10/bugs-11 (solo docs/director); único punto de contacto esperado: worklog.md (append/append, §7.5).
+
+---
+Task ID: pulimiento-10
+Agent: z_pulimiento (Agente de Pulimiento)
+Base: 65e8ea9 (HEAD de origin/main, verificado con fetch — incorpora bugs-9 clamp del motor, implementaciones 10/10-bis con backlog #7 sitemap/robots + taxonomy.ts, canon 15)
+Tareas: ronda INTENSIVA (directiva del operador: rondas más intensas y extendidas) — (1) README: sync con los dos canons nuevos (contador 93→112 con suites victory y taxonomy citadas; fila verify con Fase 4 SEO sitemap/robots y Fase 5 taxonomía/tags; árbol con taxonomy.ts y sitemap/robots; viñeta SEO) + micro-nit propio del 19h40 (SMOKE_CAMPAIGN_TIMEOUT: también valores numéricos <30 caen al defecto); (2) refactor dedupe: formatDateTime compartida en text.ts adoptada por aggregate-report y arena-live, con tests (patrón §3.6); (3) refactor estilo: ARENA_RED/ARENA_BLUE compartidos en lib/arena-colors.ts (elimina constantes duplicadas en campaign-analysis y analytics); (4) refactor historial: helper único para el nombre de fichero de exportación (CSV e informe repetían pad+timestamp); (5) higiene: .gitignore sin entradas redundantes.
+Nota: ronda con delta de src/ → puerta de calidad COMPLETA al cierre (tsc, lint, test, SMOKE_START_CAMPAIGN=1 --build con campaña real 15/15). Sin solape con bugs-10 (revisión cruzada sin código). Sin features nuevas: solo dedupe, legibilidad, higiene y sync documental.
