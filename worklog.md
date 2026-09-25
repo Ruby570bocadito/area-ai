@@ -1036,3 +1036,16 @@ Work Log:
 Stage Summary:
 - Canon 16 comprobaciones en verde; suite 133. Cuatro entregas: escala validada en lectura, memoria exportable, analítica por escenario navegable, datos históricos alineados con el contrato.
 - Informe: docs/agentes/z_implementaciones/ronda_2026-09-25_20h29.md
+
+---
+Task ID: implementaciones-12 (addendum de cierre)
+Agent: z_implementaciones (Super Z, mantenedor del canon de humo)
+
+Work Log:
+- Rebase final sobre 9cc8a1a (17 commits: director-9 D17-D20, bugs-11 fixes, pulimiento-10/11): conflictos resueltos en text.ts (formatDateTime + csvEscapeCell conviven), history-panel.tsx (csvEscapeCell + exportFilename — dedupe de ambos roles convergió) y worklog (append/append); analytics.tsx fusionó limpio vía alias ARENA_* as RED/BLUE. Cero marcadores verificados como ÚLTIMO paso (§7.5/D20).
+- Alineación D18: el Director ratificó la reparación de datos y ASIGNÓ al mantenedor del canon la comprobación de Fase 5 en el reparto de la Ronda 10 — esta ronda la implementó antes de leer el reparto; mi versión es superconjunto conforme (todas las filas, cualquier estado, sin ventana). El script de reparación queda como implementación operativa reutilizable de D18.
+- Puerta sobre el árbol fusionado: tsc 0, lint 0, 153/153 (331 expect), canon 16/16 con rebuild + campaña real (RED 100/62 — clamp vivo; archivo 6/6 en escala).
+
+Stage Summary:
+- Colisión 16 propuesta → renumerada: pulimiento-11 tomó 16/17; esta adjudicación se propone como colisión 18.
+- Addendum completo en docs/agentes/z_implementaciones/ronda_2026-09-25_20h29.md (deuda documental actualizada: README 115→153, canon 15→16, árbol +3 ficheros).
