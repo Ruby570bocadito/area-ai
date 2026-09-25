@@ -38,6 +38,9 @@ function StatCell({
   )
 }
 
+// Curva de entrada única del laboratorio — usada en toda la coreografía
+const EASE_OUT = 'power3.out'
+
 export function Hero({ stats, provider }: { stats: StateResponse['stats']; provider: string }) {
   const rootRef = useRef<HTMLElement | null>(null)
   const titleRef = useRef<HTMLHeadingElement | null>(null)
@@ -91,14 +94,17 @@ export function Hero({ stats, provider }: { stats: StateResponse['stats']; provi
     }
   }, [])
 
-  // Reveal del titular carácter a carácter (GSAP + SplitType).
-  // El punto medio «·» vuela con el gradiente rojo→cian de la marca;
-  // al terminar se revierte el split para restaurar el DOM original.
+  // ── Entrada orquestada: UNA secuencia de carga, del titular a la franja ──
   useEffect(() => {
-    if (!titleRef.current) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const root = rootRef.current
+    const title = titleRef.current
+    if (!root || !title) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      gsap.set(root.querySelectorAll('[data-hero]'), { opacity: 1, y: 0 })
+      return
+    }
 
-    const split = new SplitType(titleRef.current, { types: 'chars' })
+    const split = new SplitType(title, { types: 'chars' })
     split.chars?.forEach((ch) => {
       if (ch.textContent === '·') {
         ch.style.backgroundImage = 'linear-gradient(90deg, #f4536e, #41c0ef)'
@@ -107,18 +113,40 @@ export function Hero({ stats, provider }: { stats: StateResponse['stats']; provi
         ch.style.color = 'transparent'
       }
     })
+
     const ctx = gsap.context(() => {
-      gsap.from(split.chars ?? [], {
+      const tl = gsap.timeline({ defaults: { ease: EASE_OUT } })
+      // fromTo explícito: los elementos traen opacity:0 inline hasta animar
+      const flyIn = (selector: string, vars: gsap.TweenVars, position: number | string) => {
+        tl.fromTo(selector, { opacity: 0, ...vars }, { opacity: 1, y: 0, duration: 0.6, ...vars }, position)
+      }
+      tl.from(split.chars ?? [], {
         opacity: 0,
-        y: 36,
-        rotateX: -60,
-        stagger: 0.05,
-        duration: 0.85,
-        ease: 'power4.out',
-        delay: 0.15,
-        onComplete: () => split.revert(),
+        y: 34,
+        rotateX: -55,
+        stagger: 0.045,
+        duration: 0.8,
+        delay: 0.1,
       })
+      flyIn('[data-hero="eyebrow"]', { y: -12, duration: 0.5 }, 0.05)
+      flyIn('[data-hero="sub"]', { y: 18, duration: 0.6 }, 0.55)
+      flyIn('[data-hero="ctas"]', { y: 16, duration: 0.55 }, 0.68)
+      tl.fromTo(
+        '[data-hero="emblem"]',
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.55 },
+        0.8
+      )
+      tl.fromTo(
+        '[data-hero="stats"]',
+        { opacity: 0, y: 14 },
+        { opacity: 1, y: 0, duration: 0.5 },
+        0.95
+      )
+      // reinicio del DOM dividido para restaurar el gradiente del interpunct
+      tl.call(() => split.revert(), undefined, 1.4)
     }, rootRef)
+
     return () => {
       ctx.revert()
       split.revert()
@@ -148,13 +176,7 @@ export function Hero({ stats, provider }: { stats: StateResponse['stats']; provi
       <div className="relative z-10 mx-auto max-w-7xl px-4 pb-14 pt-16 sm:px-6 sm:pt-24">
         <div className="flex flex-col items-center text-center">
           {/* eyebrow */}
-          <div
-            className="mb-7 flex items-center gap-2.5"
-            style={{ opacity: 0 }}
-            ref={(el) => {
-              if (el) gsap.to(el, { opacity: 1, y: 0, duration: 0.6, delay: 0.05, ease: 'power2.out' })
-            }}
-          >
+          <div data-hero="eyebrow" className="mb-7 flex items-center gap-2.5" style={{ opacity: 0 }}>
             <span className="flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.03] px-4 py-1.5 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-muted-foreground backdrop-blur-sm">
               <CircleDot className="h-3 w-3 text-[#41c0ef]" />
               Simulador adversarial autónomo
@@ -164,22 +186,17 @@ export function Hero({ stats, provider }: { stats: StateResponse['stats']; provi
           </div>
 
           {/* marca */}
-          <div className="relative">
-            <span className="title-sheen" aria-hidden />
-            <h1
-              ref={titleRef}
-              className="font-display bg-gradient-to-b from-white via-white to-white/45 bg-clip-text text-7xl font-extrabold leading-[0.95] tracking-[-0.03em] text-transparent sm:text-[120px]"
-            >
-              area<span className="bg-gradient-to-r from-[#f4536e] to-[#41c0ef] bg-clip-text text-transparent">·</span>ai
-            </h1>
-          </div>
+          <h1
+            ref={titleRef}
+            className="font-display bg-gradient-to-b from-white via-white to-white/45 bg-clip-text text-7xl font-extrabold leading-[0.95] tracking-[-0.03em] text-transparent sm:text-[120px]"
+          >
+            area<span className="bg-gradient-to-r from-[#f4536e] to-[#41c0ef] bg-clip-text text-transparent">·</span>ai
+          </h1>
 
           <p
+            data-hero="sub"
             className="mt-6 max-w-2xl text-balance text-[15px] leading-relaxed text-muted-foreground sm:text-base"
             style={{ opacity: 0 }}
-            ref={(el) => {
-              if (el) gsap.to(el, { opacity: 1, y: 0, duration: 0.7, delay: 0.55, ease: 'power2.out' })
-            }}
           >
             Agentes de IA de{' '}
             <span className="font-semibold text-[#f98ca0]">Red Team</span> y{' '}
@@ -190,11 +207,9 @@ export function Hero({ stats, provider }: { stats: StateResponse['stats']; provi
 
           {/* CTAs */}
           <div
+            data-hero="ctas"
             className="mt-8 flex flex-wrap items-center justify-center gap-3"
             style={{ opacity: 0 }}
-            ref={(el) => {
-              if (el) gsap.to(el, { opacity: 1, y: 0, duration: 0.7, delay: 0.7, ease: 'power2.out' })
-            }}
           >
             <button
               type="button"
@@ -215,12 +230,10 @@ export function Hero({ stats, provider }: { stats: StateResponse['stats']; provi
 
           {/* Emblema VS — con parallax inverso */}
           <div
+            data-hero="emblem"
             className="mt-12 flex items-center gap-5 will-change-transform sm:gap-8"
             style={{ opacity: 0 }}
-            ref={(el) => {
-              emblemRef.current = el
-              if (el) gsap.to(el, { opacity: 1, y: 0, duration: 0.7, delay: 0.85, ease: 'power2.out' })
-            }}
+            ref={emblemRef}
           >
             <div className="flex items-center gap-3.5">
               <span className="conic-ring conic-ring-red flex h-12 w-12 items-center justify-center rounded-full p-[1.5px] sm:h-14 sm:w-14">
@@ -259,13 +272,7 @@ export function Hero({ stats, provider }: { stats: StateResponse['stats']; provi
         </div>
 
         {/* Franja de estadísticas */}
-        <div
-          className="mx-auto mt-12 max-w-4xl"
-          style={{ opacity: 0 }}
-          ref={(el) => {
-            if (el) gsap.to(el, { opacity: 1, y: 0, duration: 0.7, delay: 1, ease: 'power2.out' })
-          }}
-        >
+        <div data-hero="stats" className="mx-auto mt-12 max-w-4xl" style={{ opacity: 0 }}>
           <div className="panel grid grid-cols-2 overflow-hidden rounded-2xl sm:grid-cols-3 lg:grid-cols-6">
             <div className="border-b border-r border-white/[0.06] lg:border-b-0">
               <StatCell label="Campañas" value={stats.totalCampaigns} tone="violet" />

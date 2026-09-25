@@ -65,7 +65,7 @@ export function HistoryPanel({ campaigns }: { campaigns: CampaignListItemDTO[] }
               <WinnerBadge winner={c.winner} />
             ) : c.status === 'RUNNING' ? (
               <span className="flex items-center gap-1 rounded-full border border-[#e8b64c]/35 bg-[#e8b64c]/[0.08] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#f0cd85]">
-                <Hourglass className="h-2.5 w-2.5 anim-blink" /> EN CURSO
+                <Hourglass className="h-2.5 w-2.5 pulse-dot" /> EN CURSO
               </span>
             ) : (
               <span className="rounded-full border border-white/10 bg-white/[0.03] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-muted-foreground">

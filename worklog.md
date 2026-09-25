@@ -113,3 +113,25 @@ Work Log:
 Stage Summary:
 - Identidad visual completa: ilustraciones por escenario, emblema hexagonal rojo/cian en favicon+navbar, OG/Twitter card, tipografía con datos tabulares y paleta con profundidad ambiental. El motor de campañas sigue evolucionando el conocimiento en producción con usuarios reales.
 - Ficheros clave: public/scenario-*.png + public/og.png (nuevos), src/app/icon.svg (nuevo), scripts/generate-visuals.mjs (nuevo), src/app/{globals.css,layout.tsx,page.tsx}, src/components/arena/control-center.tsx.
+
+---
+Task ID: 7
+Agent: Super Z (main agent)
+Task: "Skill de Claude de frontend de GitHub + web en sub-partes + animaciones profesionales + mapa + agentes en segundo plano con visibilidad real. Nada simulado."
+
+Work Log:
+- Skill cargado de GitHub: anthropics/skills → skills/frontend-design/SKILL.md (vía raw.githubusercontent.com; la API estaba rate-limited). Aplicado como dirección de arte: una sola pieza memorable por escena, movimiento que responde a eventos reales, retirar efectos dispersos, copy claro.
+- Sub-partes (refactor): src/hooks/use-arena-state.ts (sondeo adaptativo + start + toggle autopiloto); src/components/arena/layout/{brand,navbar,footer,section-shell}.tsx (marca compartida, navbar con menú móvil hamburguesa, footer, wrapper de secciones); src/app/page.tsx reducido a composición fina (~140 líneas). CommandPalette montado una sola vez (navbar).
+- Agentes en segundo plano (REAL, motor intacto): src/lib/sim/autopilot.ts — "Operación continua": si está activa y el motor está ocioso (>12s de calma), lanza campañas reales vía engine.startCampaign(); se dispara desde /api/state (sondeo) sin hilos. APIs nuevas: GET/POST /api/autopilot (Setting persistente) y GET /api/agents/[key]/activity (agregados REALES de CampaignEvent: total, tasa de éxito, técnicas ×usos, objetivos, rendimiento por fase, últimas 40 acciones con campaña).
+- ControlCenter: tarjeta "Operación continua" con switch (framer-motion layout) y estado persistente; badge visual cuando está activa.
+- Visibilidad de agentes: TurnOperator en ArenaLive (dos tarjetas "quién está actuando ahora" con rol, técnica, detalle, nodo, resultado e impacto reales); ficha de agente ampliada: fases con iniciativa (del roster del motor), actividad registrada (40 acciones de HYDRA, 78% éxito, técnicas top, barras por fase, últimas acciones con codename de campaña). NetworkMap recibe phase.
+- Mapa de operaciones v2 (network-map.tsx rehecho): carriles dinámicos por segmento presentes (Perímetro/Núcleo/Identidad/Cloud/Industrial) con etiquetas y separadores; nodos CLICABLES con panel de detalle (id, IP, segmento, criticidad 1-5, vulnerabilidades y controles REALES del escenario); cadena de ataque acumulada (éxitos RED encadenados, punteada); objetivos previstos de la fase (misma regla que el motor: DMZ en RECON/ARMADO, criticidad>=4 en OBJETIVO) con anillo ámbar punteado; haces con gradiente, paquetes SMIL, impacto animado; contadores (activos/comprometidos/endurecidos); leyenda depurada.
+- Animaciones profesionales: ELIMINADOS efectos "cutres" (title-sheen, winner-shine, score-flash, cursor-glow, anim-blink duro); nuevas utilidades pulse-dot (latido suave) y svg-pulse-soft (pulso contenido en mapa); hero con UNA timeline GSAP orquestada (chars SplitType → eyebrow → sub → CTAs → emblema → franja stats) con fromTo explícito (fix: wrappers con opacity inline necesitaban fromTo, no from); marquee más limpio; reduced-motion actualizado.
+- Verificación en caliente (Agent Browser): hero completo tras fix (emblem/stats opacity 1); autopiloto ACTIVADO desde UI → arrancó OPERACIÓN CENTINELA solo en ~8s; encadenó CENTINELA → HORIZONTE → ÁBACO… (9→15 campañas y conocimiento 42→82 durante la verificación, HYDRA Nv8 con 599 XP y 1 trofeo); mapa v2 con carriles y panel de nodo (CDN/Edge: Rate limiting genérico / Anti-DDoS); ficha HYDRA con actividad real; ⌘K OK; móvil 390px sin h-scroll y menú hamburguesa OK; consola sin errores; eslint 0 problemas en ficheros tocados; tsc sin errores nuevos (engine/llm/agent-avatar preexistentes).
+
+Stage Summary:
+- La web vive sola: con "Operación continua" activada, el motor encadena campañas reales (LLM/determinista) y la evolución corre en segundo plano — verificado con +6 campañas y +40 conocimientos en una sesión.
+- Visibilidad total de agentes: quién actúa, qué técnica usa, sobre qué nodo, con qué resultado e impacto, y su historial/rendimiento agregado por fase — todo desde la BD, nada fingido.
+- Código en sub-partes mantenibles (layout/, hook de estado, page fino) y lenguaje de motion unificado y sobrio.
+- Ficheros clave: src/lib/sim/autopilot.ts, src/app/api/autopilot/route.ts, src/app/api/agents/[key]/activity/route.ts, src/hooks/use-arena-state.ts, src/components/arena/layout/* (nuevos), src/app/page.tsx, {network-map,arena-live,agent-detail,control-center,hero,chrome,agent-avatar,analytics,history-panel}.tsx, globals.css, api-types.ts, api/state/route.ts.
+- Capturas: download/round7-hero2.png, round7-mando.png, round7-arena-live.png, round7-map.png, round7-node-detail.png, round7-agent-activity.png, round7-mobile-menu.png, round7-palette.png.

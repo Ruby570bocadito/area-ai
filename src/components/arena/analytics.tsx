@@ -433,13 +433,13 @@ export function Analytics({
         <div className="grid gap-5 md:grid-cols-2">
           <div>
             <p className="mb-2.5 flex items-center gap-1.5 font-mono-tight text-[10px] font-bold uppercase tracking-[0.2em] text-[#f98ca0]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#f4536e] anim-blink" /> Equipo RED
+              <span className="h-1.5 w-1.5 rounded-full bg-[#f4536e] pulse-dot" /> Equipo RED
             </p>
             <KnowledgeEffectiveness items={knowledge.red} team="RED" />
           </div>
           <div>
             <p className="mb-2.5 flex items-center gap-1.5 font-mono-tight text-[10px] font-bold uppercase tracking-[0.2em] text-[#8adcf7]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#41c0ef] anim-blink" /> Equipo BLUE
+              <span className="h-1.5 w-1.5 rounded-full bg-[#41c0ef] pulse-dot" /> Equipo BLUE
             </p>
             <KnowledgeEffectiveness items={knowledge.blue} team="BLUE" />
           </div>

@@ -113,6 +113,7 @@ export interface KnowledgeDTO {
 export interface StateResponse {
   ok: boolean
   provider: string
+  autopilot: boolean
   agents: AgentDTO[]
   scenarios: ScenarioDTO[]
   campaigns: CampaignListItemDTO[]

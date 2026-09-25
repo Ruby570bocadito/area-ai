@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import NumberFlow from '@number-flow/react'
-import { Building2, Crown, Download, Swords, ShieldCheck, Trophy } from 'lucide-react'
+import { Building2, Crown, Download, Swords, ShieldCheck, Trophy, Target } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { AgentDTO, CampaignSummaryDTO, EventDTO, InfraNodeDTO } from '@/lib/api-types'
 import { AgentCard } from './agent-avatar'
@@ -10,6 +10,78 @@ import { EventFeed } from './event-feed'
 import { NetworkMap } from './network-map'
 
 const PHASES = ['RECON', 'ARMADO', 'INTRUSION', 'ESCALADA', 'LATERAL', 'OBJETIVO'] as const
+
+const RESULT_BADGE: Record<string, { label: string; cls: string }> = {
+  EXITO: { label: 'ÉXITO', cls: 'border-[#f4536e]/40 bg-[#f4536e]/[0.1] text-[#f98ca0]' },
+  PARCIAL: { label: 'PARCIAL', cls: 'border-[#e8b64c]/40 bg-[#e8b64c]/[0.1] text-[#f0cd85]' },
+  FALLO: { label: 'FALLO', cls: 'border-white/15 bg-white/[0.06] text-white/60' },
+  BLOQUEADO: { label: 'BLOQUEADO', cls: 'border-[#41c0ef]/40 bg-[#41c0ef]/[0.1] text-[#8adcf7]' },
+  DETECTADO: { label: 'DETECTADO', cls: 'border-[#4ad6a5]/40 bg-[#4ad6a5]/[0.1] text-[#7fe8c4]' },
+  CONTENIDO: { label: 'CONTENIDO', cls: 'border-[#a78bfa]/40 bg-[#a78bfa]/[0.1] text-[#cbb8f8]' },
+  IGNORADO: { label: 'IGNORADO', cls: 'border-[#e8b64c]/40 bg-[#e8b64c]/[0.1] text-[#f0cd85]' },
+}
+
+// Tarjeta del operador que está resolviendo el turno ahora mismo.
+function TurnOperator({
+  team,
+  agent,
+  event,
+}: {
+  team: 'red' | 'blue'
+  agent?: { codename: string; role: string; level: number }
+  event?: { action: string; detail: string; result: string | null; targetNode: string | null; impact: number }
+}) {
+  const accent = team === 'red' ? '#f4536e' : '#41c0ef'
+  const soft = team === 'red' ? '#f98ca0' : '#8adcf7'
+  const badge = event?.result ? RESULT_BADGE[event.result] : null
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      className="panel relative overflow-hidden rounded-xl p-3.5"
+      style={{ borderColor: `${accent}44` }}
+    >
+      <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: `linear-gradient(180deg, ${accent}, transparent)` }} />
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2.5">
+          {agent ? (
+            <>
+              <span className="font-mono-tight truncate text-[11.5px] font-bold tracking-wide" style={{ color: soft }}>
+                {agent.codename}
+              </span>
+              <span className="hidden truncate text-[10.5px] text-muted-foreground sm:inline">{agent.role}</span>
+            </>
+          ) : (
+            <span className="font-mono-tight text-[11px] text-muted-foreground">
+              {team === 'red' ? 'RED sin acciones aún' : 'BLUE sin acciones aún'}
+            </span>
+          )}
+        </div>
+        {badge && (
+          <span className={cn('shrink-0 rounded border px-1.5 py-px font-mono-tight text-[9px] font-bold', badge.cls)}>
+            {badge.label}
+            {event && event.impact > 0 && ` +${event.impact}`}
+          </span>
+        )}
+      </div>
+      {event && (
+        <>
+          <p className="mt-1.5 flex items-center gap-1.5 text-[12.5px] font-semibold leading-snug text-foreground">
+            <Target className="h-3 w-3 shrink-0" style={{ color: accent }} />
+            {event.action}
+            {event.targetNode && (
+              <span className="ml-1 rounded bg-white/[0.06] px-1.5 py-px font-mono-tight text-[9px] font-normal text-muted-foreground">
+                {event.targetNode}
+              </span>
+            )}
+          </p>
+          <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-muted-foreground">{event.detail}</p>
+        </>
+      )}
+    </motion.div>
+  )
+}
 
 function ProgressBar({
   value,
@@ -119,13 +191,13 @@ export function ArenaLive({
         <div className="relative z-10 flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2.5">
-              <Swords className={cn('h-4 w-4', running ? 'text-[#e8b64c] anim-blink' : 'text-muted-foreground')} />
+              <Swords className={cn('h-4 w-4', running ? 'text-[#e8b64c] pulse-dot' : 'text-muted-foreground')} />
               <h3 className="font-mono-tight text-base font-bold tracking-[0.12em] text-foreground sm:text-lg">
                 {campaign.scenario.codename}
               </h3>
               {running ? (
                 <span className="flex items-center gap-1.5 rounded-full border border-[#e8b64c]/45 bg-[#e8b64c]/[0.08] px-2.5 py-0.5 font-mono-tight text-[10px] font-bold text-[#f0cd85]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#e8b64c] anim-blink" /> EN VIVO
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#e8b64c] pulse-dot" /> EN VIVO
                 </span>
               ) : (
                 <span className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-0.5 font-mono-tight text-[10px] font-bold text-muted-foreground">
@@ -214,6 +286,30 @@ export function ArenaLive({
           </div>
         )}
       </div>
+
+      {/* Operadores en turno — qué agente está haciendo qué ahora mismo */}
+      {running && events.length > 0 && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <TurnOperator
+            team="red"
+            agent={agents.find((a) => a.key === lastRed?.agentKey) ?? undefined}
+            event={
+              lastRed
+                ? { action: lastRed.action, detail: lastRed.detail, result: lastRed.result, targetNode: lastRed.targetNode, impact: lastRed.impact }
+                : undefined
+            }
+          />
+          <TurnOperator
+            team="blue"
+            agent={agents.find((a) => a.key === lastBlue?.agentKey) ?? undefined}
+            event={
+              lastBlue
+                ? { action: lastBlue.action, detail: lastBlue.detail, result: lastBlue.result, targetNode: lastBlue.targetNode, impact: lastBlue.impact }
+                : undefined
+            }
+          />
+        </div>
+      )}
 
       {/* Zona de batalla VS */}
       <div className="grid gap-4 lg:grid-cols-[230px_1fr_230px]">
@@ -309,7 +405,7 @@ export function ArenaLive({
       {/* Mapa + Feed */}
       <div className="grid gap-4 xl:grid-cols-2">
         {infraNodes.length > 0 ? (
-          <NetworkMap nodes={infraNodes} events={events} running={running} />
+          <NetworkMap nodes={infraNodes} events={events} running={running} phase={campaign.phase} />
         ) : (
           <div className="panel rounded-xl p-6 text-sm text-muted-foreground">Sin mapa disponible.</div>
         )}
@@ -322,7 +418,7 @@ export function ArenaLive({
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           className={cn(
-            'panel-raised winner-shine relative overflow-hidden rounded-2xl p-5',
+            'panel-raised relative overflow-hidden rounded-2xl p-5',
             winner === 'RED' ? 'active-red' : winner === 'BLUE' ? 'active-blue' : 'active-amber'
           )}
         >

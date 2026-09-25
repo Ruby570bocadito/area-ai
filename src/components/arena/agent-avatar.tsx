@@ -147,7 +147,7 @@ export function AgentCard({
             isRed ? 'bg-[#f4536e]/15 text-[#f98ca0]' : 'bg-[#41c0ef]/15 text-[#8adcf7]'
           )}
         >
-          <span className={cn('h-1.5 w-1.5 rounded-full anim-blink', isRed ? 'bg-[#f4536e]' : 'bg-[#41c0ef]')} />
+          <span className={cn('h-1.5 w-1.5 rounded-full pulse-dot', isRed ? 'bg-[#f4536e]' : 'bg-[#41c0ef]')} />
           Actuando
         </span>
       )}

@@ -1,0 +1,583 @@
+     1→import { db } from '@/lib/db'
+     2→import { llmJson } from './llm'
+     3→import { ensureSeed } from './seed'
+     4→import { RED_AGENTS, BLUE_AGENTS } from './roster'
+     5→import {
+     6→  PHASE_ORDER,
+     7→  PHASE_LABEL,
+     8→  type Phase,
+     9→  type EventDraft,
+    10→  type LessonDraft,
+    11→  type RedDecision,
+    12→  type BlueDecision,
+    13→  type KnowledgeRef,
+    14→  type Infrastructure,
+    15→  type InfraNode,
+    16→} from './types'
+    17→
+    18→const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+    19→const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))
+    20→const rand = (arr: unknown[]) => arr[Math.floor(Math.random() * arr.length)]
+    21→
+    22→const g = globalThis as unknown as { __aegisLLMAlive?: boolean | null }
+    23→
+    24→/** Mapa agentKey → fases en las que toma la iniciativa (definido en el roster) */
+    25→const AGENT_PHASES = new Map<string, Phase[]>(
+    26→  [...RED_AGENTS, ...BLUE_AGENTS].map((a) => [a.key, a.phases])
+    27→)
+    28→
+    29→/** Elige el agente de la fase, rotando entre los que comparten fase para que todos participen */
+    30→function pickAgentForPhase<T extends { key: string }>(agents: T[], phase: Phase, round: number): T {
+    31→  const matches = agents.filter((a) => (AGENT_PHASES.get(a.key) ?? []).includes(phase))
+    32→  if (matches.length === 0) return agents[0]
+    33→  return matches[(round - 1) % matches.length]
+    34→}
+    35→
+    36→// ─────────────────────────────────────────────────────────────
+    37→// Arranque de campaña
+    38→// ─────────────────────────────────────────────────────────────
+    39→
+    40→export async function startCampaign(scenarioId?: string) {
+    41→  await ensureSeed()
+    42→
+    43→  const running = await db.campaign.findFirst({ where: { status: 'RUNNING' } })
+    44→  if (running) {
+    45→    const err = new Error('Ya existe una campaña en curso') as Error & { code?: string }
+    46→    err.code = 'CAMPAIGN_RUNNING'
+    47→    throw err
+    48→  }
+    49→
+    50→  const scenarios = await db.scenario.findMany()
+    51→  if (scenarios.length === 0) throw new Error('No hay escenarios disponibles')
+    52→  const scenario = scenarioId
+    53→    ? scenarios.find((s) => s.id === scenarioId) ?? rand(scenarios)
+    54→    : rand(scenarios)
+    55→
+    56→  const campaign = await db.campaign.create({
+    57→    data: {
+    58→      scenarioId: scenario.id,
+    59→      maxRounds: PHASE_ORDER.length,
+    60→      status: 'RUNNING',
+    61→      phase: 'RECON',
+    62→    },
+    63→  })
+    64→
+    65→  // Lanzar el bucle en segundo plano (no bloquea la respuesta HTTP)
+    66→  void runCampaign(campaign.id).catch(async (err) => {
+    67→    console.error('[engine] error fatal de campaña:', err)
+    68→    try {
+    69→      await db.campaign.update({ where: { id: campaign.id }, data: { status: 'ABORTED', endedAt: new Date() } })
+    70→    } catch { /* noop */ }
+    71→  })
+    72→
+    73→  return campaign
+    74→}
+    75→
+    76→// ─────────────────────────────────────────────────────────────
+    77→// Memoria institucional (conocimiento) por equipo
+    78→// ─────────────────────────────────────────────────────────────
+    79→
+    80→function knowledgeScore(k: { confidence: number; timesUsed: number; timesWorked: number }): number {
+    81→  const ratio = k.timesUsed > 0 ? k.timesWorked / k.timesUsed : 0.5
+    82→  return k.confidence * 0.6 + ratio * 0.3 + Math.min(1, k.timesUsed / 10) * 0.1
+    83→}
+    84→
+    85→async function loadMemory(team: 'RED' | 'BLUE'): Promise<KnowledgeRef[]> {
+    86→  const items = await db.knowledge.findMany({ where: { team } })
+    87→  items.sort((a, b) => knowledgeScore(b) - knowledgeScore(a))
+    88→  return items.slice(0, 8).map((k) => ({
+    89→    id: k.id,
+    90→    team: k.team,
+    91→    category: k.category,
+    92→    title: k.title,
+    93→    content: k.content,
+    94→    tags: k.tags,
+    95→    confidence: k.confidence,
+    96→    timesUsed: k.timesUsed,
+    97→    timesWorked: k.timesWorked,
+    98→  }))
+    99→}
+   100→
+   101→const PHASE_TAGS: Record<Phase, string[]> = {
+   102→  RECON: ['recon', 'osint', 'deteccion', 'visibilidad', 'siem'],
+   103→  ARMADO: ['malware', 'weaponizacion', 'hardening', 'parcheo', 'planificacion'],
+   104→  INTRUSION: ['intrusion', 'explotacion', 'perimetro', 'mfa', 'waf', 'phishing'],
+   105→  ESCALADA: ['escalada', 'credenciales', 'privilegios', 'pam', 'laps'],
+   106→  LATERAL: ['lateral', 'segmentacion', 'ad', 'pivoting', 'ndr'],
+   107→  OBJETIVO: ['exfiltracion', 'ransomware', 'dlp', 'backup', 'contencion', 'c2'],
+   108→}
+   109→
+   110→function pickPhaseKnowledge(mem: KnowledgeRef[], phase: Phase, n = 3): KnowledgeRef[] {
+   111→  const scored = mem.map((k) => {
+   112→    const tags = k.tags.toLowerCase().split(',').map((t) => t.trim())
+   113→    const overlap = tags.filter((t) => PHASE_TAGS[phase].some((p) => t.includes(p) || p.includes(t))).length
+   114→    return { k, s: overlap * 2 + knowledgeScore(k) }
+   115→  })
+   116→  scored.sort((a, b) => b.s - a.s)
+   117→  return scored.slice(0, n).map((x) => x.k)
+   118→}
+   119→
+   120→// ─────────────────────────────────────────────────────────────
+   121→// Bucle principal de campaña
+   122→// ─────────────────────────────────────────────────────────────
+   123→
+   124→async function runCampaign(campaignId: string) {
+   125→  const campaign = await db.campaign.findUnique({ where: { id: campaignId }, include: { scenario: true } })
+   126→  if (!campaign) return
+   127→
+   128→  const scenario = campaign.scenario
+   129→  const infra = JSON.parse(scenario.infrastructure) as Infrastructure
+   130→  const nodes: InfraNode[] = infra.nodes
+   131→  const redAgents = await db.agent.findMany({ where: { team: 'RED' } })
+   132→  const blueAgents = await db.agent.findMany({ where: { team: 'BLUE' } })
+   133→
+   134→  let seq = 0
+   135→  let engineMode = 'LLM'
+   136→
+   137→  const writeEvent = async (draft: EventDraft) => {
+   138→    await db.campaignEvent.create({
+   139→      data: {
+   140→        campaignId,
+   141→        seq: seq++,
+   142→        round: draft.round,
+   143→        phase: draft.phase,
+   144→        team: draft.team,
+   145→        agentKey: draft.agentKey,
+   146→        agentCodename: draft.agentCodename,
+   147→        action: draft.action,
+   148→        detail: draft.detail,
+   149→        result: draft.result,
+   150→        impact: draft.impact ?? 0,
+   151→        severity: draft.severity ?? 'INFO',
+   152→        targetNode: draft.targetNode,
+   153→      },
+   154→    })
+   155→  }
+   156→
+   157→  // ── Sonda de disponibilidad LLM (evita esperas largas si no hay LLM)
+   158→  const probe = await llmJson<{ ok: boolean }>('Responde solo con JSON.', 'Confirma disponibilidad devolviendo {"ok": true}', 12000)
+   159→  const llmAlive = probe?.ok === true
+   160→  g.__aegisLLMAlive = llmAlive
+   161→  if (!llmAlive) engineMode = 'SIM'
+   162→
+   163→  await db.campaign.update({ where: { id: campaignId }, data: { engineMode } })
+   164→
+   165→  await writeEvent({
+   166→    round: 0,
+   167→    phase: 'RECON',
+   168→    team: 'SYSTEM',
+   169→    action: `Campaña ${scenario.codename} iniciada`,
+   170→    detail: `Escenario: ${scenario.company} (${scenario.industry}, dificultad ${scenario.difficulty}/5). Objetivo RED: ${scenario.redObjective} Objetivo BLUE: ${scenario.blueObjective} Motor: ${engineMode === 'LLM' ? 'LLM activo' : 'simulación determinista (LLM no disponible)'}.`,
+   171→    severity: 'INFO',
+   172→  })
+   173→
+   174→  let redProgress = 0
+   175→  let blueProgress = 0
+   176→  let redScore = 0
+   177→  let blueScore = 0
+   178→  const xpDelta = new Map<string, number>()
+   179→  const knowledgeUsed = new Map<string, { used: number; worked: number }>()
+   180→
+   181→  const trackKnowledge = (ids: string[], worked: boolean) => {
+   182→    for (const id of ids) {
+   183→      const cur = knowledgeUsed.get(id) ?? { used: 0, worked: 0 }
+   184→      cur.used += 1
+   185→      if (worked) cur.worked += 1
+   186→      knowledgeUsed.set(id, cur)
+   187→    }
+   188→  }
+   189→
+   190→  const recentEvents = async () => {
+   191→    const evs = await db.campaignEvent.findMany({
+   192→      where: { campaignId, team: { not: 'SYSTEM' } },
+   193→      orderBy: { seq: 'desc' },
+   194→      take: 6,
+   195→    })
+   196→    return evs.reverse().map((e) => `[R${e.round}/${e.phase}] ${e.team} ${e.agentCodename ?? ''}: ${e.action} → ${e.result ?? '—'} (impacto ${e.impact}). ${e.detail}`)
+   197→  }
+   198→
+   199→  const maxRounds = campaign.maxRounds
+   200→  for (let round = 1; round <= maxRounds; round++) {
+   201→    const phase = PHASE_ORDER[round - 1]
+   202→    const redAgent = pickAgentForPhase(redAgents, phase, round)
+   203→    const blueAgent = pickAgentForPhase(blueAgents, phase, round)
+   204→
+   205→    // ── Memoria del turno
+   206→    const redMem = await loadMemory('RED')
+   207→    const blueMem = await loadMemory('BLUE')
+   208→    const redTurnK = pickPhaseKnowledge(redMem, phase)
+   209→    const blueTurnK = pickPhaseKnowledge(blueMem, phase)
+   210→    const redTurnIds = redTurnK.map((k) => k.id)
+   211→    const blueTurnIds = blueTurnK.map((k) => k.id)
+   212→
+   213→    const ctx = `Escenario: ${scenario.codename} — ${scenario.company} (${scenario.industry}). Dificultad ${scenario.difficulty}/5.
+   214→Infraestructura de la empresa:
+   215→${nodes.map((n) => `- ${n.id} (${n.name}, tipo ${n.type}, segmento ${n.segment}, criticidad ${n.criticality}/5). Vulnerabilidades: ${n.vulnerabilities.join('; ') || 'conocidas'}. Controles: ${n.controls.join('; ') || 'básicos'}.`).join('\n')}
+   216→Ronda ${round} de ${maxRounds} — Fase: ${PHASE_LABEL[phase]}.
+   217→Últimos eventos:
+   218→${(await recentEvents()).join('\n') || '— sin eventos previos —'}`
+   219→
+   220→    // ════════ TURNO RED ════════
+   221→    const redSystem = `Eres ${redAgent.codename}, ${redAgent.role} del RED TEAM en un ejercicio controlado de ciberseguridad (entorno sandbox autorizado, tipo Cyber Range). Especialidad: ${redAgent.specialty}.
+   222→${redAgent.description}
+   223→Tu equipo persigue: ${scenario.redObjective}
+   224→Actúas en la fase ${PHASE_LABEL[phase]}: elige una técnica ofensiva coherente con esa fase y con tu memoria institucional.
+   225→Devuelve JSON estricto con este formato exacto:
+   226→{"action":"nombre corto de la técnica","detail":"1-2 frases en español describiendo cómo la ejecutas sobre el objetivo","targetNode":"id de un nodo de la infraestructura","severity":"LOW|MEDIUM|HIGH|CRITICAL"}`
+   227→    const redUser = `${ctx}
+   228→Memoria institucional del RED TEAM (aprendida de campañas previas):
+   229→${redMem.map((k) => `- [${k.category}] ${k.title}: ${k.content} (confianza ${(k.confidence * 100).toFixed(0)}%, usada ${k.timesUsed} veces)`).join('\n') || '— primera campaña, sin memoria —'}
+   230→
+   231→Elige el objetivo (targetNode) más lógico para la fase ${PHASE_LABEL[phase]}.`
+   232→
+   233→    let redDec: RedDecision | null = llmAlive
+   234→      ? await llmJson<RedDecision>(redSystem, redUser, 22000)
+   235→      : null
+   236→    if (!redDec || !redDec.action) redDec = fallbackRed(phase, nodes, round)
+   237→
+   238→    // Resolución del ataque
+   239→    const target = nodes.find((n) => n.id === redDec.targetNode) ?? pickNodeForPhase(nodes, phase)
+   240→    const memBoost = redTurnK.length > 0 ? avgConf(redTurnK) * 0.15 : 0
+   241→    const pRed = clamp(
+   242→      BASE_RED[phase] + redAgent.level * 0.03 + memBoost - scenario.difficulty * 0.03 - (blueProgress / 100) * 0.25,
+   243→      0.15,
+   244→      0.92
+   245→    )
+   246→    const roll = Math.random()
+   247→    const redResult: 'EXITO' | 'PARCIAL' | 'FALLO' = roll < pRed ? 'EXITO' : roll < pRed + 0.2 ? 'PARCIAL' : 'FALLO'
+   248→    const sevImpact: Record<string, number> = { LOW: 4, MEDIUM: 7, HIGH: 11, CRITICAL: 16 }
+   249→    let impact = 0
+   250→    if (redResult === 'EXITO') impact = Math.round((sevImpact[redDec.severity] ?? 7) * (1 - blueProgress / 160))
+   251→    else if (redResult === 'PARCIAL') impact = Math.round((sevImpact[redDec.severity] ?? 7) * 0.45)
+   252→    redProgress = clamp(redProgress + impact, 0, 100)
+   253→    redScore += impact + (redResult === 'FALLO' ? 1 : 0)
+   254→    trackKnowledge(redTurnIds, redResult !== 'FALLO')
+   255→    xpDelta.set(redAgent.key, (xpDelta.get(redAgent.key) ?? 0) + 8 + Math.round(impact / 2))
+   256→
+   257→    await writeEvent({
+   258→      round,
+   259→      phase,
+   260→      team: 'RED',
+   261→      agentKey: redAgent.key,
+   262→      agentCodename: redAgent.codename,
+   263→      action: redDec.action,
+   264→      detail: redDec.detail,
+   265→      result: redResult,
+   266→      impact,
+   267→      severity: redDec.severity ?? 'MEDIUM',
+   268→      targetNode: target.id,
+   269→    })
+   270→    await sleep(650)
+   271→
+   272→    // ════════ TURNO BLUE ════════
+   273→    const blueSystem = `Eres ${blueAgent.codename}, ${blueAgent.role} del BLUE TEAM (defensa) en un ejercicio controlado de ciberseguridad (entorno sandbox autorizado, tipo Cyber Range). Especialidad: ${blueAgent.specialty}.
+   274→${blueAgent.description}
+   275→Tu equipo debe lograr: ${scenario.blueObjective}
+   276→El RED TEAM acaba de actuar en la fase ${PHASE_LABEL[phase]}. Decide tu acción defensiva: detectar, bloquear, contener o endurecer.
+   277→Devuelve JSON estricto con este formato exacto:
+   278→{"action":"nombre corto de la acción defensiva","detail":"1-2 frases en español describiendo qué haces y con qué herramienta/regla","verdict":"BLOQUEADO|DETECTADO|CONTENIDO|IGNORADO"}`
+   279→    const blueUser = `${ctx}
+   280→Memoria institucional del BLUE TEAM (aprendida de campañas previas):
+   281→${blueMem.map((k) => `- [${k.category}] ${k.title}: ${k.content} (confianza ${(k.confidence * 100).toFixed(0)}%, usada ${k.timesUsed} veces)`).join('\n') || '— primera campaña, sin memoria —'}
+   282→
+   283→Última acción del RED TEAM: "${redDec.action}" sobre ${target.id} (${target.name}) — resultado para el rojo: ${redResult}.`
+   284→
+   285→    let blueDec: BlueDecision | null = llmAlive
+   286→      ? await llmJson<BlueDecision>(blueSystem, blueUser, 22000)
+   287→      : null
+   288→    if (!blueDec || !blueDec.action) blueDec = fallbackBlue(phase, target, redResult, round)
+   289→
+   290→    // Resolución de la defensa
+   291→    const pBlue = clamp(
+   292→      0.5 + blueAgent.level * 0.03 + (blueTurnK.length > 0 ? avgConf(blueTurnK) * 0.15 : 0) - (redDec.severity === 'CRITICAL' ? 0.12 : 0) + (blueProgress / 100) * 0.1,
+   293→      0.15,
+   294→      0.9
+   295→    )
+   296→    const defVerdict = blueDec.verdict ?? (Math.random() < pBlue ? (phase === 'RECON' ? 'DETECTADO' : 'BLOQUEADO') : 'IGNORADO')
+   297→    const defGain: Record<string, number> = { BLOQUEADO: 10, DETECTADO: 6, CONTENIDO: 4, IGNORADO: 1 }
+   298→    let defImpact = defGain[defVerdict] ?? 1
+   299→    if (defVerdict === 'IGNORADO' && redResult === 'FALLO') defImpact = 2
+   300→    blueProgress = clamp(blueProgress + defImpact + 2, 0, 100) // +2 endurecimiento pasivo
+   301→    blueScore += defImpact * 2
+   302→    trackKnowledge(blueTurnIds, defVerdict === 'BLOQUEADO' || defVerdict === 'DETECTADO')
+   303→    xpDelta.set(blueAgent.key, (xpDelta.get(blueAgent.key) ?? 0) + 6 + defImpact)
+   304→
+   305→    await writeEvent({
+   306→      round,
+   307→      phase,
+   308→      team: 'BLUE',
+   309→      agentKey: blueAgent.key,
+   310→      agentCodename: blueAgent.codename,
+   311→      action: blueDec.action,
+   312→      detail: blueDec.detail,
+   313→      result: defVerdict,
+   314→      impact: defImpact,
+   315→      severity: defVerdict === 'BLOQUEADO' ? 'LOW' : defVerdict === 'IGNORADO' ? 'HIGH' : 'MEDIUM',
+   316→      targetNode: target.id,
+   317→    })
+   318→    await sleep(650)
+   319→
+   320→    await db.campaign.update({
+   321→      where: { id: campaignId },
+   322→      data: { round, phase, redProgress, blueProgress, redScore, blueScore },
+   323→    })
+   324→  }
+   325→
+   326→  // ─────────────────────────────────────────────────────────
+   327→  // Cierre: ganador, narrativa, lecciones y evolución
+   328→  // ─────────────────────────────────────────────────────────
+   329→  const winner: 'RED' | 'BLUE' | 'DRAW' =
+   330→    redProgress >= 70 && redProgress > blueProgress ? 'RED' : redProgress < 45 ? 'BLUE' : 'DRAW'
+   331→
+   332→  const allEvents = await db.campaignEvent.findMany({ where: { campaignId }, orderBy: { seq: 'asc' } })
+   333→  const compact = allEvents
+   334→    .filter((e) => e.team !== 'SYSTEM')
+   335→    .map((e) => `${e.team} ${e.agentCodename}: ${e.action} sobre ${e.targetNode ?? '—'} → ${e.result} (impacto ${e.impact}). ${e.detail}`)
+   336→
+   337→  const lessonsSchema = `Devuelve JSON estricto:
+   338→{"narrative":"resumen cinematográfico de 3-4 frases de la campaña en español",
+   339→ "red":[{"category":"TACTICA|TECNICA|LECCION|VULNERABILIDAD","title":"título corto","content":"2-3 frases del aprendizaje concreto y accionable para futuras campañas","tags":["tag1","tag2"],"confidence":0.0-1.0}],
+   340→ "blue":[...igual, aprendizajes defensivos...]}`
+   341→  const lessonsUser = `Campaña ${scenario.codename} sobre ${scenario.company}. Ganador: ${winner}. Progreso RED ${redProgress}/100, postura BLUE ${blueProgress}/100.
+   342→Objetivo RED: ${scenario.redObjective}
+   343→Objetivo BLUE: ${scenario.blueObjective}
+   344→Eventos:
+   345→${compact.join('\n')}
+   346→
+   347→Extrae 2 lecciones por equipo: qué funcionó, qué falló y cómo aplicarlo la próxima campaña. Sé específico (nombres de técnicas, controles, nodos).`
+   348→
+   349→  type LessonsOut = { narrative?: string; red?: LessonDraft[]; blue?: LessonDraft[] }
+   350→  let lessons: LessonsOut | null = llmAlive ? await llmJson<LessonsOut>(lessonsSchema, lessonsUser, 30000) : null
+   351→  if (!lessons || !Array.isArray(lessons.red) || !Array.isArray(lessons.blue)) {
+   352→    lessons = fallbackLessons(winner, redProgress, blueProgress, scenario.redObjective, scenario.blueObjective)
+   353→  }
+   354→
+   355→  const narrative =
+   356→    (lessons.narrative ?? '').slice(0, 1200) ||
+   357→    `Campaña finalizada. ${winner === 'RED' ? 'El RED TEAM' : winner === 'BLUE' ? 'El BLUE TEAM' : 'Ninguno de los equipos'} prevaleció (RED ${redProgress}/100 vs BLUE ${blueProgress}/100). Ambos equipos archivan el aprendizaje para la siguiente campaña.`
+   358→
+   359→  // Guardar lecciones
+   360→  const saveLessons = async (team: 'RED' | 'BLUE', arr: LessonDraft[]) => {
+   361→    for (const l of arr.slice(0, 3)) {
+   362→      if (!l?.title || !l?.content) continue
+   363→      await db.knowledge.create({
+   364→        data: {
+   365→          team,
+   366→          campaignId,
+   367→          category: l.category ?? 'LECCION',
+   368→          title: String(l.title).slice(0, 140),
+   369→          content: String(l.content).slice(0, 900),
+   370→          tags: Array.isArray(l.tags) ? l.tags.join(',').slice(0, 200) : 'general',
+   371→          confidence: clamp(Number(l.confidence) || 0.55, 0.2, 0.95),
+   372→        },
+   373→      })
+   374→    }
+   375→  }
+   376→  await saveLessons('RED', lessons.red ?? [])
+   377→  await saveLessons('BLUE', lessons.blue ?? [])
+   378→
+   379→  // Actualizar estadísticas de conocimiento usado (bucle de evolución)
+   380→  for (const [id, u] of knowledgeUsed) {
+   381→    const k = await db.knowledge.findUnique({ where: { id } })
+   382→    if (!k) continue
+   383→    const used = k.timesUsed + u.used
+   384→    const worked = k.timesWorked + u.worked
+   385→    const ratio = worked / Math.max(1, used)
+   386→    const confidence = clamp(0.3 + ratio * 0.6 + Math.min(1, used / 10) * 0.1, 0.2, 0.95)
+   387→    await db.knowledge.update({ where: { id }, data: { timesUsed: used, timesWorked: worked, confidence } })
+   388→  }
+   389→
+   390→  // Actualizar agentes (XP, nivel, victorias)
+   391→  const allAgents = await db.agent.findMany()
+   392→  for (const a of allAgents) {
+   393→    const xp = a.xp + (xpDelta.get(a.key) ?? 0)
+   394→    const isWinner = (winner === 'RED' && a.team === 'RED') || (winner === 'BLUE' && a.team === 'BLUE')
+   395→    await db.agent.update({
+   396→      where: { id: a.id },
+   397→      data: {
+   398→        xp,
+   399→        level: 1 + Math.floor(xp / 80),
+   400→        campaigns: a.campaigns + 1,
+   401→        victories: a.victories + (isWinner ? 1 : 0),
+   402→      },
+   403→    })
+   404→  }
+   405→
+   406→  await writeEvent({
+   407→    round: maxRounds,
+   408→    phase: 'OBJETIVO',
+   409→    team: 'SYSTEM',
+   410→    action: `Fin de la campaña — victoria: ${winner === 'RED' ? 'RED TEAM' : winner === 'BLUE' ? 'BLUE TEAM' : 'EMPATE'}`,
+   411→    detail: `${narrative} Lecciones archivadas: ${lessons.red?.length ?? 0} del RED, ${lessons.blue?.length ?? 0} del BLUE. Se aplicarán en próximas campañas.`,
+   412→    severity: 'INFO',
+   413→  })
+   414→
+   415→  await db.campaign.update({
+   416→    where: { id: campaignId },
+   417→    data: {
+   418→      status: 'COMPLETED',
+   419→      winner,
+   420→      narrative,
+   421→      redProgress,
+   422→      blueProgress,
+   423→      redScore,
+   424→      blueScore,
+   425→      endedAt: new Date(),
+   426→    },
+   427→  })
+   428→}
+   429→
+   430→// ─────────────────────────────────────────────────────────────
+   431→// Modelo de combate — constantes y utilidades
+   432→// ─────────────────────────────────────────────────────────────
+   433→
+   434→const BASE_RED: Record<Phase, number> = {
+   435→  RECON: 0.8,
+   436→  ARMADO: 0.72,
+   437→  INTRUSION: 0.55,
+   438→  ESCALADA: 0.5,
+   439→  LATERAL: 0.5,
+   440→  OBJETIVO: 0.42,
+   441→}
+   442→
+   443→function avgConf(items: KnowledgeRef[]): number {
+   444→  if (items.length === 0) return 0
+   445→  return items.reduce((s, k) => s + k.confidence, 0) / items.length
+   446→}
+   447→
+   448→function pickNodeForPhase(nodes: InfraNode[], phase: Phase): InfraNode {
+   449→  const pool =
+   450→    phase === 'RECON' || phase === 'ARMADO'
+   451→      ? nodes.filter((n) => n.segment === 'DMZ')
+   452→      : phase === 'OBJETIVO'
+   453→        ? nodes.filter((n) => n.criticality >= 4)
+   454→        : nodes
+   455→  const list = pool.length > 0 ? pool : nodes
+   456→  return rand(list)
+   457→}
+   458→
+   459→// ─────────────────────────────────────────────────────────────
+   460→// Fallbacks deterministas (modo SIM) — siempre en español
+   461→// ─────────────────────────────────────────────────────────────
+   462→
+   463→const RED_FALLBACK: Record<Phase, Array<{ action: string; detail: string; severity: RedDecision['severity'] }>> = {
+   464→  RECON: [
+   465→    { action: 'Enumeración pasiva de superficie', detail: 'Recolecta subdominios, rangos IP y certificados TLS desde fuentes públicas sin contacto directo con la víctima.', severity: 'LOW' },
+   466→    { action: 'Fingerprinting de servicios expuestos', detail: 'Identifica versiones exactas de servicios en la DMZ correlacionando banners y repositorios públicos.', severity: 'LOW' },
+   467→  ],
+   468→  ARMADO: [
+   469→    { action: 'Weaponización de exploit', detail: 'Prepara una carga adaptada a las versiones detectadas y un dominio de señuelo para la campaña.', severity: 'MEDIUM' },
+   470→    { action: 'Preparación de infraestructura C2', detail: 'Despliega servidor de mando y control con dominio rotado y certificado legítimo.', severity: 'MEDIUM' },
+   471→  ],
+   472→  INTRUSION: [
+   473→    { action: 'Explotación del perímetro', detail: 'Explota la vulnerabilidad conocida del servicio expuesto para obtener un shell inicial en la DMZ.', severity: 'HIGH' },
+   474→    { action: 'Phishing dirigido con payload', detail: 'Envía un documento malicioso personalizado a un empleado con acceso privilegiado.', severity: 'HIGH' },
+   475→  ],
+   476→  ESCALADA: [
+   477→    { action: 'Robo de credenciales en memoria', detail: 'Dumpea LSASS y extrae hashes NTLM y tickets Kerberos del host comprometido.', severity: 'HIGH' },
+   478→    { action: 'Abuso de misconfiguration de privilegios', detail: 'Aprovecha delegaciones y grupos legacy para obtener privilegios de administrador.', severity: 'CRITICAL' },
+   479→  ],
+   480→  LATERAL: [
+   481→    { action: 'Movimiento lateral por SMB/WMI', detail: 'Usa credenciales robadas para pivotar hacia el segmento core reutilizando sesiones legítimas.', severity: 'HIGH' },
+   482→    { action: 'Pivoting sobre jump host', detail: 'Compromete el host de salto y reutiliza su sesión confiable para alcanzar la red protegida.', severity: 'CRITICAL' },
+   483→  ],
+   484→  OBJETIVO: [
+   485→    { action: 'Exfiltración por canal cifrado', detail: 'Comprime y exfiltra los datos críticos por HTTPS hacia el C2 fragmentando el tráfico.', severity: 'CRITICAL' },
+   486→    { action: 'Despliegue de ransomware y borrado de rastros', detail: 'Despliega el cifrador en el activo crítico y limpia logs para retrasar la respuesta.', severity: 'CRITICAL' },
+   487→  ],
+   488→}
+   489→
+   490→function fallbackRed(phase: Phase, nodes: InfraNode[], round: number): RedDecision {
+   491→  const t = RED_FALLBACK[phase][round % 2]
+   492→  const node = pickNodeForPhase(nodes, phase)
+   493→  return { action: t.action, detail: t.detail, targetNode: node.id, severity: t.severity }
+   494→}
+   495→
+   496→const BLUE_FALLBACK: Record<Phase, Array<{ action: string; detail: string }>> = {
+   497→  RECON: [
+   498→    { action: 'Correlación de alertas de enumeración', detail: 'Ajusta reglas SIEM para detectar patrones de enumeración DNS y banners inusuales desde ASN externos.' },
+   499→    { action: 'Revisión de superficie expuesta', detail: 'Audita activos expuestos y cierra servicios innecesarios detectados en el inventario.' },
+   500→  ],
+   501→  ARMADO: [
+   502→    { action: 'Threat intelligence y bloqueo de IOCs', detail: 'Actualiza feeds de IOCs y refuerza reglas de correo y proxy ante campañas de weaponización.' },
+   503→    { action: 'Parcheo urgente de activos críticos', detail: 'Prioriza el parcheo de servicios de borde con versiones vulnerables conocidas.' },
+   504→  ],
+   505→  INTRUSION: [
+   506→    { action: 'Bloqueo en WAF e IPS', detail: 'Despliega firmas específicas contra el payload observado y aísla el host afectado para análisis.' },
+   507→    { action: 'Respuesta a incidente inicial', detail: 'Aísla el endpoint comprometido, revoca sesiones y captura memoria para forense.' },
+   508→  ],
+   509→  ESCALADA: [
+   510→    { action: 'Rotación de credenciales privilegiadas', detail: 'Fuerza rotación de contraseñas y tickets Kerberos; activa cuentas honey para detectar abuso.' },
+   511→    { action: 'Endurecimiento de PAM', detail: 'Aplica políticas de least privilege y habilita monitorización intensiva de cuentas administrativas.' },
+   512→  ],
+   513→  LATERAL: [
+   514→    { action: 'Segmentación de emergencia', detail: 'Restringe tráfico east-west con reglas temporales y monitoriza intentos de pivoting.' },
+   515→    { action: 'Threat hunting en el segmento core', detail: 'Rastrea artefactos de movimiento lateral en hosts críticos y verifica integridad de hashes.' },
+   516→  ],
+   517→  OBJETIVO: [
+   518→    { action: 'Contención de exfiltración', detail: 'Bloquea canales salientes sospechosos y verifica integridad de los datos críticos en backups.' },
+   519→    { action: 'Recuperación y endurecimiento final', detail: 'Restaura desde copias inmutables, cierra la vía de acceso y documenta la cadena de ataque.' },
+   520→  ],
+   521→}
+   522→
+   523→function fallbackBlue(phase: Phase, target: InfraNode, redResult: string, round: number): BlueDecision {
+   524→  const t = BLUE_FALLBACK[phase][round % 2]
+   525→  const verdict =
+   526→    redResult === 'FALLO' ? 'BLOQUEADO' : redResult === 'PARCIAL' ? 'DETECTADO' : Math.random() < 0.55 ? 'CONTENIDO' : 'IGNORADO'
+   527→  return { action: t.action, detail: `${t.detail} Foco en ${target.name} (${target.id}).`, verdict }
+   528→}
+   529→
+   530→function fallbackLessons(winner: string, redProgress: number, blueProgress: number, redObj: string, blueObj: string) {
+   531→  return {
+   532→    narrative: `La campaña terminó con ${winner === 'RED' ? 'victoria del RED TEAM' : winner === 'BLUE' ? 'victoria del BLUE TEAM' : 'un empate táctico'} (RED ${redProgress}/100 vs BLUE ${blueProgress}/100). Ambos equipos archivan sus hallazgos y ajustarán sus tácticas en la siguiente campaña.`,
+   533→    red: [
+   534→      {
+   535→        category: 'LECCION',
+   536→        title: 'Ajustar la selección de objetivos por fase',
+   537→        content: `El progreso alcanzado fue ${redProgress}/100. En próximas campañas conviene auditar antes los controles del nodo objetivo (${redObj.slice(0, 60)}…) y escalar solo tras confirmar la ruta lateral.`,
+   538→        tags: ['planificacion', 'objetivos'],
+   539→        confidence: 0.55,
+   540→      },
+   541→      {
+   542→        category: 'TACTICA',
+   543→        title: 'Reducir ruido entre fases',
+   544→        content: 'Las transiciones entre fases generan telemetría. Introducir pausas (dwell time) y reutilizar sesiones legítimas reduce la probabilidad de detección.',
+   545→        tags: ['opsec', 'stealth'],
+   546→        confidence: 0.5,
+   547→      },
+   548→    ],
+   549→    blue: [
+   550→      {
+   551→        category: 'LECCION',
+   552→        title: 'Priorizar visibilidad en el segmento atacado',
+   553→        content: `La postura defensiva terminó en ${blueProgress}/100. Reforzar logging en los nodos de mayor criticidad y correlacionar eventos entre fases habría adelantado la detección.`,
+   554→        tags: ['visibilidad', 'siem'],
+   555→        confidence: 0.55,
+   556→      },
+   557→      {
+   558→        category: 'DEFENSA',
+   559→        title: 'Contención más rápida ante éxito rojo',
+   560→        content: 'Cuando el rojo consigue éxito en una fase, aislar el host afectado y rotar credenciales inmediatamente limita la escalada de la siguiente fase.',
+   561→        tags: ['respuesta', 'contencion'],
+   562→        confidence: 0.5,
+   563→      },
+   564→    ],
+   565→  }
+   566→}
+   567→
+   568→// ─────────────────────────────────────────────────────────────
+   569→// Recuperación de campañas huérfanas (servidor reiniciado)
+   570→// ─────────────────────────────────────────────────────────────
+   571→
+   572→export async function recoverOrphanCampaigns() {
+   573→  const running = await db.campaign.findMany({ where: { status: 'RUNNING' } })
+   574→  const now = Date.now()
+   575→  for (const c of running) {
+   576→    const last = await db.campaignEvent.findFirst({ where: { campaignId: c.id }, orderBy: { seq: 'desc' } })
+   577→    const lastMs = last ? new Date(last.createdAt).getTime() : new Date(c.startedAt).getTime()
+   578→    if (now - lastMs > 120000) {
+   579→      await db.campaign.update({ where: { id: c.id }, data: { status: 'ABORTED', endedAt: new Date() } })
+   580→    }
+   581→  }
+   582→}
+   583→

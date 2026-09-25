@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { ensureSeed } from '@/lib/sim/seed'
 import { recoverOrphanCampaigns } from '@/lib/sim/engine'
+import { getAutopilot, maybeRunAutopilot } from '@/lib/sim/autopilot'
 import { llmProviderName } from '@/lib/sim/llm'
 import type { Infrastructure } from '@/lib/sim/types'
 
@@ -16,6 +17,8 @@ export async function GET() {
   try {
     await ensureSeed()
     await recoverOrphanCampaigns()
+    // Operación continua: si está activa y el motor está ocioso, lanza la siguiente campaña real
+    await maybeRunAutopilot()
 
     const [agents, scenarios, campaigns, activeCampaign, knowledges] = await Promise.all([
       db.agent.findMany({ orderBy: [{ team: 'asc' }, { xp: 'desc' }] }),
@@ -66,6 +69,7 @@ export async function GET() {
     return NextResponse.json({
       ok: true,
       provider: await llmProviderName(),
+      autopilot: await getAutopilot(),
       agents,
       scenarios: scenarios.map((s) => ({ ...s, infrastructure: undefined })),
       campaigns,

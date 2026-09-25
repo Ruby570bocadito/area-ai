@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
-import { Play, Loader2, RadioTower, Building2, Cpu, ShieldAlert, Swords, Check } from 'lucide-react'
+import { Play, Loader2, RadioTower, Building2, Cpu, ShieldAlert, Swords, Check, Infinity as InfinityIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ScenarioDTO } from '@/lib/api-types'
 
@@ -41,12 +41,16 @@ export function ControlCenter({
   running,
   provider,
   disabled,
+  autopilot,
+  onToggleAutopilot,
   onStart,
 }: {
   scenarios: ScenarioDTO[]
   running: boolean
   provider: string
   disabled: boolean
+  autopilot: boolean
+  onToggleAutopilot: (enabled: boolean) => void
   onStart: (scenarioId?: string) => void
 }) {
   const [selected, setSelected] = useState<string | null>(null)
@@ -89,10 +93,57 @@ export function ControlCenter({
               running ? 'status-live' : 'border-emerald-500/40 bg-emerald-500/[0.08] text-emerald-300'
             )}
           >
-            <span className={cn('h-1.5 w-1.5 rounded-full anim-blink', running ? 'bg-[#e8b64c]' : 'bg-emerald-400')} />
+            <span className={cn('h-1.5 w-1.5 rounded-full pulse-dot', running ? 'bg-[#e8b64c]' : 'bg-emerald-400')} />
             {running ? 'CAMPAÑA EN CURSO' : 'SISTEMA LISTO'}
           </span>
         </div>
+      </div>
+
+      {/* Operación continua — campañas reales en segundo plano */}
+      <div
+        className={cn(
+          'relative z-10 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 transition-colors',
+          autopilot ? 'border-[#a78bfa]/35 bg-[#a78bfa]/[0.06]' : 'border-white/[0.07] bg-white/[0.015]'
+        )}
+      >
+        <div className="flex min-w-0 items-center gap-3">
+          <span
+            className={cn(
+              'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border',
+              autopilot ? 'border-[#a78bfa]/40 bg-[#a78bfa]/10 text-[#c4b0f5]' : 'border-white/10 bg-white/[0.03] text-muted-foreground'
+            )}
+          >
+            <InfinityIcon className="h-4 w-4" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[13px] font-semibold text-foreground">Operación continua</p>
+            <p className="text-[11px] leading-snug text-muted-foreground">
+              {autopilot
+                ? 'Activado — el motor encadena campañas reales en segundo plano, con un breve periodo de calma entre ellas.'
+                : 'Actívalo y el motor encadenará campañas reales sin intervención, escenario tras escenario.'}
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={autopilot}
+          aria-label="Operación continua"
+          onClick={() => onToggleAutopilot(!autopilot)}
+          className={cn(
+            'relative h-6.5 w-11 shrink-0 rounded-full border transition-colors',
+            autopilot ? 'border-[#a78bfa]/60 bg-[#a78bfa]/30' : 'border-white/15 bg-white/[0.06]'
+          )}
+        >
+          <motion.span
+            layout
+            transition={{ type: 'spring', stiffness: 500, damping: 32 }}
+            className={cn(
+              'absolute top-1/2 h-4.5 w-4.5 -translate-y-1/2 rounded-full bg-white shadow',
+              autopilot ? 'right-[3px]' : 'left-[3px]'
+            )}
+          />
+        </button>
       </div>
 
       {/* Selector de escenarios */}
@@ -185,7 +236,7 @@ export function ControlCenter({
             </>
           ) : running ? (
             <>
-              <ShieldAlert className="h-4 w-4 anim-blink" /> Campaña en curso
+              <ShieldAlert className="h-4 w-4 pulse-dot" /> Campaña en curso
             </>
           ) : (
             <>
