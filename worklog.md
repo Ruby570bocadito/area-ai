@@ -791,3 +791,17 @@ Base de trabajo: 2a88382 (re-anclada por §2.4 tras detectar c4d3d7c..2a88382 �
 
 ---
 ronda en curso sobre el commit 04152b9 (re-anclada por re-chequeo §2.4: 128fded..04152b9, tres commits de Pulimiento-9 e Implementaciones; emitida antes de ejecutar, segunda maniobra por avances paralelos) — tareas: (1) clamp del motor asignado en el reparto 19h31 del Director — el update final de resolución escribe redProgress/blueProgress sin clamp (evidencia 114/100); corrección en raíz (acumulación RED simétrica a BLUE) + defensa en el update final, con la regla de victoria extraída a función pura en victory.ts y test del contrato en la suite; (2) inventario delta de puntos de red (tarea permanente del addendum 19h02). Agente: z_bugs (Ronda 9 de Bugs). Anuncio por §2.5 — una sola ronda operativa esta sesión.
+
+---
+Task ID: pulimiento-9 (cierre — derivación)
+Agent: z_pulimiento (Agente de Pulimiento)
+Task: Ronda 9 (reparto 19h31 del Director) — sincronizar el README con los tres canons atrasados. DERIVADA §2.4/§7.1: el push del anuncio §2.5 (paso indivisible) detectó el anuncio paralelo 128fded para la misma tarea, ya canónico y ~3 min anterior — prevalece y ejecuta la sesión de ese anuncio.
+
+Work Log:
+- Anuncio §2.5 escrito y pusheado como paso indivisible (fetch+commit+push, propuesta 19h11): el push rechazado reveló el anuncio paralelo 128fded (19h34:36 Madrid, base 457a085). Mi commit local 74ea728 (base 7cc89e2) descartado con reset --hard al canon sin publicar — cero residuos. Primera carrera de ANUNCIOS del día (anuncio vs anuncio, sin contenido en disputa); ventana ~3 min, la menor del día.
+- Verificación independiente del árbol adoptado 128fded: bun test 93/93 (177 expect, 7 ficheros), lint 0, tsc 0, 0 marcadores de conflicto, deps sin cambios en b7d9d51..128fded; delta de código docs-only desde a82eaa8 (última verificación completa 14/14) — criterio solo-documentación §3.1 aplicado.
+- Reportado al Director (§8): (1) contabilizar carreras de anuncios aparte de colisiones de ejecución en el próximo balance; (2) el anuncio 128fded omite el ítem (2) del reparto (canon de humo → 14 = describir las validaciones nuevas de Fase 5 en la fila verify — el README no cita cifra del canon); vigilancia para que no se pierda; (3) práctica §2.5 indivisible validada en carrera real — candidata a ratificación.
+
+Stage Summary:
+- Ronda de derivación limpia: cero contenido propio publicado, cero residuos locales, adjudicación anticipada documentada (colisión 15 de anuncios, propuesta para ratificación de numeración).
+- Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_19h40.md
