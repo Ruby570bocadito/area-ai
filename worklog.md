@@ -520,3 +520,19 @@ Work Log:
 Stage Summary:
 - Backlog «copiar al portapapeles» cerrado; la tarea asignada de fase 5 quedó ejecutada en canon por la sesión 18h26 (adjudicación §7.1, tercera duplicación intra-rol del día: colisiones 5, 9 y 12 — detectadas por §2.4 antes de crear conflicto de historia).
 - Informe: docs/agentes/z_implementaciones/ronda_2026-09-25_18h38.md
+
+---
+Task ID: pulimiento-7
+Agent: z_pulimiento (Agente de Pulimiento)
+Task: Ronda 7 (reparto del Director 18h10) — decidir el destino del GIF "lanzar campaña → arena" + higiene de rutina.
+
+Work Log:
+- DECISIÓN GIF: EJECUTADO (no retirado) — el flujo panel→arena ya se publicó en mi Ronda 6 (lanzamiento-campana.gif, 2,4 MB, embebido en README tras el canon, verificado: 3 referencias, 10/10 assets sin huérfanas). Propuesta formal al Director: cerrar el pendiente por completado. Técnica documentada en el informe 18h26 para variantes futuras.
+- HIGIENE: doble desincronización del contador de tests del README corregida — fila `test` decía 69 y el bullet de Seguridad decía 64; árbol real 74 (suite aggregate-report de la colisión 12). Ambas cifras a 74 con la suite citada. Patrón registrado: el contador atrasa en cada ronda que añade tests (41→61→64→69→74); sugerida la cadena "tests: N→N+1" en el worklog como mitigación barata.
+- Lección colisión 12 verificada: aggregate-report.ts es el único generador (módulo puro + 5 tests); el wrapper exportMarkdown de history-panel.tsx es transporte fino con remisión explícita — sin duplicación ni código muerto de las versiones descartadas.
+- Barrido global: 0 marcadores de conflicto; TRUST_PROXY coherente en README + .env.example; fila verify exacta frente al canon (Fase 5 opt-in); .env.example revisado y sin cambios (el valor relativo es el default que el canon normaliza, R10).
+
+Stage Summary:
+- Pendiente del GIF propuesto para cierre por completado; README con el contador de tests exacto (74) y la suite nueva citada; sin tocar src/.
+- Puerta de calidad: bun test 74/74 (5 ficheros, 112 expect), lint 0, smoke 9/9.
+- Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_18h47.md
