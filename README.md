@@ -30,7 +30,7 @@ Sandbox de autoevolución **Red Team vs Blue Team**: agentes de IA ejecutan camp
 - **Bucle de evolución**: las lecciones generadas por LLM se archivan como `Knowledge` con confianza dinámica y se reinyectan en campañas siguientes; los agentes ganan XP/niveles con curva rebalanceada.
 - **Operación continua (autopiloto)**: con un interruptor, el motor encadena campañas reales en segundo plano mientras el motor está ocioso.
 - **UI profesional multi-página**: panel de mando, operaciones con mapa de red interactivo y clicables, fichas de agente con actividad real, conocimiento, historial, analítica y gestión de modelos LLM. Paleta de comandos con `⌘K` y exportación de informes `.md`.
-- **Motor LLM configurable**: por defecto usa `z-ai-web-dev-sdk`; se puede conectar cualquier proveedor compatible OpenAI (DeepSeek, Ollama, OpenRouter…) desde `/modelos`, con descarga real del catálogo `/v1/models`.
+- **Motor LLM configurable**: por defecto usa `z-ai-web-dev-sdk`; se puede conectar cualquier proveedor compatible OpenAI (DeepSeek, Ollama, OpenRouter…) desde `/modelos`, con descarga real del catálogo `/v1/models`. Si el proveedor no responde o falla, el motor **degrada a modo determinista** y la campaña continúa en lugar de abortarse.
 
 ## Arquitectura
 
@@ -89,7 +89,7 @@ bun run dev                   # http://localhost:3000
 | `bun run build` | Build de producción (standalone) |
 | `bun run start` | Servir el build de producción |
 | `bun run lint` | ESLint |
-| `bun run test` | Tests unitarios de seguridad en `tests/` (runner nativo de bun): guard de destinos SSRF (`target-guard`) y control de acceso/rate limit (`access`) |
+| `bun run test` | Tests unitarios en `tests/` (runner nativo de bun): guard de destinos SSRF (`target-guard`), control de acceso/rate limit (`access`) y resiliencia del motor LLM (`llm-resilience`) — 64 tests |
 | `bun run verify` | **Verificación de cierre de ronda**: tipos (`tsc`) → unidades → entorno → servidor de producción → golden path (healthcheck `/api`, `/api/state` con seed, `/api/campaigns`, `/api/knowledge` y página principal). Delega en `tests/smoke.mjs` (canon único) y usa una BD de verificación dedicada, no toca tus datos. `--build` fuerza rebuild; flags opt-in: `SMOKE_START_CAMPAIGN=1` lanza una campaña real end-to-end, `SMOKE_SKIP_UNIT=1` y `SMOKE_SKIP_TSC=1` omiten fases |
 | `bun run smoke` | Alias directo del test de humo: `bun tests/smoke.mjs` (mismo canon que `verify`, sin envoltorio de shell) |
 | `bun run db:push` | Sincronizar el esquema Prisma con SQLite |
@@ -97,7 +97,6 @@ bun run dev                   # http://localhost:3000
 | `bun run db:migrate` | Migraciones en desarrollo |
 | `bun run db:reset` | Resetear la base de datos |
 | `bun scripts/checkdb.mjs` | Utilidad de diagnóstico: conteo de registros por modelo (agentes, campañas, lecciones…) |
- fbf2e6a (docs(bugs): informe de ronda 17h41, README vivo (fila test, fila verify duplicada fusionada) y worklog)
 
 ## Configurar el motor LLM
 
@@ -122,13 +121,14 @@ También es posible configurarlo por variables de entorno — o directamente en 
 ## Seguridad
 
 - El laboratorio hace bind **exclusivamente en `127.0.0.1`** y está pensado para ejecutarse en local.
-- `POST /api/models` valida protocolo y **bloquea destinos de red interna (loopback, RFC1918, link-local) y endpoints de metadata de nube** para conexiones no locales, mitigando SSRF.
+- **Barrera SSRF en las URL de proveedor** (guard `src/lib/net/target-guard.ts`): se aplica al guardar (`POST /api/models` y `POST /api/settings`) y **en el punto de uso** (cada llamada del motor), bloqueando destinos de red interna (loopback, RFC1918, link-local) y endpoints de metadata de nube para conexiones no locales. Los `fetch` a URL de usuario abortan ante redirecciones (`redirect: 'error'`), cerrando el vector `302 → red interna`.
 - **Token opcional de administración** (`ADMIN_TOKEN` en `.env`): si se define, los endpoints que mutan estado (`POST /api/campaigns`, `/api/autopilot`, `/api/settings`, `/api/models`) exigen el token vía cabecera `X-Admin-Token` o cookie `admin_token` (fija la cookie en el navegador con `document.cookie = "admin_token=<token>"` para seguir usando la UI). Sin definir, la app queda en modo local abierto.
 - **Rate limit** en `POST /api/campaigns` (6 lanzamientos/minuto por cliente) para frenar bucles de gasto de créditos LLM.
 - `GET /api` es un healthcheck que verifica el servicio y la base de datos.
 - **Sin autenticación por defecto**: cualquier usuario con acceso a la app puede leer datos de simulación y (sin `ADMIN_TOKEN`) lanzar campañas. **No expongas la aplicación a Internet** sin auth en el proxy o sin definir `ADMIN_TOKEN`.
 - Las claves del proveedor se guardan en la BD local y la API solo las devuelve enmascaradas.
 - La base de datos debe apuntarse con una **ruta absoluta** en `DATABASE_URL` (las relativas se resuelven distinto entre la CLI de Prisma y el runtime).
+- **Tests de seguridad versionados**: 64 tests en `tests/` (`bun run test`) cubren el guard SSRF, el token/rate limit y la degradación del motor ante proveedor caído.
 
 ## Agentes del proyecto
 
