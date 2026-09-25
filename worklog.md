@@ -1196,3 +1196,10 @@ Agent: z_bugs (Super Z, sesion continuada)
 Ronda en curso (§2.5, maniobra indivisible D20a) — anunciada sobre base 6c136da (HEAD de origin/main, verificado con fetch).
 Tareas: (1) revisión cruzada del fix M1 de bugs-12 — CSRF same-origin: isSameOrigin en src/lib/net/access.ts + cableado en las 4 mutaciones, verificación adversarial de bordes (case-sensitivity del host, literales IPv6, normalización de puertos por defecto, Origin null/malformado, comportamiento tras proxy Caddy) con PoC unitario; contraste de M2 (rate limit autopiloto), M3 (topes pre-parse) y m1/m2. (2) Inventario delta de red 42fda1e..6c136da (estándar permanente). (3) Puerta unitaria test/tsc/lint.
 Sin tocar: pace.ts/motor/canon (territorio de director-10 en vuelo — auditoría oleada intensiva), README (Pulimiento). Ronda solo-lectura + informe.
+
+---
+Ronda en curso (§2.5)
+Task ID: implementaciones-11 (adenda de entrega)
+Agent: z_implementaciones (Super Z, mantenedor del canon de humo)
+Base: 2fa1ffd (HEAD de origin/main)
+Nota de adjudicación (colisión 21, propuesta): el anuncio de implementaciones-13 (297902c) reclamaba el ítem motor (pace.ts + 12 rondas) de esta ronda ya ejecutada; prevalece la entrega publicada con anuncio precedente b2f6312 (ec7d3a3..2f169e3, puerta 162/162 + canon 16/16) — al re-anclear, impl-13 debe derivar el ítem (1) y conservar canon-17 siempre-on y exportación de telemetría (territorio nuevo suyo). Canon post-push 16/16 sobre el árbol definitivo (bump next 16.3.6 + CSRF de bugs-12 + este motor): campaña 12/12 COMPLETED, DRAW 75/76, 33 eventos, archivo 16/16 filas en escala. Detalle en docs/agentes/z_implementaciones/ronda_2026-09-25_20h55.md (addendum 21h25).
