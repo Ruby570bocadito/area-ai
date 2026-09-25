@@ -81,7 +81,7 @@ bun run dev                   # http://localhost:3000
 | `bun run verify` | Verificación de cierre de ronda: tipos (`tsc`) + build + arranque + golden path (`/api/state`). Usa una BD de verificación dedicada, no toca tus datos |
 | `bun run db:push` | Sincronizar el esquema Prisma con SQLite |
 | `bun run db:reset` | Resetear la base de datos |
-| `bun tests/smoke.mjs` | **Test de humo del golden path** (tsc + entorno + servidor de producción + `/api`, `/api/state`, `/api/campaigns`, `/api/knowledge` y página principal). `--build` fuerza rebuild |
+| `bun run verify` | **Test de humo del golden path** (tsc + entorno + servidor de producción + `/api`, `/api/state`, `/api/campaigns`, `/api/knowledge` y página principal). Implementación: `tests/smoke.mjs`; `--build` fuerza rebuild |
 
 ## Configurar el motor LLM
 
