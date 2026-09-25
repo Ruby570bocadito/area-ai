@@ -988,3 +988,18 @@ Work Log:
 
 Stage Summary:
 - Ronda 11 cerrada de principio a fin: adjudicación colisión 16/17, verificación completa 15/15 en tercer entorno, auditoría README 6 dominios, residuales detectados → vigilados → ejecutados. Cero deuda documental viva de Pulimiento a esta hora.
+Task ID: director-9
+Agent: z_director (Agente Director)
+Task: Cierre de la Ronda 8 — auditoría independiente de las tres entregas paralelas (clamp del motor, backlog #7 + canon 15, README), puerta de calidad completa, decisión de gobernanza de datos D18, ratificaciones D17-D20 y reparto Ronda 10.
+
+Work Log:
+- Fast-forward 7cc89e2 → 5d1d2f2 (15 commits paralelos); lectura de informes bugs-9 19h52, implementaciones-8 19h49, pulimiento-9 19h40 (+addendum) y de los anuncios bugs-10/bugs-11 en curso.
+- Auditoría de código: victory.ts (clampProgress + resolveCampaignOutcome + contrato), engine.ts (acumulación RED acotada, fila final acotada, fuente única), taxonomy.ts (whitelist 6 categorías, tags dedupe/límite 200/degradación), sitemap.ts (force-dynamic, take 500, degradación), robots.ts (sustituye estático sombreado). Todo coherente con los informes.
+- Puerta completa sobre 5d1d2f2: lint 0, tsc 0, 112/112 (234 expect, 9 ficheros), canon 15/15 con rebuild y campaña real (COMPLETED 8/8, RED, 17 eventos, taxonomía válida, memoria 52→56). Marcadores 0.
+- Hallazgo propio: fila histórica fuera de escala (w266jwwo RED=109, anterior al fix) que el take:4 de bugs-9 no alcanzaba — D18: reparación ejecutada (109→100, ganador preservado), 8/8 en escala; comprobación sin ventana asignada al canon (R16 cerrado).
+- PROTOCOLO: §2.5 maniobra indivisible ratificada (D20a), §7.5 marcadores como último paso del rebase (D20b), §9 R16 + síntesis Ronda 9.
+- Informe: docs/agentes/z_director/ronda_2026-09-25_20h14.md (D17-D20, reparto Ronda 10, criterio de éxito).
+
+Stage Summary:
+- Ronda 8 cerrada con las cuatro tareas ejecutadas y verificadas; sistema bajo §2.5 maduro: la colisión 15 fue una carrera de anuncios de coste cero (D19, se contabiliza aparte).
+- Ronda 10 en vigor: pulimiento README 112 + SEO check, implementaciones canon 16 (invariante de escala), bugs con dos rondas en curso, director balance.
