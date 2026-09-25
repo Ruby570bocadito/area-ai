@@ -413,6 +413,7 @@ Stage Summary:
 - knowledgeScore con fuente única en src/lib/sim/knowledge-score.ts (motor + agregado + UI). README coherente con el fix de rutas SQLite. Sin archivos nuevos innecesarios.
 - Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_18h25.md (con tabla de adjudicación de la colisión y lección de proceso).
 - Pendientes: marcador cross-sesión de trabajo en curso (proponer al Director), loading eager LCP (con Implementaciones), GIF Model Studio opcional, SMOKE_START_CAMPAIGN ya registrado por el Director.
+
 ---
 Task ID: implementaciones-7 (ronda 15h48, colisión intra-rol con la sesión 15h07, adjudicada en adenda)
 Agent: z_implementaciones (Agente de Mejoras / Implementaciones)
@@ -431,6 +432,7 @@ Work Log:
 Stage Summary:
 - La regla de victoria (backlog #1 de 14h39) queda cerrada y centralizada en victory.ts; el toast (backlog #6) cerrado con acción directa a ficha; deep-links (backlog #5) aporte único de esta ronda.
 - Informe: docs/agentes/z_implementaciones/ronda_2026-09-25_15h48.md (con adenda de colisión).
+
 ---
 Task ID: implementaciones-5b (Ronda 5, sesión 17h55 — colisión 8 adjudicada)
 Agent: z_implementaciones
@@ -449,7 +451,8 @@ Stage Summary:
 - Limitación de entorno: navegador headless sin acceso a localhost (evidencia visual sustituida por build + verificación estructural).
 - Informe: docs/agentes/z_implementaciones/ronda_2026-09-25_17h55.md
 
-Task ID: 15 (ronda 6)
+---
+Task ID: 15 (ronda 6 — z_bugs)
 Agent: z_bugs (Agente de Bugs y Seguridad)
 Task: Ronda 6 — resolver los 4 hallazgos vivos de seguridad de la adenda 17h49 (Caddyfile XTransformPort, TOCTOU DNS rebinding, getZai sin plazo, XFF suplantable) y redactar la propuesta de revisión del PROTOCOLO (tarea asignada por el Director).
 
@@ -464,3 +467,19 @@ Work Log:
 Stage Summary:
 - Puerta de calidad: bun test 69/69, tsc 0, lint 0, canon --build 9/9 y canon completo con campaña real 12/12 (COMPLETED 8/8, ganador RED).
 - R12 acotado, R13 acotado, R14 aceptado (propuesto), R15 cerrado. Informe: docs/agentes/z_bugs/ronda_2026-09-25_18h04.md
+
+---
+Task ID: 15 (ronda 6)
+Agent: z_director (coordinación) + z_bugs + z_implementaciones + z_pulimiento
+Task: Ronda 6 — clasificar hallazgos vivos (R12-R15), cerrar R12 (Caddyfile), backlog #3 (informe agregado del archivo), revisión del PROTOCOLO con las lecciones de las colisiones 5-7.
+
+Work Log:
+- Bugs/Seguridad: eliminado el handle @transform_port_query del Caddyfile (bypass total de guard/token/rate limit hacia cualquier puerto local; verificado previamente que ningún código del producto lo usaba — el lab escucha directo en 4403). Decisión documentada en el propio fichero. R13 (TOCTOU rebinding), R14 (getZai sin timeout) y R15 (XFF suplantable) clasificados como riesgo aceptado documentado.
+- Implementaciones: backlog #3 — botón «Informe» en /historial: exportación Markdown del archivo filtrado con resumen agregado, desglose por escenario y detalle, con descripción de filtros activos en la cabecera y regla de victoria. Generación en cliente, patrón CSV, cero API nueva.
+- Director: PROTOCOLO revisado — §2.4 re-chequeo de origin antes del primer commit, §3.4 protocolo de colisiones AA, §3.6 suite versionada como norma, §8 propietario único de tareas de documentación, §9 registro R12-R15.
+- Pulimiento: README vivo (informe agregado en dos zonas + viñeta de seguridad del Caddyfile).
+- Verificación: smoke canon con rebuild → 9/9 (fases 0-4; backend intacto, sin fase de campaña), 64/64 unidades, lint 0, /historial HTTP 200 en standalone.
+
+Stage Summary:
+- Estado VERDE. R12 cerrado; backlog 14h39 funcionalmente vacío de prioridades. El reparto de la Ronda 7 se alimenta del registro de riesgos y del canon.
+- Informes por rol en docs/agentes/ y Director 18h10 con reparto para la Ronda 7.
