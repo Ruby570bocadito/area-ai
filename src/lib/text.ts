@@ -40,3 +40,21 @@ export function formatDuration(ms: number): string {
   if (m > 0) return `${m}m ${String(s).padStart(2, '0')}s`
   return `${s}s`
 }
+
+/**
+ * Fecha y hora legible (locale es-ES) — fuente única para los informes
+ * Markdown de campaña (el agregado del archivo y el informe en vivo):
+ *
+ *   · fecha válida     → "25/9/25 19:03" (formato del locale es-ES)
+ *   · nula o inválida  → "—"
+ *
+ * Delegar el formateo en una sola función garantiza que ambos informes
+ * muestren las marcas temporales con el mismo formato y que la ausencia
+ * de fecha se degrade con el mismo guion largo que las duraciones.
+ */
+export function formatDateTime(d: string | null): string {
+  if (!d) return '—'
+  const date = new Date(d)
+  if (Number.isNaN(date.getTime())) return '—'
+  return date.toLocaleString('es-ES')
+}

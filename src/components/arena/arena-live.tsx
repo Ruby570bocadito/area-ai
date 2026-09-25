@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import NumberFlow from '@number-flow/react'
 import { Building2, Crown, Download, Info, Swords, ShieldCheck, Trophy, Target, TerminalSquare } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { formatDateTime } from '@/lib/text'
 import { explainWinner, VICTORY_RULE_DETAIL } from '@/lib/victory'
 import type { AgentDTO, CampaignSummaryDTO, EventDTO, InfraNodeDTO, LiveLabDTO } from '@/lib/api-types'
 import { AgentCard } from './agent-avatar'
@@ -163,8 +164,8 @@ export function ArenaLive({
       `- **Empresa:** ${campaign.scenario.company} (${campaign.scenario.industry})`,
       `- **Dificultad:** ${campaign.scenario.difficulty}/5`,
       `- **Estado:** ${res} · Ronda ${campaign.round}/${campaign.maxRounds}`,
-      `- **Inicio:** ${new Date(campaign.startedAt).toLocaleString('es-ES')}`,
-      campaign.endedAt ? `- **Fin:** ${new Date(campaign.endedAt).toLocaleString('es-ES')}` : null,
+      `- **Inicio:** ${formatDateTime(campaign.startedAt)}`,
+      campaign.endedAt ? `- **Fin:** ${formatDateTime(campaign.endedAt)}` : null,
       '',
       `## Resultado`,
       `| Métrica | RED | BLUE |`,

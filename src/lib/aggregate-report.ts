@@ -1,4 +1,4 @@
-import { formatDuration } from '@/lib/text'
+import { formatDateTime, formatDuration } from '@/lib/text'
 import type { CampaignListItemDTO } from '@/lib/api-types'
 
 // ─────────────────────────────────────────────────────────────
@@ -34,7 +34,6 @@ export function buildAggregateReport(
     .filter((c) => c.endedAt)
     .map((c) => new Date(c.endedAt as string).getTime() - new Date(c.startedAt).getTime())
   const avgDuration = avg(durations)
-  const fmtDate = (d: string | null) => (d ? new Date(d).toLocaleString('es-ES') : '—')
   const scenarioTop = Object.entries(
     campaigns.reduce<Record<string, number>>((acc, c) => {
       acc[c.scenario.codename] = (acc[c.scenario.codename] ?? 0) + 1
@@ -91,7 +90,7 @@ export function buildAggregateReport(
           ? ` · ${c.redScore}–${c.blueScore} (objetivos RED ${c.redProgress}% vs BLUE ${c.blueProgress}%)`
           : ''
       }`,
-      `- **Periodo:** ${fmtDate(c.startedAt)} → ${fmtDate(c.endedAt)} (${duration})`,
+      `- **Periodo:** ${formatDateTime(c.startedAt)} → ${formatDateTime(c.endedAt)} (${duration})`,
       `- **Dificultad:** ${c.scenario.difficulty}/5`,
       `- **Ficha completa:** /historial/${c.id}`,
       ''

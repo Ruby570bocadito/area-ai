@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { formatDuration, normalizeText } from '../src/lib/text'
+import { formatDateTime, formatDuration, normalizeText } from '../src/lib/text'
 
 // ─────────────────────────────────────────────────────────────
 // Contrato de las utilidades puras de src/lib/text.ts.
@@ -57,5 +57,22 @@ describe('normalizeText', () => {
   test('cadenas sin acentos quedan intactas (salvo minúsculas)', () => {
     expect(normalizeText('DATA_EXFIL')).toBe('data_exfil')
     expect(normalizeText('sql')).toBe('sql')
+  })
+})
+
+describe('formatDateTime', () => {
+  test('fecha válida: mismo formato que el locale es-ES (contrato compartido con los informes)', () => {
+    const d = '2026-09-25T19:03:00.000Z'
+    expect(formatDateTime(d)).toBe(new Date(d).toLocaleString('es-ES'))
+    expect(formatDateTime(d)).not.toBe('—')
+  })
+
+  test('nula o vacía: guion largo, igual que las duraciones inválidas', () => {
+    expect(formatDateTime(null)).toBe('—')
+    expect(formatDateTime('')).toBe('—')
+  })
+
+  test('cadena no parseable: degradación explícita a guion largo (nunca "Invalid Date")', () => {
+    expect(formatDateTime('no-es-una-fecha')).toBe('—')
   })
 })
