@@ -53,7 +53,8 @@ src/
 ├── lib/
 │   ├── sim/                # engine.ts (motor), roster.ts, seed.ts, llm.ts, progression.ts, autopilot.ts, knowledge-score.ts (fuerza del conocimiento)
 │   ├── lab/                # runtime.ts (servidor HTTP del lab), ops.ts (acciones RED/BLUE), store.ts
-│   └── net/                # target-guard.ts (SSRF), access.ts (token opcional + rate limit)
+│   ├── net/                # target-guard.ts (SSRF), access.ts (token opcional + rate limit)
+│   └── *.ts                # módulos puros de raíz: victory.ts (regla de victoria, fuente única), aggregate-report.ts (informe agregado), text.ts (utilidades de texto y duraciones), api-types.ts (contratos API), db.ts (cliente Prisma)
 └── hooks/use-arena-state.tsx  # Sondeo único de /api/state compartido por toda la app
 ```
 
@@ -93,7 +94,7 @@ bun run dev                   # http://localhost:3000
 | `bun run build` | Build de producción (standalone) |
 | `bun run start` | Servir el build de producción |
 | `bun run lint` | ESLint |
-| `bun run test` | Tests unitarios en `tests/` (runner nativo de bun): guard de destinos SSRF (`target-guard`), control de acceso/rate limit (`access`), resiliencia del motor LLM (`llm-resilience`, `llm-creation`) y contrato del informe agregado (`aggregate-report`) — 74 tests |
+| `bun run test` | Tests unitarios en `tests/` (runner nativo de bun): guard de destinos SSRF (`target-guard`), control de acceso/rate limit (`access`), resiliencia del motor LLM (`llm-resilience`, `llm-creation`), contrato del informe agregado (`aggregate-report`) y utilidades de texto/duraciones (`text`) — 87 tests |
 | `bun run verify` | **Verificación de cierre de ronda**: tipos (`tsc`) → unidades → entorno → servidor de producción → golden path (healthcheck `/api`, `/api/state` con seed, `/api/campaigns`, `/api/knowledge` y página principal). Delega en `tests/smoke.mjs` (canon único) y usa una BD de verificación dedicada, no toca tus datos. `--build` fuerza rebuild; flags opt-in: `SMOKE_START_CAMPAIGN=1` lanza una campaña real end-to-end, `SMOKE_SKIP_UNIT=1` y `SMOKE_SKIP_TSC=1` omiten fases |
 | `bun run smoke` | Alias directo del test de humo: `bun tests/smoke.mjs` (mismo canon que `verify`, sin envoltorio de shell) |
 | `bun run db:push` | Sincronizar el esquema Prisma con SQLite |
@@ -134,7 +135,7 @@ También es posible configurarlo por variables de entorno — o directamente en 
 - El `Caddyfile` incluido **solo proxifica al puerto de la app** (el antiguo handle `XTransformPort`, que permitía alcanzar cualquier puerto local bypasando el guard y el token, fue eliminado en la Ronda 6 — decisión documentada en el propio fichero).
 - Las claves del proveedor se guardan en la BD local y la API solo las devuelve enmascaradas.
 - La base de datos debe apuntarse con una **ruta absoluta** en `DATABASE_URL` (las relativas se resuelven distinto entre la CLI de Prisma y el runtime).
-- **Tests versionados**: 74 tests en `tests/` (`bun run test`) cubren el guard SSRF, el token/rate limit, la resiliencia del motor LLM (degradación ante proveedor caído y creación colgada) y el contrato del informe agregado.
+- **Tests versionados**: 87 tests en `tests/` (`bun run test`) cubren el guard SSRF, el token/rate limit, la resiliencia del motor LLM (degradación ante proveedor caído y creación colgada), el contrato del informe agregado y las utilidades de texto/duraciones.
 
 ## Agentes del proyecto
 
@@ -144,5 +145,5 @@ Este repositorio se desarrolla con un flujo multiagente. Cada rol deja su inform
 |---|---|---|
 | Director | `docs/agentes/z_director/` | Supervisa, audita y coordina |
 | Implementaciones | `docs/agentes/z_implementaciones/` | Features del motor y la UI |
-| Pulimiento | `docs/agentes/z_pulimiento/` | Limpieza, README, dependencias, UI |
+| Pulimiento | `docs/agentes/z_pulimiento/` | README vivo, dependencias, limpieza de artefactos, deuda técnica de configuración |
 | Bugs/Seguridad | `docs/agentes/z_bugs/` | Correcciones y riesgos de seguridad |
