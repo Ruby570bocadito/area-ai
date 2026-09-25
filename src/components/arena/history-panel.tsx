@@ -1,10 +1,12 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
+  Check,
   ChevronRight,
+  ClipboardCopy,
   Download,
   FileText,
   History,
@@ -16,13 +18,15 @@ import {
   Swords,
 } from 'lucide-react'
 import { normalizeText } from '@/lib/text'
+import { buildAggregateReport } from '@/lib/aggregate-report'
 import { decisiveProgressLabel, VICTORY_RULE_DETAIL, VICTORY_RULE_SHORT } from '@/lib/victory'
 import type { CampaignListItemDTO } from '@/lib/api-types'
 
 // ─────────────────────────────────────────────────────────────
 // Archivo completo de enfrentamientos: búsqueda, filtro por
-// resultado y escenario, exportación CSV y acceso a la ficha
-// completa de cada campaña (/historial/[id]).
+// resultado y escenario, exportación CSV, informe agregado en
+// Markdown (descarga o copia al portapapeles) y acceso a la
+// ficha completa de cada campaña (/historial/[id]).
 // ─────────────────────────────────────────────────────────────
 
 type ResultFilter = 'ALL' | 'RED' | 'BLUE' | 'DRAW' | 'RUNNING'
@@ -125,113 +129,49 @@ function exportCsv(campaigns: CampaignListItemDTO[]) {
 }
 
 // ── Informe agregado del archivo (Markdown, complemento del CSV) ──
-
-function formatDuration(ms: number): string {
-  if (!Number.isFinite(ms) || ms <= 0) return '—'
-  const totalSec = Math.round(ms / 1000)
-  const h = Math.floor(totalSec / 3600)
-  const m = Math.floor((totalSec % 3600) / 60)
-  const s = totalSec % 60
-  if (h > 0) return `${h}h ${String(m).padStart(2, '0')}m`
-  if (m > 0) return `${m}m ${String(s).padStart(2, '0')}s`
-  return `${s}s`
-}
+// El generador vive en src/lib/aggregate-report.ts (módulo puro,
+// compartido por la descarga y la copia al portapapeles y testeado
+// de forma unitaria). Aquí solo queda el transporte al usuario.
 
 function exportMarkdown(campaigns: CampaignListItemDTO[], filtersDesc: string) {
-  const completed = campaigns.filter((c) => c.status === 'COMPLETED')
-  const running = campaigns.filter((c) => c.status === 'RUNNING')
-  const aborted = campaigns.length - completed.length - running.length
-  const redWins = completed.filter((c) => c.winner === 'RED').length
-  const blueWins = completed.filter((c) => c.winner === 'BLUE').length
-  const draws = completed.length - redWins - blueWins
-  const pct = (n: number) => (completed.length > 0 ? `${Math.round((n / completed.length) * 1000) / 10}%` : '—')
-  const avg = (nums: number[]) => (nums.length > 0 ? nums.reduce((a, b) => a + b, 0) / nums.length : null)
-  const fmtAvg = (v: number | null, digits = 0) => (v == null ? '—' : v.toFixed(digits))
-  const avgRedProgress = avg(completed.map((c) => c.redProgress))
-  const avgBlueProgress = avg(completed.map((c) => c.blueProgress))
-  const avgRedScore = avg(completed.map((c) => c.redScore))
-  const avgBlueScore = avg(completed.map((c) => c.blueScore))
-  const durations = completed
-    .filter((c) => c.endedAt)
-    .map((c) => new Date(c.endedAt as string).getTime() - new Date(c.startedAt).getTime())
-  const avgDuration = avg(durations)
-  const fmtDate = (d: string | null) => (d ? new Date(d).toLocaleString('es-ES') : '—')
-  const scenarioTop = Object.entries(
-    campaigns.reduce<Record<string, number>>((acc, c) => {
-      acc[c.scenario.codename] = (acc[c.scenario.codename] ?? 0) + 1
-      return acc
-    }, {})
-  ).sort((a, b) => b[1] - a[1])[0]
-
+  const md = buildAggregateReport(campaigns, filtersDesc)
   const now = new Date()
-  const lines: string[] = [
-    '# Informe agregado del archivo — area·ai',
-    '',
-    `- **Generado:** ${now.toLocaleString('es-ES')}`,
-    `- **Campañas incluidas:** ${campaigns.length}`,
-    `- **Filtros aplicados:** ${filtersDesc}`,
-    '',
-    '## Resumen ejecutivo',
-    '',
-    '| Métrica | Valor |',
-    '| --- | --- |',
-    `| Campañas incluidas | ${campaigns.length} |`,
-    `| Finalizadas · en curso · abortadas | ${completed.length} · ${running.length} · ${aborted} |`,
-    `| Victorias RED | ${redWins} (${pct(redWins)}) |`,
-    `| Victorias BLUE | ${blueWins} (${pct(blueWins)}) |`,
-    `| Empates | ${draws} (${pct(draws)}) |`,
-    `| Progreso medio de objetivos (RED / BLUE) | ${fmtAvg(avgRedProgress)} / ${fmtAvg(avgBlueProgress)} de 100 |`,
-    `| Puntuación media (RED / BLUE) | ${fmtAvg(avgRedScore, 1)} / ${fmtAvg(avgBlueScore, 1)} |`,
-    `| Duración media de campaña | ${avgDuration == null ? '—' : formatDuration(avgDuration)} |`,
-    `| Escenario más repetido | ${scenarioTop ? `${scenarioTop[0]} (${scenarioTop[1]} campaña${scenarioTop[1] === 1 ? '' : 's'})` : '—'} |`,
-    '',
-    '> Recuerda: el ganador se decide por progreso de objetivos (≥70 y por delante del rival); la puntuación refleja impacto y detecciones.',
-    '',
-    '## Campañas',
-    '',
-  ]
-
-  for (const [i, c] of campaigns.entries()) {
-    const winnerLabel =
-      c.winner === 'RED'
-        ? 'GANA RED'
-        : c.winner === 'BLUE'
-          ? 'GANA BLUE'
-          : c.status === 'RUNNING'
-            ? 'EN CURSO'
-            : c.status === 'COMPLETED'
-              ? 'EMPATE'
-              : 'ABORTADA'
-    const duration = c.endedAt
-      ? formatDuration(new Date(c.endedAt).getTime() - new Date(c.startedAt).getTime())
-      : '—'
-    lines.push(
-      `### ${i + 1}. ${c.scenario.codename} — ${c.scenario.company} (${c.scenario.industry})`,
-      '',
-      `- **Resultado:** ${winnerLabel}${
-        c.status === 'COMPLETED'
-          ? ` · ${c.redScore}–${c.blueScore} (objetivos RED ${c.redProgress}% vs BLUE ${c.blueProgress}%)`
-          : ''
-      }`,
-      `- **Periodo:** ${fmtDate(c.startedAt)} → ${fmtDate(c.endedAt)} (${duration})`,
-      `- **Dificultad:** ${c.scenario.difficulty}/5`,
-      `- **Ficha completa:** /historial/${c.id}`,
-      ''
-    )
-  }
-
-  lines.push(
-    '---',
-    'La telemetría completa de cada enfrentamiento (comandos reales, evidencia HTTP y lecciones archivadas) está disponible en la ficha de cada campaña y en su informe individual descargable.',
-    'Generado por area·ai — laboratorio adversarial de agentes IA.'
-  )
-
   const pad = (n: number) => String(n).padStart(2, '0')
   downloadBlob(
-    lines.join('\n'),
+    md,
     'text/markdown;charset=utf-8',
     `area-ai-informe-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.md`
   )
+}
+
+// Copia el informe al portapapeles con doble vía: Clipboard API
+// (contexto seguro) y fallback heredado con textarea + execCommand
+// (contextos no seguros o permisos restringidos). Devuelve false
+// solo si ambas vías fallan, para que el llamante pueda degradar
+// a la descarga y el usuario nunca pierda el informe.
+async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+      return true
+    }
+  } catch {
+    // sigue al fallback
+  }
+  try {
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.setAttribute('readonly', '')
+    ta.style.position = 'fixed'
+    ta.style.opacity = '0'
+    document.body.appendChild(ta)
+    ta.select()
+    const ok = document.execCommand('copy')
+    ta.remove()
+    return ok
+  } catch {
+    return false
+  }
 }
 
 export function HistoryPanel({
@@ -244,6 +184,14 @@ export function HistoryPanel({
   const [query, setQuery] = useState('')
   const [result, setResult] = useState<ResultFilter>(initialResult)
   const [scenario, setScenario] = useState('ALL')
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle')
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (copyTimer.current) clearTimeout(copyTimer.current)
+    }
+  }, [])
 
   const scenarioOptions = useMemo(
     () => Array.from(new Set(campaigns.map((c) => c.scenario.codename))).sort(),
@@ -274,6 +222,27 @@ export function HistoryPanel({
     if (scenario !== 'ALL') parts.push(`escenario ${scenario}`)
     return parts.length > 0 ? parts.join(' · ') : 'ninguno (archivo completo)'
   }, [query, result, scenario])
+
+  // Copia el informe de la selección filtrada al portapapeles (mismo texto
+  // que la descarga). Definido tras los useMemo de los que depende para
+  // preservar la memoización del compilador de React.
+  const handleCopyReport = async () => {
+    if (filtered.length === 0 || copyState === 'copied') return
+    const md = buildAggregateReport(filtered, filtersDesc)
+    const ok = await copyToClipboard(md)
+    if (ok) {
+      setCopyState('copied')
+      if (copyTimer.current) clearTimeout(copyTimer.current)
+      copyTimer.current = setTimeout(() => setCopyState('idle'), 2000)
+    } else {
+      // Degradación honesta: si el entorno bloquea el portapapeles, el
+      // informe no se pierde — se descarga como el botón Informe.
+      exportMarkdown(filtered, filtersDesc)
+      setCopyState('error')
+      if (copyTimer.current) clearTimeout(copyTimer.current)
+      copyTimer.current = setTimeout(() => setCopyState('idle'), 2500)
+    }
+  }
 
   if (campaigns.length === 0) {
     return (
@@ -330,6 +299,27 @@ export function HistoryPanel({
           <span className="font-mono-tight text-[10px] text-[#98a2b3]">
             {filtered.length} de {campaigns.length}
           </span>
+          <button
+            type="button"
+            onClick={handleCopyReport}
+            disabled={filtered.length === 0}
+            className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-[#667085] shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-[#101828] disabled:cursor-not-allowed disabled:opacity-50"
+            title="Copiar el informe agregado en Markdown de la selección filtrada al portapapeles (mismo contenido que la descarga del botón Informe)"
+          >
+            {copyState === 'copied' ? (
+              <>
+                <Check className="h-3 w-3 text-[#067647]" /> Copiado
+              </>
+            ) : copyState === 'error' ? (
+              <>
+                <Download className="h-3 w-3 text-[#b54708]" /> Descargado
+              </>
+            ) : (
+              <>
+                <ClipboardCopy className="h-3 w-3" /> Copiar
+              </>
+            )}
+          </button>
           <button
             type="button"
             onClick={() => exportMarkdown(filtered, filtersDesc)}
