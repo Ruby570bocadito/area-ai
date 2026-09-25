@@ -1,14 +1,19 @@
 #!/usr/bin/env bun
 // ─────────────────────────────────────────────────────────────
-// Test de humo del golden path de area·ai (Ronda 3, Implementaciones)
+// Test de humo del golden path de area·ai (Ronda 3, Implementaciones;
+// Ronda 5 añade fase 0 de unidades y fase 5 opcional de campaña real)
 //
 //   bun tests/smoke.mjs           → usa el build existente (o construye si falta)
 //   bun tests/smoke.mjs --build   → fuerza build de producción antes de arrancar
 //   SMOKE_SKIP_TSC=1              → salta el chequeo de tipos (para iterar rápido)
+//   SMOKE_SKIP_UNIT=1             → salta los tests unitarios (fase 0)
+//   SMOKE_START_CAMPAIGN=1        → lanza UNA campaña real y espera su fin (opt-in:
+//                                   escribe en la BD objetivo; hasta ~4 min)
 //
-// Fases: (1) tsc --noEmit  (2) entorno (.env, prisma db push)  (3) servidor
-// de producción standalone  (4) golden path: /api, /api/state (con seed),
-// /api/campaigns, /api/knowledge, página principal.
+// Fases: (0) bun test tests/ — guard SSRF + token/rate limit  (1) tsc --noEmit
+// (2) entorno (.env, prisma db push)  (3) servidor de producción standalone
+// (4) golden path: /api, /api/state (con seed), /api/campaigns,
+// /api/knowledge, página principal.  (5, opt-in) campaña end-to-end.
 // Exit 0 = todo verde.
 // ─────────────────────────────────────────────────────────────
 
@@ -54,6 +59,14 @@ async function checkJson(path, validate) {
     if (problem) return { ok: false, detail: problem }
   }
   return { ok: true, detail: '' }
+}
+
+// ── Fase 0: tests unitarios ─────────────────────────────────
+if (!process.env.SMOKE_SKIP_UNIT) {
+  console.log('── Fase 0: tests unitarios (bun test tests/)')
+  record('tests unitarios (guard SSRF + acceso)', run('bun', ['test', 'tests/']))
+} else {
+  console.log('── Fase 0: omitida (SMOKE_SKIP_UNIT)')
 }
 
 // ── Fase 1: tipos ────────────────────────────────────────────
@@ -151,6 +164,52 @@ if (up) {
   const home = await fetch(`${BASE}/`)
   const html = await home.text().catch(() => '')
   record('GET / (panel de mando)', home.ok && html.includes('area'), `HTTP ${home.status}`)
+}
+
+// ── Fase 5 (opt-in): campaña real end-to-end ────────────────
+if (process.env.SMOKE_START_CAMPAIGN === '1' && up) {
+  console.log('── Fase 5: campaña real end-to-end (SMOKE_START_CAMPAIGN)')
+
+  const launch = await fetch(`${BASE}/api/campaigns`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({}), // escenario aleatorio, modo motor por defecto
+  })
+  const launched = launch.ok ? await launch.json().catch(() => null) : null
+  record(
+    'POST /api/campaigns (lanzamiento)',
+    launch.ok && !!launched?.campaignId,
+    launch.ok ? `campaña ${launched.campaignId}` : `HTTP ${launch.status} ${launched?.error ?? ''}`
+  )
+
+  if (launched?.campaignId) {
+    const id = launched.campaignId
+    const deadline = Date.now() + 240_000
+    let detail = null
+    while (Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 2000))
+      const res = await fetch(`${BASE}/api/campaigns/${id}`).catch(() => null)
+      const body = res?.ok ? await res.json().catch(() => null) : null
+      if (body?.ok && body.campaign?.status !== 'RUNNING') {
+        detail = body
+        break
+      }
+    }
+
+    record(
+      'campaña end-to-end COMPLETED',
+      detail?.campaign?.status === 'COMPLETED',
+      detail ? `estado ${detail.campaign.status} · ronda ${detail.campaign.round}/${detail.campaign.maxRounds}` : 'timeout 240s sin finalizar'
+    )
+    record(
+      'registro de eventos y lecciones',
+      Array.isArray(detail?.events) && detail.events.length > 0 &&
+        ['RED', 'BLUE', 'DRAW'].includes(detail.campaign?.winner),
+      detail ? `eventos ${detail.events?.length ?? 0} · ganador ${detail.campaign?.winner}` : 'sin detalle'
+    )
+  }
+} else if (process.env.SMOKE_START_CAMPAIGN === '1') {
+  console.log('── Fase 5: omitida (el servidor no está en pie)')
 }
 
 server.kill('SIGTERM')
