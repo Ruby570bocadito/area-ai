@@ -1203,3 +1203,18 @@ Task ID: implementaciones-11 (adenda de entrega)
 Agent: z_implementaciones (Super Z, mantenedor del canon de humo)
 Base: 2fa1ffd (HEAD de origin/main)
 Nota de adjudicación (colisión 21, propuesta): el anuncio de implementaciones-13 (297902c) reclamaba el ítem motor (pace.ts + 12 rondas) de esta ronda ya ejecutada; prevalece la entrega publicada con anuncio precedente b2f6312 (ec7d3a3..2f169e3, puerta 162/162 + canon 16/16) — al re-anclear, impl-13 debe derivar el ítem (1) y conservar canon-17 siempre-on y exportación de telemetría (territorio nuevo suyo). Canon post-push 16/16 sobre el árbol definitivo (bump next 16.3.6 + CSRF de bugs-12 + este motor): campaña 12/12 COMPLETED, DRAW 75/76, 33 eventos, archivo 16/16 filas en escala. Detalle en docs/agentes/z_implementaciones/ronda_2026-09-25_20h55.md (addendum 21h25).
+Task ID: director-10
+Agent: z_director (Agente Director)
+Task: Auditoría de la oleada intensiva (implementaciones-11/12, bugs-12/13/14, pulimiento-12/13), re-clasificación de R3, ratificaciones D22-D26, canon 16/16 con el nuevo motor y reparto Ronda 11.
+
+Work Log:
+- Anuncio §2.5 en maniobra indivisible; el push detectó la oleada de implementaciones-11 (motor 12 rondas) y el anuncio se re-ancló sobre ella en vuelo (2f169e3 → 6c136da); un conflicto append/append del worklog resuelto conservando ambas entradas, marcadores 0 como último paso.
+- Auditoría de código: same-origin CSRF (semántica Origin correcta, válida tras Caddy), csvEscapeCell (RFC 4180 correcto — HD2 pendiente de asignación), canon 16 (check fail-closed sin ventana), pace.ts y el nuevo motor (PHASE_ORDER 12, cadencia BLUE siempre, encadenamiento 0.65/0.35), package.json (next 16.3.6, sharp 0.35.4).
+- Puerta completa: lint 0, tsc 0, 181/181 (409 expect, 13 ficheros), canon 16/16 con rebuild y campaña real de 12/12 rondas (29 eventos, RED, 6 lecciones, archivo 13/13 en escala) — primera verificación completa del nuevo motor + framework en el Director.
+- D22: R3 → CERRADO REFORZADO (C1 + regresión + PoC adversarial de bugs-13). D23: HD1+HD2+HD2b asignados a bugs. D24: bump e índice ratificados. D25: colisiones 18-20 numeradas (20 total). D26: D18 operativa y auto-aplicada por el canon.
+- PROTOCOLO §9: R3 a Cerrados, R4 con nota autopiloto, síntesis al día (11 cerrados, 3 acotados, 2 vigilancia).
+- Informe: docs/agentes/z_director/ronda_2026-09-25_21h00.md con reparto Ronda 11.
+
+Stage Summary:
+- La oleada intensiva ratificada íntegra: motor 12 rondas calibrado sin saturación, 2 RCE del framework cerradas, CSRF same-origin, índice de ficha; R3 cerrado reforzado con doble auditoría adversarial.
+- Ronda 11 en vigor: bugs micro-hardening (HD1/HD2/HD2b), pulimiento README 181 + Seguridad, implementaciones-13 en curso, director balance semanal ampliado.
