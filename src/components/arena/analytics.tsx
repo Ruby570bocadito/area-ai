@@ -8,12 +8,12 @@ import { AgentAvatar } from './agent-avatar'
 import type { AgentDTO, CampaignListItemDTO, KnowledgeDTO } from '@/lib/api-types'
 
 // ─────────────────────────────────────────────────────────────
-// 06 · Analítica — gráficos SVG animados a medida
+// /analitica — gráficos SVG animados a medida
 // ─────────────────────────────────────────────────────────────
 
-const RED = '#f4536e'
-const BLUE = '#41c0ef'
-const AMBER = '#e8b64c'
+const RED = '#d92d20'
+const BLUE = '#0086c9'
+const AMBER = '#d97706'
 
 /* ---------- Donut de resultados ---------- */
 function OutcomeDonut({ red, blue, draws }: { red: number; blue: number; draws: number }) {
@@ -40,7 +40,7 @@ function OutcomeDonut({ red, blue, draws }: { red: number; blue: number; draws: 
     <div className="flex items-center gap-5">
       <div className="relative h-[132px] w-[132px] shrink-0">
         <svg viewBox="0 0 132 132" className="h-full w-full -rotate-90">
-          <circle cx="66" cy="66" r={R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="13" />
+          <circle cx="66" cy="66" r={R} fill="none" stroke="#f2f4f7" strokeWidth="13" />
           {segs.map((s, i) =>
             s.v > 0 ? (
               <motion.circle
@@ -67,11 +67,11 @@ function OutcomeDonut({ red, blue, draws }: { red: number; blue: number; draws: 
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="font-display text-2xl font-extrabold text-foreground"
+            className="font-display text-2xl font-extrabold text-[#101828]"
           >
             {total}
           </motion.span>
-          <span className="font-mono-tight text-[8.5px] uppercase tracking-[0.22em] text-muted-foreground">
+          <span className="font-mono-tight text-[8.5px] uppercase tracking-[0.22em] text-[#98a2b3]">
             campañas
           </span>
         </div>
@@ -91,9 +91,9 @@ function OutcomeDonut({ red, blue, draws }: { red: number; blue: number; draws: 
             className="flex items-center gap-2.5"
           >
             <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: row.color }} />
-            <span className="flex-1 truncate font-mono-tight text-[11px] text-muted-foreground">{row.label}</span>
-            <span className="font-mono-tight text-sm font-bold text-foreground">{row.v}</span>
-            <span className="w-10 text-right font-mono-tight text-[10px] text-muted-foreground">
+            <span className="flex-1 truncate font-mono-tight text-[11px] text-[#667085]">{row.label}</span>
+            <span className="font-mono-tight text-sm font-bold text-[#101828]">{row.v}</span>
+            <span className="w-10 text-right font-mono-tight text-[10px] text-[#98a2b3]">
               {total > 0 ? Math.round((row.v / total) * 100) : 0}%
             </span>
           </motion.div>
@@ -133,7 +133,7 @@ function EvolutionChart({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
 
   if (data.length === 0) {
     return (
-      <div className="flex h-[130px] items-center justify-center text-[12px] text-muted-foreground">
+      <div className="flex h-[130px] items-center justify-center text-[12px] text-[#98a2b3]">
         Lanza campañas para ver la curva de evolución.
       </div>
     )
@@ -142,7 +142,7 @@ function EvolutionChart({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <div className="flex items-center gap-3 font-mono-tight text-[10px] text-muted-foreground">
+        <div className="flex items-center gap-3 font-mono-tight text-[10px] text-[#667085]">
           <span className="flex items-center gap-1.5">
             <span className="h-1.5 w-4 rounded-full" style={{ background: RED }} /> RED
           </span>
@@ -150,23 +150,23 @@ function EvolutionChart({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
             <span className="h-1.5 w-4 rounded-full" style={{ background: BLUE }} /> BLUE
           </span>
         </div>
-        <span className="font-mono-tight text-[9.5px] uppercase tracking-wider text-muted-foreground">
+        <span className="font-mono-tight text-[9.5px] uppercase tracking-wider text-[#98a2b3]">
           últimas {data.length} · máx {max}
         </span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="h-[150px] w-full overflow-visible">
         <defs>
           <linearGradient id="evol-red" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={RED} stopOpacity="0.28" />
+            <stop offset="0%" stopColor={RED} stopOpacity="0.18" />
             <stop offset="100%" stopColor={RED} stopOpacity="0" />
           </linearGradient>
           <linearGradient id="evol-blue" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={BLUE} stopOpacity="0.24" />
+            <stop offset="0%" stopColor={BLUE} stopOpacity="0.16" />
             <stop offset="100%" stopColor={BLUE} stopOpacity="0" />
           </linearGradient>
         </defs>
         {[0.25, 0.5, 0.75].map((f) => (
-          <line key={f} x1={PAD_X} x2={W - PAD_X} y1={PAD_Y + f * (H - 2 * PAD_Y)} y2={PAD_Y + f * (H - 2 * PAD_Y)} stroke="rgba(255,255,255,0.05)" strokeDasharray="3 5" />
+          <line key={f} x1={PAD_X} x2={W - PAD_X} y1={PAD_Y + f * (H - 2 * PAD_Y)} y2={PAD_Y + f * (H - 2 * PAD_Y)} stroke="rgba(16,24,40,0.07)" strokeDasharray="3 5" />
         ))}
         <motion.path d={redArea} fill="url(#evol-red)" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 1, delay: 0.7 }} />
         <motion.path d={blueArea} fill="url(#evol-blue)" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 1, delay: 0.7 }} />
@@ -178,7 +178,7 @@ function EvolutionChart({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
             cx={p.x}
             cy={p.y}
             r="3.2"
-            fill="#08090d"
+            fill="#ffffff"
             stroke={RED}
             strokeWidth="1.8"
             initial={{ opacity: 0, scale: 0 }}
@@ -196,7 +196,7 @@ function EvolutionChart({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
             cx={p.x}
             cy={p.y}
             r="3.2"
-            fill="#08090d"
+            fill="#ffffff"
             stroke={BLUE}
             strokeWidth="1.8"
             initial={{ opacity: 0, scale: 0 }}
@@ -231,24 +231,24 @@ function Leaderboard({ agents }: { agents: AgentDTO[] }) {
             className="group"
           >
             <div className="mb-1 flex items-center gap-2.5">
-              <span className={cn('w-5 shrink-0 text-center font-mono-tight text-[11px] font-bold', i === 0 ? 'text-[#f0cd85]' : 'text-muted-foreground')}>
+              <span className={cn('w-5 shrink-0 text-center font-mono-tight text-[11px] font-bold', i === 0 ? 'text-[#b54708]' : 'text-[#98a2b3]')}>
                 {i + 1}
               </span>
               <AgentAvatar agent={a} size="sm" />
               <div className="min-w-0 flex-1">
-                <p className={cn('truncate font-mono-tight text-[11.5px] font-bold', isRed ? 'text-[#f98ca0]' : 'text-[#8adcf7]')}>
+                <p className={cn('truncate font-mono-tight text-[11.5px] font-bold', isRed ? 'text-[#b42318]' : 'text-[#026aa2]')}>
                   {a.codename}
                 </p>
-                <p className="truncate text-[10px] text-muted-foreground">{a.role}</p>
+                <p className="truncate text-[10px] text-[#667085]">{a.role}</p>
               </div>
               <div className="shrink-0 text-right">
-                <p className="font-mono-tight text-[11px] font-bold text-foreground">{a.xp} XP</p>
-                <p className="font-mono-tight text-[9px] text-muted-foreground">
+                <p className="font-mono-tight text-[11px] font-bold text-[#101828]">{a.xp} XP</p>
+                <p className="font-mono-tight text-[9px] text-[#98a2b3]">
                   {a.victories}🏆 · Nv{a.level}
                 </p>
               </div>
             </div>
-            <div className="ml-7 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+            <div className="ml-7 h-1 overflow-hidden rounded-full bg-[#f2f4f7]">
               <motion.div
                 className="h-full rounded-full"
                 style={{ background: isRed ? RED : BLUE }}
@@ -278,7 +278,7 @@ function KnowledgeEffectiveness({ items, team }: { items: KnowledgeDTO[]; team: 
   )
   if (top.length === 0) {
     return (
-      <p className="flex h-full min-h-[80px] items-center justify-center px-4 text-center text-[11.5px] text-muted-foreground">
+      <p className="flex h-full min-h-[80px] items-center justify-center px-4 text-center text-[11.5px] text-[#98a2b3]">
         Sin usos registrados todavía — se activará cuando los agentes apliquen estas lecciones en combate.
       </p>
     )
@@ -294,25 +294,25 @@ function KnowledgeEffectiveness({ items, team }: { items: KnowledgeDTO[]; team: 
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.09, duration: 0.4 }}
-            className="rounded-lg border border-white/[0.05] bg-white/[0.02] p-2.5"
+            className="rounded-lg border border-[#f2f4f7] bg-[#f9fafb] p-2.5"
           >
             <div className="flex items-center justify-between gap-2">
-              <p className="truncate text-[11.5px] font-medium text-foreground/90">{k.title}</p>
-              <span className={cn('shrink-0 font-mono-tight text-[10px] font-bold', isRed ? 'text-[#f98ca0]' : 'text-[#8adcf7]')}>
+              <p className="truncate text-[11.5px] font-medium text-[#101828]">{k.title}</p>
+              <span className={cn('shrink-0 font-mono-tight text-[10px] font-bold', isRed ? 'text-[#b42318]' : 'text-[#026aa2]')}>
                 {rate}%
               </span>
             </div>
             <div className="mt-1.5 flex items-center gap-2">
-              <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+              <div className="h-1 flex-1 overflow-hidden rounded-full bg-[#f2f4f7]">
                 <motion.div
-                  className={cn('h-full rounded-full', isRed ? 'bg-[#f4536e]' : 'bg-[#41c0ef]')}
+                  className={cn('h-full rounded-full', isRed ? 'bg-[#d92d20]' : 'bg-[#0086c9]')}
                   initial={{ width: 0 }}
                   whileInView={{ width: `${rate}%` }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.8, delay: 0.25 + i * 0.09 }}
                 />
               </div>
-              <span className="shrink-0 font-mono-tight text-[9px] text-muted-foreground">
+              <span className="shrink-0 font-mono-tight text-[9px] text-[#667085]">
                 {k.timesWorked}/{k.timesUsed} usos · conf {Math.round(k.confidence * 100)}%
               </span>
             </div>
@@ -349,18 +349,18 @@ export function Analytics({
         className="panel relative overflow-hidden rounded-2xl p-5"
       >
         <div className="mb-4 flex items-center gap-2">
-          <Trophy className="h-3.5 w-3.5 text-[#f0cd85]" />
-          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-foreground/85">
+          <Trophy className="h-3.5 w-3.5 text-[#b54708]" />
+          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-[#475467]">
             Balance de victorias
           </h3>
         </div>
         <OutcomeDonut red={stats.redWins} blue={stats.blueWins} draws={stats.draws} />
         {mvp && (
-          <div className="mt-4 flex items-center gap-2.5 rounded-lg border border-[#e8b64c]/20 bg-[#e8b64c]/[0.05] p-2.5">
-            <Crown className="h-4 w-4 shrink-0 text-[#f0cd85]" />
+          <div className="mt-4 flex items-center gap-2.5 rounded-lg border border-[#fedf89] bg-[#fffaeb] p-2.5">
+            <Crown className="h-4 w-4 shrink-0 text-[#b54708]" />
             <div className="min-w-0 flex-1">
-              <p className="font-mono-tight text-[9px] uppercase tracking-wider text-muted-foreground">Agente MVP</p>
-              <p className={cn('truncate font-mono-tight text-[11.5px] font-bold', mvp.team === 'RED' ? 'text-[#f98ca0]' : 'text-[#8adcf7]')}>
+              <p className="font-mono-tight text-[9px] uppercase tracking-wider text-[#98a2b3]">Agente MVP</p>
+              <p className={cn('truncate font-mono-tight text-[11.5px] font-bold', mvp.team === 'RED' ? 'text-[#b42318]' : 'text-[#026aa2]')}>
                 {mvp.codename} · {mvp.xp} XP
               </p>
             </div>
@@ -378,17 +378,17 @@ export function Analytics({
         className="panel relative overflow-hidden rounded-2xl p-5"
       >
         <div className="mb-4 flex items-center gap-2">
-          <TrendingUp className="h-3.5 w-3.5 text-foreground/70" />
-          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-foreground/85">
+          <TrendingUp className="h-3.5 w-3.5 text-[#667085]" />
+          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-[#475467]">
             Evolución de puntuaciones
           </h3>
         </div>
         <EvolutionChart campaigns={campaigns} />
-        <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-3">
-          <span className="flex items-center gap-1.5 font-mono-tight text-[10px] text-muted-foreground">
-            <Target className="h-3 w-3 text-[#f98ca0]" /> RED gana {redWinRate}% de las campañas
+        <div className="mt-3 flex items-center justify-between border-t border-[#f2f4f7] pt-3">
+          <span className="flex items-center gap-1.5 font-mono-tight text-[10px] text-[#667085]">
+            <Target className="h-3 w-3 text-[#b42318]" /> RED gana {redWinRate}% de las campañas
           </span>
-          <span className="font-mono-tight text-[10px] text-muted-foreground">
+          <span className="font-mono-tight text-[10px] text-[#667085]">
             {stats.blueWins + stats.redWins + stats.draws > 0
               ? `ventaja ${stats.redWins > stats.blueWins ? 'RED' : stats.blueWins > stats.redWins ? 'BLUE' : '—'}`
               : 'sin datos'}
@@ -405,8 +405,8 @@ export function Analytics({
         className="panel relative overflow-hidden rounded-2xl p-5"
       >
         <div className="mb-4 flex items-center gap-2">
-          <Sparkles className="h-3.5 w-3.5 text-[#f0cd85]" />
-          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-foreground/85">
+          <Sparkles className="h-3.5 w-3.5 text-[#b54708]" />
+          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-[#475467]">
             Ranking de agentes
           </h3>
         </div>
@@ -422,24 +422,24 @@ export function Analytics({
         className="panel relative overflow-hidden rounded-2xl p-5 lg:col-span-3"
       >
         <div className="mb-4 flex items-center gap-2">
-          <BrainCircuit className="h-3.5 w-3.5 text-foreground/70" />
-          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-foreground/85">
+          <BrainCircuit className="h-3.5 w-3.5 text-[#667085]" />
+          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-[#475467]">
             Conocimiento más efectivo
           </h3>
-          <span className="font-mono-tight text-[9.5px] normal-case tracking-normal text-muted-foreground">
+          <span className="font-mono-tight text-[9.5px] normal-case tracking-normal text-[#98a2b3]">
             — lecciones con mayor tasa de éxito al aplicarse en combate
           </span>
         </div>
         <div className="grid gap-5 md:grid-cols-2">
           <div>
-            <p className="mb-2.5 flex items-center gap-1.5 font-mono-tight text-[10px] font-bold uppercase tracking-[0.2em] text-[#f98ca0]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#f4536e] pulse-dot" /> Equipo RED
+            <p className="mb-2.5 flex items-center gap-1.5 font-mono-tight text-[10px] font-bold uppercase tracking-[0.2em] text-[#b42318]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#d92d20] pulse-dot" /> Equipo RED
             </p>
             <KnowledgeEffectiveness items={knowledge.red} team="RED" />
           </div>
           <div>
-            <p className="mb-2.5 flex items-center gap-1.5 font-mono-tight text-[10px] font-bold uppercase tracking-[0.2em] text-[#8adcf7]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#41c0ef] pulse-dot" /> Equipo BLUE
+            <p className="mb-2.5 flex items-center gap-1.5 font-mono-tight text-[10px] font-bold uppercase tracking-[0.2em] text-[#026aa2]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#0086c9] pulse-dot" /> Equipo BLUE
             </p>
             <KnowledgeEffectiveness items={knowledge.blue} team="BLUE" />
           </div>

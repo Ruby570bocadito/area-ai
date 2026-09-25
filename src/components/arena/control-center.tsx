@@ -23,7 +23,7 @@ function DifficultyDots({ level }: { level: number }) {
       {Array.from({ length: 5 }).map((_, i) => (
         <span
           key={i}
-          className={cn('h-1 w-3 rounded-full', i < level ? 'bg-gradient-to-r from-[#e8b64c] to-[#f4536e]' : 'bg-white/10')}
+          className={cn('h-1 w-3 rounded-full', i < level ? 'bg-gradient-to-r from-[#fdb022] to-[#f97066]' : 'bg-white/35')}
         />
       ))}
     </span>
@@ -70,31 +70,31 @@ export function ControlCenter({
     <div className="panel relative overflow-hidden rounded-2xl p-5 sm:p-6">
       <div className="relative z-10 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3.5">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]">
-            <RadioTower className="h-4.5 w-4.5 text-foreground/80" />
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#e4e7ec] bg-[#f2f4f7]">
+            <RadioTower className="h-4.5 w-4.5 text-[#344054]" />
           </span>
           <div>
-            <h3 className="font-display text-base font-semibold tracking-tight sm:text-lg">
-              Selección de escenario
+            <h3 className="font-display text-base font-semibold tracking-tight text-[#101828] sm:text-lg">
+              Centro de lanzamiento
             </h3>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-[#667085]">
               Elige la infraestructura objetivo y lanza una campaña autónoma Red vs Blue
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 font-mono-tight text-[10px] text-muted-foreground">
-            <Cpu className="h-3 w-3 text-[#41c0ef]" />
-            Motor: <span className="text-foreground/85">{provider}</span>
+          <span className="flex items-center gap-1.5 rounded-full border border-[#e4e7ec] bg-white px-3 py-1.5 font-mono-tight text-[10px] text-[#667085]">
+            <Cpu className="h-3 w-3 text-[#0086c9]" />
+            Motor: <span className="text-[#101828]">{provider}</span>
           </span>
           <span
             className={cn(
-              'flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-mono-tight text-[10px]',
-              running ? 'status-live' : 'border-emerald-500/40 bg-emerald-500/[0.08] text-emerald-300'
+              'flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-mono-tight text-[10px] font-bold uppercase tracking-wider',
+              running ? 'status-live' : 'border-[#a6f4c5] bg-[#ecfdf3] text-[#067647]'
             )}
           >
-            <span className={cn('h-1.5 w-1.5 rounded-full pulse-dot', running ? 'bg-[#e8b64c]' : 'bg-emerald-400')} />
-            {running ? 'CAMPAÑA EN CURSO' : 'SISTEMA LISTO'}
+            <span className={cn('h-1.5 w-1.5 rounded-full pulse-dot', running ? 'bg-[#d97706]' : 'bg-[#12b76a]')} />
+            {running ? 'Campaña en curso' : 'Sistema listo'}
           </span>
         </div>
       </div>
@@ -103,21 +103,21 @@ export function ControlCenter({
       <div
         className={cn(
           'relative z-10 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 transition-colors',
-          autopilot ? 'border-[#a78bfa]/35 bg-[#a78bfa]/[0.06]' : 'border-white/[0.07] bg-white/[0.015]'
+          autopilot ? 'border-[#ddd6fe] bg-[#f5f3ff]' : 'border-[#e4e7ec] bg-[#f9fafb]'
         )}
       >
         <div className="flex min-w-0 items-center gap-3">
           <span
             className={cn(
               'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border',
-              autopilot ? 'border-[#a78bfa]/40 bg-[#a78bfa]/10 text-[#c4b0f5]' : 'border-white/10 bg-white/[0.03] text-muted-foreground'
+              autopilot ? 'border-[#ddd6fe] bg-white text-[#6941c6]' : 'border-[#e4e7ec] bg-white text-[#667085]'
             )}
           >
             <InfinityIcon className="h-4 w-4" />
           </span>
           <div className="min-w-0">
-            <p className="text-[13px] font-semibold text-foreground">Operación continua</p>
-            <p className="text-[11px] leading-snug text-muted-foreground">
+            <p className="text-[13px] font-semibold text-[#101828]">Operación continua</p>
+            <p className="text-[11px] leading-snug text-[#667085]">
               {autopilot
                 ? 'Activado — el motor encadena campañas reales en segundo plano, con un breve periodo de calma entre ellas.'
                 : 'Actívalo y el motor encadenará campañas reales sin intervención, escenario tras escenario.'}
@@ -132,7 +132,7 @@ export function ControlCenter({
           onClick={() => onToggleAutopilot(!autopilot)}
           className={cn(
             'relative h-6.5 w-11 shrink-0 rounded-full border transition-colors',
-            autopilot ? 'border-[#a78bfa]/60 bg-[#a78bfa]/30' : 'border-white/15 bg-white/[0.06]'
+            autopilot ? 'border-[#7c3aed] bg-[#7c3aed]' : 'border-[#d0d5dd] bg-[#eaecf0]'
           )}
         >
           <motion.span
@@ -163,15 +163,15 @@ export function ControlCenter({
               className={cn(
                 'group relative overflow-hidden rounded-xl border text-left transition-all disabled:opacity-50',
                 isSel
-                  ? 'edge-glow border-transparent bg-white/[0.05]'
-                  : 'border-white/[0.07] bg-white/[0.015] hover:border-white/20 hover:bg-white/[0.035]'
+                  ? 'border-[#101828] bg-white shadow-[0_8px_24px_-12px_rgba(16,24,40,0.35)]'
+                  : 'border-[#e4e7ec] bg-white hover:border-[#d0d5dd] hover:shadow-[0_4px_16px_-8px_rgba(16,24,40,0.18)]'
               )}
             >
               {/* halo de selección */}
               {isSel && (
                 <motion.span
                   layoutId="sel-halo"
-                  className="pointer-events-none absolute inset-0 z-20 rounded-xl ring-1 ring-white/25"
+                  className="pointer-events-none absolute inset-0 z-20 rounded-xl ring-2 ring-[#101828]/15"
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 />
               )}
@@ -195,21 +195,21 @@ export function ControlCenter({
                     layoutId="sel-check"
                     initial={{ scale: 0.6, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="absolute right-2.5 top-2.5 z-10 flex items-center gap-1 rounded-full bg-white px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#0a0b0f] shadow-lg"
+                    className="absolute right-2.5 top-2.5 z-10 flex items-center gap-1 rounded-full bg-[#101828] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-white shadow-lg"
                   >
                     <Check className="h-2.5 w-2.5" /> SELECCIONADO
                   </motion.span>
                 )}
               </div>
               <div className="p-3.5">
-                <p className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-                  <Building2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                <p className="flex items-center gap-1.5 text-sm font-semibold text-[#101828]">
+                  <Building2 className="h-3.5 w-3.5 shrink-0 text-[#98a2b3]" />
                   <span className="truncate">{s.company}</span>
                 </p>
-                <p className="mt-0.5 font-mono-tight text-[10px] uppercase tracking-wider text-muted-foreground">
+                <p className="mt-0.5 font-mono-tight text-[10px] uppercase tracking-wider text-[#98a2b3]">
                   {s.industry}
                 </p>
-                <p className="mt-2 line-clamp-2 text-[11.5px] leading-relaxed text-muted-foreground">{s.description}</p>
+                <p className="mt-2 line-clamp-2 text-[11.5px] leading-relaxed text-[#667085]">{s.description}</p>
               </div>
             </motion.button>
           )
@@ -226,7 +226,7 @@ export function ControlCenter({
           disabled={disabled || starting}
           className={cn(
             'shine-sweep relative flex items-center gap-2.5 rounded-lg px-8 py-3.5 text-sm font-semibold transition-all',
-            'bg-white text-[#0a0b0f] shadow-[0_8px_30px_-10px_rgba(255,255,255,0.4)] hover:bg-white/92',
+            'bg-[#101828] text-white shadow-[0_8px_24px_-10px_rgba(16,24,40,0.5)] hover:bg-[#182230]',
             (disabled || starting) && 'cursor-not-allowed opacity-50'
           )}
         >
@@ -246,7 +246,7 @@ export function ControlCenter({
             </>
           )}
         </motion.button>
-        <p className="max-w-md text-center text-[11.5px] leading-relaxed text-muted-foreground">
+        <p className="max-w-md text-center text-[11.5px] leading-relaxed text-[#667085]">
           Los agentes combatirán durante 8 rondas. El conocimiento generado se archiva
           automáticamente y se inyecta en las próximas campañas.
         </p>

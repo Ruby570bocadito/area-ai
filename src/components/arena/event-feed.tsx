@@ -18,21 +18,21 @@ import { cn } from '@/lib/utils'
 import type { EventDTO } from '@/lib/api-types'
 
 const RESULT_STYLE: Record<string, { label: string; cls: string; icon: LucideIcon }> = {
-  EXITO: { label: 'ÉXITO', cls: 'bg-[#f4536e]/12 text-[#f98ca0] border-[#f4536e]/35', icon: Zap },
-  PARCIAL: { label: 'PARCIAL', cls: 'bg-[#e8b64c]/12 text-[#f0cd85] border-[#e8b64c]/35', icon: AlertTriangle },
-  FALLO: { label: 'FALLO', cls: 'bg-white/[0.06] text-white/60 border-white/15', icon: ShieldX },
-  BLOQUEADO: { label: 'BLOQUEADO', cls: 'bg-[#41c0ef]/12 text-[#8adcf7] border-[#41c0ef]/35', icon: ShieldCheck },
-  DETECTADO: { label: 'DETECTADO', cls: 'bg-[#4ad6a5]/12 text-[#7fe8c4] border-[#4ad6a5]/35', icon: Eye },
-  CONTENIDO: { label: 'CONTENIDO', cls: 'bg-[#a78bfa]/12 text-[#cbb8f8] border-[#a78bfa]/35', icon: Lock },
-  IGNORADO: { label: 'IGNORADO', cls: 'bg-[#e8b64c]/12 text-[#f0cd85] border-[#e8b64c]/35', icon: AlertTriangle },
+  EXITO: { label: 'ÉXITO', cls: 'bg-[#fef3f2] text-[#b42318] border-[#fecdca]', icon: Zap },
+  PARCIAL: { label: 'PARCIAL', cls: 'bg-[#fffaeb] text-[#b54708] border-[#fedf89]', icon: AlertTriangle },
+  FALLO: { label: 'FALLO', cls: 'bg-[#f9fafb] text-[#667085] border-[#e4e7ec]', icon: ShieldX },
+  BLOQUEADO: { label: 'BLOQUEADO', cls: 'bg-[#f0f9ff] text-[#026aa2] border-[#b2ddff]', icon: ShieldCheck },
+  DETECTADO: { label: 'DETECTADO', cls: 'bg-[#ecfdf3] text-[#067647] border-[#a6f4c5]', icon: Eye },
+  CONTENIDO: { label: 'CONTENIDO', cls: 'bg-[#f5f3ff] text-[#6941c6] border-[#ddd6fe]', icon: Lock },
+  IGNORADO: { label: 'IGNORADO', cls: 'bg-[#fffaeb] text-[#b54708] border-[#fedf89]', icon: AlertTriangle },
 }
 
 const SEVERITY_COLOR: Record<string, string> = {
-  INFO: 'text-muted-foreground',
-  LOW: 'text-white/55',
-  MEDIUM: 'text-[#f0cd85]',
-  HIGH: 'text-[#f5a05e]',
-  CRITICAL: 'text-[#f98ca0]',
+  INFO: 'text-[#98a2b3]',
+  LOW: 'text-[#98a2b3]',
+  MEDIUM: 'text-[#b54708]',
+  HIGH: 'text-[#b93815]',
+  CRITICAL: 'text-[#b42318]',
 }
 
 export function EventFeed({
@@ -72,29 +72,29 @@ export function EventFeed({
             <motion.div
               key={ev.id}
               layout
-              initial={{ opacity: 0, y: 14, scale: 0.98, boxShadow: '0 0 0 1px rgba(255,255,255,0.14), 0 6px 24px -8px rgba(139,147,165,0.35)' }}
-              animate={{ opacity: 1, y: 0, scale: 1, boxShadow: '0 0 0 0 rgba(255,255,255,0), 0 0 0 rgba(0,0,0,0)' }}
+              initial={{ opacity: 0, y: 14, scale: 0.98, boxShadow: '0 2px 12px -4px rgba(16,24,40,0.18)' }}
+              animate={{ opacity: 1, y: 0, scale: 1, boxShadow: '0 0 0 rgba(0,0,0,0)' }}
               exit={{ opacity: 0 }}
               transition={{ type: 'spring', stiffness: 320, damping: 28, boxShadow: { duration: 1.6, ease: 'easeOut' } }}
               className={cn(
-                'anim-rise relative mb-1.5 flex gap-2.5 overflow-hidden rounded-lg border border-white/[0.05] bg-white/[0.02] p-2.5 pl-3',
+                'anim-rise relative mb-1.5 flex gap-2.5 overflow-hidden rounded-lg border border-[#f2f4f7] bg-[#f9fafb] p-2.5 pl-3',
               )}
             >
               {/* acento lateral por equipo */}
               <span
                 className={cn(
                   'absolute inset-y-0 left-0 w-[2.5px]',
-                  isRed ? 'bg-[#f4536e]/70' : isBlue ? 'bg-[#41c0ef]/70' : 'bg-[#e8b64c]/70'
+                  isRed ? 'bg-[#d92d20]/70' : isBlue ? 'bg-[#0086c9]/70' : 'bg-[#d97706]/70'
                 )}
               />
               <span
                 className={cn(
                   'mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border font-mono-tight text-[9px] font-bold',
                   isRed
-                    ? 'border-[#f4536e]/40 bg-[#f4536e]/[0.08] text-[#f98ca0]'
+                    ? 'border-[#fecdca] bg-white text-[#b42318]'
                     : isBlue
-                      ? 'border-[#41c0ef]/40 bg-[#41c0ef]/[0.08] text-[#8adcf7]'
-                      : 'border-[#e8b64c]/40 bg-[#e8b64c]/[0.08] text-[#f0cd85]'
+                      ? 'border-[#b2ddff] bg-white text-[#026aa2]'
+                      : 'border-[#fedf89] bg-white text-[#b54708]'
                 )}
               >
                 {isRed ? <Swords className="h-3 w-3" /> : isBlue ? <ShieldCheck className="h-3 w-3" /> : <Flag className="h-3 w-3" />}
@@ -104,12 +104,12 @@ export function EventFeed({
                   <span
                     className={cn(
                       'font-mono-tight text-[11px] font-bold tracking-wide',
-                      isRed ? 'text-[#f98ca0]' : isBlue ? 'text-[#8adcf7]' : 'text-[#f0cd85]'
+                      isRed ? 'text-[#b42318]' : isBlue ? 'text-[#026aa2]' : 'text-[#b54708]'
                     )}
                   >
                     {ev.agentCodename ?? 'SISTEMA'}
                   </span>
-                  <span className={cn('font-mono-tight text-[9px] uppercase', SEVERITY_COLOR[ev.severity] ?? 'text-muted-foreground')}>
+                  <span className={cn('font-mono-tight text-[9px] uppercase', SEVERITY_COLOR[ev.severity] ?? 'text-[#98a2b3]')}>
                     R{ev.round}·{ev.phase}
                   </span>
                   {res && ResIcon && (
@@ -120,22 +120,22 @@ export function EventFeed({
                     </span>
                   )}
                   {ev.targetNode && (
-                    <span className="rounded bg-white/[0.05] px-1.5 py-px font-mono-tight text-[9px] text-muted-foreground">
+                    <span className="rounded bg-[#f2f4f7] px-1.5 py-px font-mono-tight text-[9px] text-[#667085]">
                       → {ev.targetNode}
                     </span>
                   )}
                 </div>
-                <p className="mt-0.5 text-[12px] font-semibold leading-snug text-foreground/90">{ev.action}</p>
-                <p className="text-[11px] leading-snug text-muted-foreground">{ev.detail}</p>
+                <p className="mt-0.5 text-[12px] font-semibold leading-snug text-[#101828]">{ev.action}</p>
+                <p className="text-[11px] leading-snug text-[#667085]">{ev.detail}</p>
               </div>
             </motion.div>
           )
         })}
       </AnimatePresence>
       {shown.length === 0 && (
-        <div className="flex h-full min-h-32 flex-col items-center justify-center gap-2 text-muted-foreground">
+        <div className="flex h-full min-h-32 flex-col items-center justify-center gap-2 text-[#98a2b3]">
           <Info className="h-5 w-5" />
-          <p className="text-xs">Esperando que comience la primera campaña…</p>
+          <p className="text-xs">Sin eventos todavía — las acciones de los agentes aparecerán aquí.</p>
         </div>
       )}
     </div>

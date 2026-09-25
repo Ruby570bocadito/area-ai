@@ -14,8 +14,8 @@ import type { EventDTO, InfraNodeDTO } from '@/lib/api-types'
 // · Estados: comprometido / endurecido / objetivo previsto
 // ─────────────────────────────────────────────────────────────
 
-const RED = '#f4536e'
-const BLUE = '#41c0ef'
+const RED = '#d92d20'
+const BLUE = '#0086c9'
 
 const SEG_ORDER = ['DMZ', 'CORE', 'AD', 'CLOUD', 'OT'] as const
 const SEG_LABEL: Record<string, string> = {
@@ -154,7 +154,7 @@ export function NetworkMap({
 
   return (
     <div className="panel relative overflow-hidden rounded-xl">
-      <div className="grid-bg absolute inset-0 opacity-60" />
+      <div className="grid-bg absolute inset-0 opacity-70" />
 
       <svg
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
@@ -164,20 +164,20 @@ export function NetworkMap({
       >
         <defs>
           <radialGradient id="nm-red-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor={RED} stopOpacity="0.32" />
+            <stop offset="0%" stopColor={RED} stopOpacity="0.14" />
             <stop offset="100%" stopColor={RED} stopOpacity="0" />
           </radialGradient>
           <radialGradient id="nm-blue-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor={BLUE} stopOpacity="0.32" />
+            <stop offset="0%" stopColor={BLUE} stopOpacity="0.14" />
             <stop offset="100%" stopColor={BLUE} stopOpacity="0" />
           </radialGradient>
           <linearGradient id="nm-red-beam" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor={RED} stopOpacity="0.15" />
-            <stop offset="1" stopColor={RED} stopOpacity="0.95" />
+            <stop offset="0" stopColor={RED} stopOpacity="0.12" />
+            <stop offset="1" stopColor={RED} stopOpacity="0.85" />
           </linearGradient>
           <linearGradient id="nm-blue-beam" x1="1" y1="0" x2="0" y2="0">
-            <stop offset="0" stopColor={BLUE} stopOpacity="0.15" />
-            <stop offset="1" stopColor={BLUE} stopOpacity="0.95" />
+            <stop offset="0" stopColor={BLUE} stopOpacity="0.12" />
+            <stop offset="1" stopColor={BLUE} stopOpacity="0.85" />
           </linearGradient>
         </defs>
 
@@ -188,8 +188,8 @@ export function NetworkMap({
             n === 1 ? (190 + (VIEW_W - 170)) / 2 : 190 + (i * (VIEW_W - 170 - 190)) / (n - 1)
           return (
             <g key={seg}>
-              <line x1={x} y1={44} x2={x} y2={VIEW_H - 26} stroke="rgba(255,255,255,0.045)" strokeWidth="1" strokeDasharray="2 6" />
-              <text x={x} y={26} textAnchor="middle" fontSize="9.5" fill="#78829a" style={{ letterSpacing: '0.22em', textTransform: 'uppercase' }}>
+              <line x1={x} y1={44} x2={x} y2={VIEW_H - 26} stroke="rgba(16,24,40,0.07)" strokeWidth="1" strokeDasharray="2 6" />
+              <text x={x} y={26} textAnchor="middle" fontSize="9.5" fill="#98a2b3" style={{ letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: 600 }}>
                 {SEG_LABEL[seg] ?? seg}
               </text>
             </g>
@@ -205,7 +205,7 @@ export function NetworkMap({
                 key={`${a.id}~${b.id}`}
                 d={arc(a, b, 26)}
                 fill="none"
-                stroke="rgba(255,255,255,0.07)"
+                stroke="rgba(16,24,40,0.12)"
                 strokeWidth="1"
               />
             ))
@@ -213,7 +213,7 @@ export function NetworkMap({
 
         {/* cadena de ataque acumulada (éxitos RED) */}
         {chain.length > 0 && (
-          <g fill="none" stroke={RED} strokeWidth="1.3" opacity="0.4">
+          <g fill="none" stroke={RED} strokeWidth="1.3" opacity="0.38">
             {chain.map((id, i) => {
               const prev = i === 0 ? RED_BASE : byId.get(chain[i - 1])
               const cur = byId.get(id)
@@ -226,11 +226,11 @@ export function NetworkMap({
         {/* haz RED en curso + paquetes + impacto */}
         {redTarget && (
           <g key={`red-${lastRed?.id ?? 'idle'}`}>
-            <path d={arc(RED_BASE, redTarget, 40)} fill="none" stroke="url(#nm-red-beam)" strokeWidth="2" className="attack-beam" style={{ filter: `drop-shadow(0 0 5px ${RED}77)` }} />
+            <path d={arc(RED_BASE, redTarget, 40)} fill="none" stroke="url(#nm-red-beam)" strokeWidth="2" className="attack-beam" style={{ filter: `drop-shadow(0 1px 3px ${RED}55)` }} />
             {running && (
               <>
                 <BeamPacket path={arc(RED_BASE, redTarget, 40)} color={RED} dur={1.5} delay={0} />
-                <BeamPacket path={arc(RED_BASE, redTarget, 40)} color="#f98ca0" dur={1.5} delay={0.75} />
+                <BeamPacket path={arc(RED_BASE, redTarget, 40)} color="#f97066" dur={1.5} delay={0.75} />
               </>
             )}
             <motion.circle
@@ -251,11 +251,11 @@ export function NetworkMap({
         {/* haz BLUE en curso */}
         {blueTarget && (
           <g key={`blue-${lastBlue?.id ?? 'idle'}`}>
-            <path d={arcDown(BLUE_BASE, blueTarget, 30)} fill="none" stroke="url(#nm-blue-beam)" strokeWidth="2" className="attack-beam" style={{ filter: `drop-shadow(0 0 5px ${BLUE}77)` }} />
+            <path d={arcDown(BLUE_BASE, blueTarget, 30)} fill="none" stroke="url(#nm-blue-beam)" strokeWidth="2" className="attack-beam" style={{ filter: `drop-shadow(0 1px 3px ${BLUE}55)` }} />
             {running && (
               <>
                 <BeamPacket path={arcDown(BLUE_BASE, blueTarget, 30)} color={BLUE} dur={1.5} delay={0.2} />
-                <BeamPacket path={arcDown(BLUE_BASE, blueTarget, 30)} color="#8adcf7" dur={1.5} delay={0.95} />
+                <BeamPacket path={arcDown(BLUE_BASE, blueTarget, 30)} color="#36bffa" dur={1.5} delay={0.95} />
               </>
             )}
           </g>
@@ -264,9 +264,9 @@ export function NetworkMap({
         {/* base RED */}
         <g>
           <circle cx={RED_BASE.x} cy={RED_BASE.y} r="44" fill="url(#nm-red-glow)" />
-          <circle cx={RED_BASE.x} cy={RED_BASE.y} r="16" fill="#170b11" stroke={RED} strokeWidth="2" className={running ? 'svg-pulse-soft' : ''} />
-          <text x={RED_BASE.x} y={RED_BASE.y + 4} textAnchor="middle" fontSize="11" fill="#f98ca0" fontWeight="bold">R</text>
-          <text x={RED_BASE.x} y={RED_BASE.y + 34} textAnchor="middle" fontSize="8.5" fill="#f98ca0" opacity="0.75" style={{ letterSpacing: '0.18em' }}>
+          <circle cx={RED_BASE.x} cy={RED_BASE.y} r="16" fill="#fef3f2" stroke={RED} strokeWidth="2" className={running ? 'svg-pulse-soft' : ''} />
+          <text x={RED_BASE.x} y={RED_BASE.y + 4} textAnchor="middle" fontSize="11" fill="#b42318" fontWeight="bold">R</text>
+          <text x={RED_BASE.x} y={RED_BASE.y + 34} textAnchor="middle" fontSize="8.5" fill="#b42318" opacity="0.75" style={{ letterSpacing: '0.18em', fontWeight: 700 }}>
             RED ORIGIN
           </text>
         </g>
@@ -274,9 +274,9 @@ export function NetworkMap({
         {/* base BLUE (SOC) */}
         <g>
           <circle cx={BLUE_BASE.x} cy={BLUE_BASE.y} r="44" fill="url(#nm-blue-glow)" />
-          <circle cx={BLUE_BASE.x} cy={BLUE_BASE.y} r="16" fill="#0a1420" stroke={BLUE} strokeWidth="2" className={running ? 'svg-pulse-soft' : ''} />
-          <text x={BLUE_BASE.x} y={BLUE_BASE.y + 4} textAnchor="middle" fontSize="11" fill="#8adcf7" fontWeight="bold">B</text>
-          <text x={BLUE_BASE.x} y={BLUE_BASE.y + 34} textAnchor="middle" fontSize="8.5" fill="#8adcf7" opacity="0.75" style={{ letterSpacing: '0.18em' }}>
+          <circle cx={BLUE_BASE.x} cy={BLUE_BASE.y} r="16" fill="#f0f9ff" stroke={BLUE} strokeWidth="2" className={running ? 'svg-pulse-soft' : ''} />
+          <text x={BLUE_BASE.x} y={BLUE_BASE.y + 4} textAnchor="middle" fontSize="11" fill="#026aa2" fontWeight="bold">B</text>
+          <text x={BLUE_BASE.x} y={BLUE_BASE.y + 34} textAnchor="middle" fontSize="8.5" fill="#026aa2" opacity="0.75" style={{ letterSpacing: '0.18em', fontWeight: 700 }}>
             SOC
           </text>
         </g>
@@ -290,7 +290,7 @@ export function NetworkMap({
           const isBlueTarget = lastBlue?.targetNode === nd.id
           const isEligible = eligible.has(nd.id)
           const r = 11 + nd.criticality
-          const stroke = isComp ? RED : isHard ? BLUE : 'rgba(255,255,255,0.22)'
+          const stroke = isComp ? RED : isHard ? BLUE : 'rgba(16,24,40,0.22)'
           return (
             <g
               key={nd.id}
@@ -301,7 +301,7 @@ export function NetworkMap({
             >
               {/* objetivo previsto para la fase */}
               {isEligible && !isComp && (
-                <circle cx={nd.x} cy={nd.y} r={r + 7} fill="none" stroke="rgba(232,182,76,0.4)" strokeWidth="1" strokeDasharray="3 4" />
+                <circle cx={nd.x} cy={nd.y} r={r + 7} fill="none" stroke="rgba(217,119,6,0.45)" strokeWidth="1" strokeDasharray="3 4" />
               )}
               {(isRedTarget || isBlueTarget) && (
                 <circle cx={nd.x} cy={nd.y} r={r + 5} fill="none" stroke={isRedTarget ? RED : BLUE} strokeWidth="1.4" className="svg-pulse-soft" />
@@ -310,21 +310,21 @@ export function NetworkMap({
                 cx={nd.x}
                 cy={nd.y}
                 r={r}
-                fill={isComp ? '#170b11' : isHard ? '#0a1420' : '#0d1017'}
-                stroke={isSel ? '#fff' : stroke}
+                fill={isComp ? '#fef3f2' : isHard ? '#f0f9ff' : '#ffffff'}
+                stroke={isSel ? '#101828' : stroke}
                 strokeWidth={isSel ? 2 : isComp || isHard ? 2 : 1.2}
                 style={{
-                  filter: isComp ? `drop-shadow(0 0 6px ${RED}77)` : isHard ? `drop-shadow(0 0 6px ${BLUE}66)` : undefined,
+                  filter: isComp ? `drop-shadow(0 1px 4px ${RED}66)` : isHard ? `drop-shadow(0 1px 4px ${BLUE}55)` : 'drop-shadow(0 1px 2px rgba(16,24,40,0.08))',
                   transition: 'stroke 0.2s ease',
                 }}
               />
-              <text x={nd.x} y={nd.y + 3} textAnchor="middle" fontSize="7.5" fill={isComp ? '#f98ca0' : isHard ? '#8adcf7' : '#9aa3b5'} style={{ fontWeight: 700, letterSpacing: '0.06em' }}>
+              <text x={nd.x} y={nd.y + 3} textAnchor="middle" fontSize="7.5" fill={isComp ? '#b42318' : isHard ? '#026aa2' : '#667085'} style={{ fontWeight: 700, letterSpacing: '0.06em' }}>
                 {nd.type.slice(0, 6)}
               </text>
-              <text x={nd.x} y={nd.y + r + 13} textAnchor="middle" fontSize="9" fill="#c9cedb">
+              <text x={nd.x} y={nd.y + r + 13} textAnchor="middle" fontSize="9" fill="#344054">
                 {nd.name.length > 24 ? nd.name.slice(0, 23) + '…' : nd.name}
               </text>
-              <text x={nd.x} y={nd.y - r - 6} textAnchor="middle" fontSize="7.5" fill="#78829a" className="font-mono-tight">
+              <text x={nd.x} y={nd.y - r - 6} textAnchor="middle" fontSize="7.5" fill="#98a2b3" className="font-mono-tight">
                 {nd.ip}
               </text>
             </g>
@@ -333,20 +333,20 @@ export function NetworkMap({
       </svg>
 
       {/* leyenda + contadores */}
-      <div className="relative z-10 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-white/[0.06] px-3.5 py-2.5 font-mono-tight text-[10px] text-muted-foreground">
+      <div className="relative z-10 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-[#f2f4f7] px-3.5 py-2.5 font-mono-tight text-[10px] text-[#667085]">
         <span className="flex items-center gap-1.5">
-          <Skull className="h-3 w-3 text-[#f4536e]" /> Comprometido
+          <Skull className="h-3 w-3 text-[#d92d20]" /> Comprometido
         </span>
         <span className="flex items-center gap-1.5">
-          <Shield className="h-3 w-3 text-[#41c0ef]" /> Endurecido
+          <Shield className="h-3 w-3 text-[#0086c9]" /> Endurecido
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full border border-dashed border-[#e8b64c]/70" /> Objetivo previsto de fase
+          <span className="h-2.5 w-2.5 rounded-full border border-dashed border-[#d97706]/70" /> Objetivo previsto de fase
         </span>
         <span className="ml-auto flex items-center gap-3">
           <span>{nodes.length} activos</span>
-          <span className="text-[#f98ca0]">{positions.filter((p) => compromised.has(p.id)).length} comprometidos</span>
-          <span className="text-[#8adcf7]">{positions.filter((p) => hardened.has(p.id)).length} endurecidos</span>
+          <span className="text-[#b42318]">{positions.filter((p) => compromised.has(p.id)).length} comprometidos</span>
+          <span className="text-[#026aa2]">{positions.filter((p) => hardened.has(p.id)).length} endurecidos</span>
         </span>
       </div>
 
@@ -359,14 +359,14 @@ export function NetworkMap({
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="relative z-10 overflow-hidden border-t border-white/[0.06]"
+            className="relative z-10 overflow-hidden border-t border-[#f2f4f7]"
           >
-            <div className="grid gap-4 p-4 sm:grid-cols-[1.1fr_1fr_1fr]">
+            <div className="grid gap-4 bg-[#f9fafb] p-4 sm:grid-cols-[1.1fr_1fr_1fr]">
               <div className="min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="font-display truncate text-sm font-bold text-foreground">{selected.name}</p>
-                    <p className="mt-0.5 font-mono-tight text-[10px] text-muted-foreground">
+                    <p className="font-display truncate text-sm font-bold text-[#101828]">{selected.name}</p>
+                    <p className="mt-0.5 font-mono-tight text-[10px] text-[#667085]">
                       {selected.id} · {selected.ip} · {SEG_LABEL[selected.segment] ?? selected.segment}
                     </p>
                   </div>
@@ -374,33 +374,33 @@ export function NetworkMap({
                     type="button"
                     onClick={() => setSelectedId(null)}
                     aria-label="Cerrar detalle"
-                    className="rounded p-1 text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground"
+                    className="rounded p-1 text-[#98a2b3] transition-colors hover:bg-[#f2f4f7] hover:text-[#101828]"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
                 <div className="mt-2.5 flex items-center gap-2">
-                  <span className="font-mono-tight text-[9.5px] uppercase tracking-wider text-muted-foreground">Criticidad</span>
+                  <span className="font-mono-tight text-[9.5px] uppercase tracking-wider text-[#98a2b3]">Criticidad</span>
                   <span className="flex gap-0.5">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <span
                         key={i}
                         className={cn(
                           'h-1 w-4 rounded-full',
-                          i < selected.criticality ? 'bg-gradient-to-r from-[#e8b64c] to-[#f4536e]' : 'bg-white/10'
+                          i < selected.criticality ? 'bg-gradient-to-r from-[#fdb022] to-[#f97066]' : 'bg-[#eaecf0]'
                         )}
                       />
                     ))}
                   </span>
-                  <span className="font-mono-tight text-[10px] text-foreground/80">{selected.criticality}/5</span>
+                  <span className="font-mono-tight text-[10px] text-[#475467]">{selected.criticality}/5</span>
                 </div>
                 {(compromised.has(selected.id) || hardened.has(selected.id)) && (
                   <p
                     className={cn(
                       'mt-2.5 inline-flex items-center gap-1.5 rounded-md border px-2 py-1 font-mono-tight text-[9.5px] font-bold',
                       compromised.has(selected.id)
-                        ? 'border-[#f4536e]/40 bg-[#f4536e]/[0.08] text-[#f98ca0]'
-                        : 'border-[#41c0ef]/40 bg-[#41c0ef]/[0.08] text-[#8adcf7]'
+                        ? 'border-[#fecdca] bg-[#fef3f2] text-[#b42318]'
+                        : 'border-[#b2ddff] bg-[#f0f9ff] text-[#026aa2]'
                     )}
                   >
                     {compromised.has(selected.id) ? <Bug className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
@@ -409,34 +409,34 @@ export function NetworkMap({
                 )}
               </div>
               <div className="min-w-0">
-                <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-[#f98ca0]">
+                <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-[#b42318]">
                   <Bug className="h-3 w-3" /> Vulnerabilidades
                 </p>
                 <ul className="mt-1.5 space-y-1">
                   {selected.vulnerabilities.length > 0 ? (
                     selected.vulnerabilities.map((v) => (
-                      <li key={v} className="text-[11.5px] leading-snug text-foreground/80">
+                      <li key={v} className="text-[11.5px] leading-snug text-[#344054]">
                         {v}
                       </li>
                     ))
                   ) : (
-                    <li className="text-[11.5px] text-muted-foreground">Sin vulnerabilidades conocidas.</li>
+                    <li className="text-[11.5px] text-[#667085]">Sin vulnerabilidades conocidas.</li>
                   )}
                 </ul>
               </div>
               <div className="min-w-0">
-                <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-[#8adcf7]">
+                <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-[#026aa2]">
                   <Lock className="h-3 w-3" /> Controles
                 </p>
                 <ul className="mt-1.5 space-y-1">
                   {selected.controls.length > 0 ? (
                     selected.controls.map((c) => (
-                      <li key={c} className="text-[11.5px] leading-snug text-foreground/80">
+                      <li key={c} className="text-[11.5px] leading-snug text-[#344054]">
                         {c}
                       </li>
                     ))
                   ) : (
-                    <li className="text-[11.5px] text-muted-foreground">Solo controles básicos.</li>
+                    <li className="text-[11.5px] text-[#667085]">Solo controles básicos.</li>
                   )}
                 </ul>
               </div>
@@ -447,7 +447,7 @@ export function NetworkMap({
 
       {/* pista cuando no hay selección */}
       {!selected && (
-        <div className="relative z-10 flex items-center justify-center gap-1.5 border-t border-white/[0.06] px-3.5 py-1.5 text-[10px] text-muted-foreground/70">
+        <div className="relative z-10 flex items-center justify-center gap-1.5 border-t border-[#f2f4f7] px-3.5 py-1.5 text-[10px] text-[#98a2b3]">
           <MousePointerClick className="h-3 w-3" />
           Selecciona un activo del mapa para ver sus vulnerabilidades y controles reales.
         </div>

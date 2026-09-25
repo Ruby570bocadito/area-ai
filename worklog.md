@@ -135,3 +135,26 @@ Stage Summary:
 - Código en sub-partes mantenibles (layout/, hook de estado, page fino) y lenguaje de motion unificado y sobrio.
 - Ficheros clave: src/lib/sim/autopilot.ts, src/app/api/autopilot/route.ts, src/app/api/agents/[key]/activity/route.ts, src/hooks/use-arena-state.ts, src/components/arena/layout/* (nuevos), src/app/page.tsx, {network-map,arena-live,agent-detail,control-center,hero,chrome,agent-avatar,analytics,history-panel}.tsx, globals.css, api-types.ts, api/state/route.ts.
 - Capturas: download/round7-hero2.png, round7-mando.png, round7-arena-live.png, round7-map.png, round7-node-detail.png, round7-agent-activity.png, round7-mobile-menu.png, round7-palette.png.
+
+---
+Task ID: 8
+Agent: Super Z (main agent)
+Task: "No quiero que todo sea en una misma página — hazlo en diferentes, mejora la paleta, profesional no estilo hacking, visible, mejor UI, refuerza todo." Migración multi-página + rediseño claro corporativo.
+
+Work Log:
+- Arquitectura multi-página real (App Router): / (Panel de mando), /arena (Operaciones), /agentes, /conocimiento, /historial, /analitica, /modelos. Sidebar corporativa navy fija + topbar con título de página, estado del motor y ⌘K; móvil con drawer deslizante (spring) y topbar compacta.
+- ArenaProvider (contexto) en layout.tsx: UN único sondeo de /api/state para toda la app; hook use-arena-state ahora navega a /arena con useRouter al lanzar campaña. Footer claro compartido.
+- Nueva paleta profesional clara (anti-hacker): fondos #f4f5f7/blanco, texto #101828/#667085, bordes #e4e7ec; equipos RED #d92d20 (soft #fef3f2) y BLUE #0086c9 (soft #f0f9ff); ámbar #d97706 para EN DIRECTO, violeta para autopiloto, esmeralda para éxito. Cero neones, cero terminal; sombras contenidas y bordes de 1px.
+- Tipografía: Inter Tight (display) + Inter (cuerpo) + JetBrains Mono (datos); html claro (sin .dark); themeColor #f4f5f7; data-scroll-behavior="smooth" (silencia warning de Next).
+- globals.css reescrito: .panel/.panel-raised/.panel-hover claros, grid-bg claro, active-red/blue/amber con anillos suaves, status-live ámbar claro, side-link para la sidebar, scenario-media con velo claro, shine-sweep oscuro, conic-ring con colores corporativos, marquee/map-scan/scan-sweep/pulse-dot conservados; retirados noise/cursor-glow/scroll-progress/gsap-reveal/section-index/edge-glow.
+- Componentes re-estilizados al claro conservando toda la lógica: arena-live (marcador, operadores en turno, fases, informe .md, ticker), network-map (SVG claro: nodos blancos, haces con gradiente, cadena, panel de detalle), event-feed, agent-avatar (hexágonos claros), roster, agent-detail (diálogo blanco), knowledge-panel, history-panel (añade resultado 71–44 en cada fila), analytics (donut/curva/ranking), control-center (selección navy, CTA oscuro, autopiloto violeta), model-studio convertido en PANEL de página /modelos (presets, descarga real de catálogo, estado del motor lateral).
+- CommandPalette: navega por rutas con useRouter (7 destinos + 6 escenarios), sin eventos de ventana; montada en el AppShell.
+- FIX: IDs de gradientes SVG de BrandMark duplicados (sidebar oculta vs drawer) rompían el emblema en móvil → useId único por instancia.
+- Limpieza: eliminados hero.tsx, particle-field.tsx, chrome.tsx, section.tsx, layout/navbar.tsx, layout/section-shell.tsx (GSAP/SplitType/tsParticles fuera de la app; dependencias quedan en package.json sin uso).
+- Verificación en caliente (Agent Browser): 7 rutas HTTP 200; panel con KPIs reales (15 campañas, 200 lecciones, nivel medio 19.7 — el autopiloto de la ronda 7 siguió evolucionando de fondo: conocimiento 42→200); mapa claro con carriles y panel de nodo; ficha de agente con actividad real (HYDRA Nv42, 82 campañas, técnicas ×14, 100% éxito en ficha); campaña OPERACIÓN SIGILO lanzada manualmente desde el ControlCenter → toast + router a /arena + EN VIVO con operadores en turno (SPECTRE ÉXITO +4 / CITADEL DETECTADO +6) y marcador NumberFlow animado; durante la verificación el autopiloto encadenó HORIZONTE/TITANIO/SIGILO (modo determinista por 429 del LLM externo, fallback del motor OK); ⌘K con rutas OK; móvil 390px sin h-scroll y drawer OK; consola sin errores; eslint 0 problemas; tsc sin errores nuevos (engine/llm/agent-avatar preexistentes).
+- Estado final: autopiloto apagado tras la prueba (se reactiva con un clic desde el Panel); motor y evolución intactos.
+
+Stage Summary:
+- area·ai es ahora una aplicación multi-página profesional con shell de producto (sidebar + topbar), paleta clara corporativa sin estética hacker, y todos los módulos redistribuidos en rutas propias. Nada simulado: KPIs, mapa, fichas, historial y analítica salen de la BD del motor.
+- Ficheros clave: src/app/{layout,globals.css,page.tsx} + src/app/{arena,agentes,conocimiento,historial,analitica,modelos}/page.tsx (nuevos), src/components/arena/shell/{arena-provider,app-shell,page-frame}.tsx (nuevos), todos los componentes arena/ re-estilizados, src/hooks/use-arena-state.ts (router), layout/brand.tsx (useId). Eliminados 6 ficheros muertos.
+- Capturas: download/round8-{panel,arena,map,arena-live,arena-live2,map-live,node-detail,agentes,ficha,conocimiento,historial,analitica,modelos,palette,golden-live,mobile-panel,mobile-menu,mobile-menu2,final-panel}.png

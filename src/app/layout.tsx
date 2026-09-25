@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Geist_Mono, Sora, Inter, JetBrains_Mono } from "next/font/google";
+import { Geist_Mono, Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { ArenaProvider } from "@/components/arena/shell/arena-provider";
+import { AppShell } from "@/components/arena/shell/app-shell";
 
-// ── Tipografía premium ────────────────────────────────────────
-// Sora: display geométrico para titulares (aire de AI lab moderno)
-const sora = Sora({
+// ── Tipografía profesional ───────────────────────────────────
+// Inter Tight: titulares de producto (tracking ajustado)
+const interTight = Inter_Tight({
   variable: "--font-display",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
@@ -18,7 +20,7 @@ const inter = Inter({
   weight: ["400", "500", "600", "700"],
 });
 
-// JetBrains Mono: datos, métricas y etiquetas técnicas
+// JetBrains Mono: datos, métricas e identificadores
 const jetbrains = JetBrains_Mono({
   variable: "--font-jetbrains",
   subsets: ["latin"],
@@ -61,7 +63,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#08090d",
+  themeColor: "#f4f5f7",
 };
 
 export default function RootLayout({
@@ -70,11 +72,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="dark" suppressHydrationWarning>
+    <html lang="es" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body
-        className={`${sora.variable} ${inter.variable} ${jetbrains.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen`}
+        className={`${interTight.variable} ${inter.variable} ${jetbrains.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen`}
       >
-        {children}
+        <ArenaProvider>
+          <AppShell>{children}</AppShell>
+        </ArenaProvider>
         <Toaster />
       </body>
     </html>

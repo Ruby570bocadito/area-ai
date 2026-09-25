@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   CommandDialog,
   CommandEmpty,
@@ -10,22 +11,28 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command'
-import { Swords, Map, Radio, BrainCircuit, Users, History, BarChart3, Settings2, ArrowUpRight } from 'lucide-react'
-import type { ScenarioDTO } from '@/lib/api-types'
+import { Swords, Radio, BrainCircuit, Users, History, BarChart3, SlidersHorizontal, LayoutDashboard, ArrowUpRight } from 'lucide-react'
+import { useArena } from './shell/arena-provider'
 
 // ─────────────────────────────────────────────────────────────
-// Command palette (⌘K) — navegación y acciones rápidas
+// Command palette (⌘K) — navegación por rutas y acciones
+// rápidas del laboratorio. Montada una sola vez en el AppShell.
 // ─────────────────────────────────────────────────────────────
-export function CommandPalette({
-  scenarios,
-  running,
-  onStart,
-}: {
-  scenarios: ScenarioDTO[]
-  running: boolean
-  onStart: (scenarioId?: string) => void
-}) {
+
+const ROUTES = [
+  { href: '/', label: 'Panel de mando', icon: LayoutDashboard },
+  { href: '/arena', label: 'Operaciones en vivo', icon: Radio },
+  { href: '/agentes', label: 'Roster de agentes', icon: Users },
+  { href: '/conocimiento', label: 'Base de conocimiento', icon: BrainCircuit },
+  { href: '/historial', label: 'Historial de campañas', icon: History },
+  { href: '/analitica', label: 'Analítica del laboratorio', icon: BarChart3 },
+  { href: '/modelos', label: 'Model Studio · motor LLM', icon: SlidersHorizontal },
+] as const
+
+export function CommandPalette() {
   const [open, setOpen] = useState(false)
+  const router = useRouter()
+  const { state, running, handleStart } = useArena()
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -38,45 +45,33 @@ export function CommandPalette({
     return () => document.removeEventListener('keydown', down)
   }, [])
 
-  useEffect(() => {
-    if (!open) return
-    const close = () => setOpen(false)
-    window.addEventListener('area-ai:close-palette', close)
-    return () => window.removeEventListener('area-ai:close-palette', close)
-  }, [open])
-
-  const go = (id: string) => {
+  const go = (href: string) => {
     setOpen(false)
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    router.push(href)
   }
 
   const launch = (scenarioId?: string) => {
     setOpen(false)
-    onStart(scenarioId)
-  }
-
-  const openStudio = () => {
-    setOpen(false)
-    window.dispatchEvent(new CustomEvent('area-ai:open-model-studio'))
+    void handleStart(scenarioId)
   }
 
   return (
     <>
-      {/* Botón + hint visual en navbar se gestiona desde page.tsx; esto abre por clic */}
       <button
         onClick={() => setOpen(true)}
         aria-label="Abrir paleta de comandos"
-        className="nav-link hidden items-center gap-2 rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-1.5 font-mono-tight text-[10px] text-muted-foreground transition-colors hover:text-foreground md:flex"
+        className="hidden items-center gap-1.5 rounded-md border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] text-[#667085] shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-[#101828] md:flex"
+        title="Paleta de comandos (⌘K)"
       >
         <span className="text-[11px]">⌘</span>K
       </button>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Buscar acciones: lanzar campaña, ir a sección…" />
+        <CommandInput placeholder="Buscar acciones: lanzar campaña, ir a una página…" />
         <CommandList className="nice-scroll">
           <CommandEmpty>Sin resultados.</CommandEmpty>
 
           <CommandGroup heading="Campañas">
-            {scenarios.map((s) => (
+            {(state?.scenarios ?? []).map((s) => (
               <CommandItem
                 key={s.id}
                 value={`lanzar ${s.codename} ${s.company} ${s.industry}`}
@@ -84,41 +79,25 @@ export function CommandPalette({
                 onSelect={() => launch(s.id)}
                 className="gap-2.5"
               >
-                <Swords className="h-3.5 w-3.5 text-[#f4536e]" />
+                <Swords className="h-3.5 w-3.5 text-[#d92d20]" />
                 <span className="flex-1">
                   Lanzar <b>{s.codename}</b>
-                  <span className="ml-1.5 text-muted-foreground">· {s.company}</span>
+                  <span className="ml-1.5 text-[#667085]">· {s.company}</span>
                 </span>
-                <span className="font-mono-tight text-[9px] text-muted-foreground">dif {s.difficulty}/5</span>
+                <span className="font-mono-tight text-[9px] text-[#667085]">dif {s.difficulty}/5</span>
               </CommandItem>
             ))}
           </CommandGroup>
           <CommandSeparator />
 
           <CommandGroup heading="Navegación">
-            {[
-              { id: 'mando', label: 'Centro de mando', icon: Map },
-              { id: 'arena', label: 'Arena en vivo', icon: Radio },
-              { id: 'conocimiento', label: 'Base de conocimiento', icon: BrainCircuit },
-              { id: 'agentes', label: 'Roster de agentes', icon: Users },
-              { id: 'historial', label: 'Historial', icon: History },
-              { id: 'analitica', label: 'Analítica', icon: BarChart3 },
-            ].map((s) => (
-              <CommandItem key={s.id} value={`ir a ${s.label}`} onSelect={() => go(s.id)} className="gap-2.5">
-                <s.icon className="h-3.5 w-3.5 text-muted-foreground" />
+            {ROUTES.map((s) => (
+              <CommandItem key={s.href} value={`ir a ${s.label}`} onSelect={() => go(s.href)} className="gap-2.5">
+                <s.icon className="h-3.5 w-3.5 text-[#667085]" />
                 <span className="flex-1">{s.label}</span>
-                <ArrowUpRight className="h-3 w-3 text-muted-foreground" />
+                <ArrowUpRight className="h-3 w-3 text-[#98a2b3]" />
               </CommandItem>
             ))}
-          </CommandGroup>
-          <CommandSeparator />
-
-          <CommandGroup heading="Sistema">
-            <CommandItem value="model studio configurar modelo motor" onSelect={openStudio} className="gap-2.5">
-              <Settings2 className="h-3.5 w-3.5 text-[#e8b64c]" />
-              <span className="flex-1">Abrir Model Studio</span>
-              <span className="font-mono-tight text-[9px] text-muted-foreground">motor LLM</span>
-            </CommandItem>
           </CommandGroup>
         </CommandList>
       </CommandDialog>

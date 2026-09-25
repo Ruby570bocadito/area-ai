@@ -1,12 +1,14 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
 import type { StateResponse } from '@/lib/api-types'
 
 // ─────────────────────────────────────────────────────────────
 // Estado vivo del laboratorio: carga + sondeo adaptativo +
-// lanzamiento de campañas. Aislado de la vista (page.tsx fino).
+// lanzamiento de campañas. Compartido vía ArenaProvider para
+// toda la aplicación multi-página.
 // ─────────────────────────────────────────────────────────────
 
 export function useArenaState() {
@@ -14,6 +16,7 @@ export function useArenaState() {
   const [loadError, setLoadError] = useState(false)
   const stateRef = useRef<StateResponse | null>(null)
   const { toast } = useToast()
+  const router = useRouter()
 
   const load = useCallback(async () => {
     try {
@@ -55,9 +58,7 @@ export function useArenaState() {
           description: 'Los agentes IA están entrando en combate. Sigue la acción en la arena.',
         })
         await load()
-        setTimeout(() => {
-          document.getElementById('arena')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        }, 600)
+        router.push('/arena')
       } catch (e) {
         toast({
           title: 'No se pudo iniciar la campaña',
@@ -66,7 +67,7 @@ export function useArenaState() {
         })
       }
     },
-    [load, toast]
+    [load, toast, router]
   )
 
   const toggleAutopilot = useCallback(

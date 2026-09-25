@@ -69,7 +69,7 @@ export function AgentAvatar({
       )}
       {active && (
         <motion.span
-          className={cn('absolute inset-0 rounded-full', isRed ? 'bg-[#f4536e]/20' : 'bg-[#41c0ef]/20')}
+          className={cn('absolute inset-0 rounded-full', isRed ? 'bg-[#d92d20]/20' : 'bg-[#0086c9]/20')}
           animate={{ scale: [1, 1.35], opacity: [0.7, 0] }}
           transition={{ duration: 1.1, repeat: Infinity, ease: 'easeOut' }}
         />
@@ -84,8 +84,8 @@ export function AgentAvatar({
         className={cn(
           'relative flex h-full w-full items-center justify-center border transition-colors',
           isRed
-            ? 'border-[#f4536e]/60 bg-[#170b11] text-[#f4536e]'
-            : 'border-[#41c0ef]/60 bg-[#0a1420] text-[#41c0ef]',
+            ? 'border-[#fda29b] bg-[#fef3f2] text-[#d92d20]'
+            : 'border-[#84caff] bg-[#f0f9ff] text-[#0086c9]',
           active && (isRed ? 'active-red' : 'active-blue')
         )}
         style={{
@@ -97,10 +97,10 @@ export function AgentAvatar({
       </motion.div>
       <span
         className={cn(
-          'absolute -bottom-1.5 -right-1.5 rounded-full border px-1.5 py-px font-mono-tight text-[9px] font-bold',
+          'absolute -bottom-1.5 -right-1.5 rounded-full border px-1.5 py-px font-mono-tight text-[9px] font-bold shadow-sm',
           isRed
-            ? 'border-[#f4536e]/50 bg-[#170b11] text-[#f98ca0]'
-            : 'border-[#41c0ef]/50 bg-[#0a1420] text-[#8adcf7]'
+            ? 'border-[#fecdca] bg-white text-[#b42318]'
+            : 'border-[#b2ddff] bg-white text-[#026aa2]'
         )}
       >
         Nv{agent.level}
@@ -131,9 +131,9 @@ export function AgentCard({
       animate={{
         boxShadow: active
           ? isRed
-            ? '0 8px 30px -12px rgba(244,83,110,0.45)'
-            : '0 8px 30px -12px rgba(65,192,239,0.45)'
-          : '0 0 0 rgba(0,0,0,0)',
+            ? '0 8px 24px -12px rgba(217, 45, 32, 0.4)'
+            : '0 8px 24px -12px rgba(0, 134, 201, 0.4)'
+          : '0 1px 2px rgba(16, 24, 40, 0.04)',
       }}
       className={cn(
         'panel relative overflow-hidden rounded-xl p-3 transition-colors',
@@ -144,10 +144,10 @@ export function AgentCard({
         <span
           className={cn(
             'absolute right-2 top-2 flex items-center gap-1 rounded-full px-2 py-0.5 font-mono-tight text-[9px] font-bold uppercase tracking-wider',
-            isRed ? 'bg-[#f4536e]/15 text-[#f98ca0]' : 'bg-[#41c0ef]/15 text-[#8adcf7]'
+            isRed ? 'bg-[#fef3f2] text-[#b42318]' : 'bg-[#f0f9ff] text-[#026aa2]'
           )}
         >
-          <span className={cn('h-1.5 w-1.5 rounded-full pulse-dot', isRed ? 'bg-[#f4536e]' : 'bg-[#41c0ef]')} />
+          <span className={cn('h-1.5 w-1.5 rounded-full pulse-dot', isRed ? 'bg-[#d92d20]' : 'bg-[#0086c9]')} />
           Actuando
         </span>
       )}
@@ -157,12 +157,12 @@ export function AgentCard({
           <p
             className={cn(
               'font-display truncate text-sm font-bold tracking-wide',
-              isRed ? 'text-[#f98ca0]' : 'text-[#8adcf7]'
+              isRed ? 'text-[#b42318]' : 'text-[#026aa2]'
             )}
           >
             {agent.codename}
           </p>
-          <p className="truncate text-[11px] text-muted-foreground">{agent.role}</p>
+          <p className="truncate text-[11px] text-[#667085]">{agent.role}</p>
         </div>
       </div>
       {lastAction && (
@@ -171,21 +171,21 @@ export function AgentCard({
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
-          className="mt-2 truncate rounded-md bg-white/[0.04] px-2 py-1 text-[11px] italic text-foreground/80"
+          className="mt-2 truncate rounded-md bg-[#f9fafb] px-2 py-1 text-[11px] italic text-[#475467]"
         >
           “{lastAction}”
         </motion.p>
       )}
       <div className="mt-2 flex items-center gap-2">
-        <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/[0.07]">
+        <div className="h-1 flex-1 overflow-hidden rounded-full bg-[#f2f4f7]">
           <motion.div
-            className={cn('h-full rounded-full', isRed ? 'bg-[#f4536e]' : 'bg-[#41c0ef]')}
+            className={cn('h-full rounded-full', isRed ? 'bg-[#d92d20]' : 'bg-[#0086c9]')}
             initial={{ width: 0 }}
             animate={{ width: `${xpPct}%` }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
           />
         </div>
-        <span className="font-mono-tight text-[10px] text-muted-foreground">
+        <span className="font-mono-tight text-[10px] text-[#667085]">
           {agent.xp} XP · {agent.victories}🏆
         </span>
       </div>
