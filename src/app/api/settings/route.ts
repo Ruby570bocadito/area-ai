@@ -5,9 +5,16 @@ import {
   maskKey,
 } from '@/lib/sim/provider-config'
 import { classifyTarget, isLocalRequest } from '@/lib/net/target-guard'
-import { isMutationAuthorized } from '@/lib/net/access'
+import { isMutationAuthorized, rateLimit, clientKey } from '@/lib/net/access'
 
 export const dynamic = 'force-dynamic'
+
+// Topes de tamaño para la config persistida (tabla Setting, String sin
+// límite en SQLite — hallazgo Ronda 11 de bugs): sin ellos, un POST con
+// cadenas enormes se archivaba íntegro y bloataba la BD y las respuestas.
+const MAX_BASE_URL = 2048
+const MAX_MODEL = 200
+const MAX_API_KEY = 4096
 
 export async function GET() {
   try {
@@ -28,6 +35,16 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit ANTES de la verificación del token (hallazgo Ronda 11):
+    // con ADMIN_TOKEN definido, este endpoint era el único de mutación sin
+    // límite — un atacante podía probar tokens sin techo. 30/min es
+    // holgado para uso legítimo y acota la fuerza bruta a 30 intentos/min.
+    if (!rateLimit(`admin:${clientKey(req.headers)}`, 30)) {
+      return NextResponse.json(
+        { ok: false, error: 'Demasiados intentos; espera un momento antes de reintentar' },
+        { status: 429 }
+      )
+    }
     if (!isMutationAuthorized(req.headers)) {
       return NextResponse.json(
         { ok: false, error: 'No autorizado: falta el token de administración (X-Admin-Token)' },
@@ -44,6 +61,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { ok: false, error: 'baseUrl y model son obligatorios' },
         { status: 400 }
+      )
+    }
+    if (
+      body.baseUrl.length > MAX_BASE_URL ||
+      body.model.length > MAX_MODEL ||
+      (body.apiKey !== undefined && body.apiKey.length > MAX_API_KEY)
+    ) {
+      return NextResponse.json(
+        { ok: false, error: 'Algún campo excede el tamaño máximo permitido' },
+        { status: 413 }
       )
     }
 

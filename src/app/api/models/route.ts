@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProviderConfig } from '@/lib/sim/provider-config'
 import { classifyTarget, isLocalRequest } from '@/lib/net/target-guard'
-import { isMutationAuthorized } from '@/lib/net/access'
+import { isMutationAuthorized, rateLimit, clientKey } from '@/lib/net/access'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,6 +20,15 @@ interface RawModel {
  */
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit antes de la verificación del token (hallazgo Ronda 11:
+    // fuerza bruta de ADMIN_TOKEN sin techo en este endpoint). Mismo
+    // bucket `admin:` que /api/settings — los intentos se comparten.
+    if (!rateLimit(`admin:${clientKey(req.headers)}`, 30)) {
+      return NextResponse.json(
+        { ok: false, error: 'Demasiados intentos; espera un momento antes de reintentar' },
+        { status: 429 }
+      )
+    }
     if (!isMutationAuthorized(req.headers)) {
       return NextResponse.json(
         { ok: false, error: 'No autorizado: falta el token de administración (X-Admin-Token)' },

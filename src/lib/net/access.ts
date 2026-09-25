@@ -36,7 +36,17 @@ function getCookie(headers: Headers, name: string): string | null {
   if (!raw) return null
   for (const part of raw.split(';')) {
     const [k, ...rest] = part.trim().split('=')
-    if (k === name) return decodeURIComponent(rest.join('='))
+    if (k === name) {
+      // Entrada no fiable del cliente: un valor malformado (`admin_token=%`,
+      // escapes inválidos) lanzaba URIError y convertía el rechazo 401 en un
+      // 500 en TODOS los endpoints de mutación (hallazgo Ronda 11 de bugs).
+      // Una cookie rota debe degradar a "sin credencial", nunca a error.
+      try {
+        return decodeURIComponent(rest.join('='))
+      } catch {
+        return null
+      }
+    }
   }
   return null
 }

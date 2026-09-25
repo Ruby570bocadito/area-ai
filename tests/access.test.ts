@@ -152,3 +152,43 @@ describe('clientKey — confianza en XFF bajo TRUST_PROXY', () => {
     }
   })
 })
+
+// ─────────────────────────────────────────────────────────────
+// Regresión Ronda 11 de bugs — cookie malformada y rate limit
+// de mutaciones admin.
+// ─────────────────────────────────────────────────────────────
+
+describe('cookie malformada (regresión Ronda 11)', () => {
+  test('valor con escape inválido → denegado SIN lanzar (antes: URIError → 500)', () => {
+    setToken(TOKEN)
+    // '%' sin dígitos hex lanzaba URIError en decodeURIComponent
+    expect(() =>
+      isMutationAuthorized(new Headers({ cookie: `admin_token=%` }))
+    ).not.toThrow()
+    expect(isMutationAuthorized(new Headers({ cookie: `admin_token=%` }))).toBe(false)
+  })
+
+  test('valor con secuencia inválida `%zz` → denegado sin lanzar', () => {
+    setToken(TOKEN)
+    expect(isMutationAuthorized(new Headers({ cookie: `admin_token=%zz${TOKEN}` }))).toBe(false)
+  })
+
+  test('cookie bien formada sigue acreditando (regresión del fix)', () => {
+    setToken(TOKEN)
+    expect(isMutationAuthorized(new Headers({ cookie: `admin_token=${TOKEN}` }))).toBe(true)
+  })
+
+  test('escape válido (%2F) se decodifica correctamente', () => {
+    setToken('tok/en-1') // token con '/', se envía escapado %2F
+    expect(isMutationAuthorized(new Headers({ cookie: 'admin_token=tok%2Fen-1' }))).toBe(true)
+  })
+})
+
+describe('rateLimit — bucket compartido de mutaciones admin (Ronda 11)', () => {
+  test('claves distintas son buckets independientes', () => {
+    expect(rateLimit('admin:a', 2, 60_000)).toBe(true)
+    expect(rateLimit('admin:a', 2, 60_000)).toBe(true)
+    expect(rateLimit('admin:a', 2, 60_000)).toBe(false)
+    expect(rateLimit('admin:b', 2, 60_000)).toBe(true) // no comparte con a
+  })
+})
