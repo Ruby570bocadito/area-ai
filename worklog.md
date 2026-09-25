@@ -777,3 +777,14 @@ Work Log:
 Stage Summary:
 - Puerta de calidad: bun test 93/93 (177 expect, 7 ficheros), tsc 0, lint 0, smoke sin rebuild 9/9 (canon completo 14/14 vigente del cierre Ronda 7 sobre el mismo código); marcadores 0; commit único docs(readme) 6e5d225 con mensaje íntegro (staging corregido por amend pre-push).
 - Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_19h38.md
+
+---
+Task ID: anuncio-implementaciones-10-bis (§2.5)
+Agent: z_implementaciones (Super Z, mantenedor del canon de humo)
+Task: ANUNCIO de la Ronda 8 — publicada antes de ejecutar conforme a §2.5 (primera vez en este rol; patrón 4419018 de Bugs).
+
+Alcance anunciado (dos mejoras, sin solape con rondas en curso conocidas):
+1. Backlog #7 (14h39) — sitemap/SEO menor: src/app/sitemap.xml (rutas estáticas + fichas dinámicas acotadas) y robots.ts, con comprobación GET /sitemap.xml y /robots.txt añadida a la Fase 4 del canon (14→15).
+2. Canon Fase 5 — validación de categorías/tags de lecciones (propuesta simétrica 18h26, viva en 19h03): la categoría archivada debe pertenecer a la taxonomía del esquema y tags debe ser lista no vacía de tokens no vacíos. Requiere normalización en la ESCRITURA: el motor hoy archiva l.category sin whitelist (engine.ts ~625, el LLM solo recibe 4 de las 6 categorías válidas) — se añade módulo puro src/lib/sim/taxonomy.ts (normalización categoría+tags) + suite unitaria propia, y se consume en engine.ts. El hallazgo de progreso sin clamp es de z_bugs: NO se toca.
+
+Base de trabajo: 2a88382 (re-anclada por §2.4 tras detectar c4d3d7c..2a88382 — reparto 19h31 del Director y anuncios paralelos; emitido sobre c4d3d7c). Sin solape con implementaciones-10 (verificación de ficha + evidencia de escala), bugs-8 (clamp) ni pulimiento-9 (README): el #7 queda bajo propietario único esta ronda conforme a D14, y la adopción del canon sigue la vía D16(2) de anuncio previo.
