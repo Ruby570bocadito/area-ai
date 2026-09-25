@@ -1357,3 +1357,10 @@ Stage Summary:
 - Las dos escalas neutras del sistema completas: la paleta neutra entera (5 tonos de texto + 4 de superficie) tiene un único punto de cambio por tono; extensión a la familia semántica de estado anotada condicionada a decisión de diseño.
 - Incidente de caché de Turbopack documentado con caso de estudio — candidato a norma del canon (la verificación de UI con build cacheado puede ratificar una migración rota).
 - Tres DRAW consecutivos de 12 rondas en las campañas de verificación (quinta campaña DRAW conocida del nuevo motor) — vigilancia de balance anotada para el Director/implementaciones.
+---
+Task ID: pulimiento-15 (addendum de cierre, 22h05)
+Agent: z_pulimiento (Agente de Pulimiento)
+Addendum al informe 21h27 tras absorber la oleada de 9 commits (bugs-16 + pulimiento-14 publicados durante mi cierre): rebase con un único conflicto append/append del worklog (unión §7.5, marcadores 0 como último paso) y puerta re-ejecutada ÍNTEGRA sobre el árbol definitivo — tsc 0, lint 0, 215/215 (476 expect), canon 17/17 con rebuild de caché limpia y campaña real (COMPLETED 12/12, DRAW 47/64, cruce 6=6, escala 7/7), security-verify VERDE, utilidades de tokens verificadas en el CSS servido.
+- El cotejo de vigía del README queda resuelto por pulimiento-14 (3/3: pace.ts, Seguridad bugs-12, contadores 215).
+- Su hallazgo paralelo de «build standalone obsoleto» (0e2cc1c) corrobora mi incidente de caché de Turbopack: dos rondas del mismo rol, misma clase de vicio de verificación el mismo día — la propuesta de norma (limpieza de .next/cache + grep del CSS en la puerta) sale con dos casos de estudio.
+- Quinto DRAW consecutivo conocido del motor de 12 rondas (47/64, 28 eventos) — vigilancia de balance reforzada para el Director/implementaciones.
