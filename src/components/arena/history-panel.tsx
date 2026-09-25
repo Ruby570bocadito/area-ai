@@ -97,6 +97,15 @@ function downloadBlob(content: string, mime: string, filename: string) {
   URL.revokeObjectURL(url)
 }
 
+// Marca temporal compartida por los nombres de fichero de exportación
+// (CSV e informe Markdown): area-ai-<prefijo>-YYYYMMDD-HHMM.<ext>
+function exportFilename(prefix: string, ext: 'csv' | 'md'): string {
+  const now = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`
+  return `area-ai-${prefix}-${stamp}.${ext}`
+}
+
 function exportCsv(campaigns: CampaignListItemDTO[]) {
   const header = [
     'ID', 'Inicio', 'Fin', 'Escenario', 'Empresa', 'Industria', 'Dificultad',
@@ -119,12 +128,10 @@ function exportCsv(campaigns: CampaignListItemDTO[]) {
     c.blueProgress,
   ])
   const csv = '\uFEFF' + [header, ...rows].map((r) => r.map(csvCell).join(';')).join('\n')
-  const now = new Date()
-  const pad = (n: number) => String(n).padStart(2, '0')
   downloadBlob(
     csv,
     'text/csv;charset=utf-8',
-    `area-ai-campanas-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.csv`
+    exportFilename('campanas', 'csv')
   )
 }
 
@@ -135,12 +142,10 @@ function exportCsv(campaigns: CampaignListItemDTO[]) {
 
 function exportMarkdown(campaigns: CampaignListItemDTO[], filtersDesc: string) {
   const md = buildAggregateReport(campaigns, filtersDesc)
-  const now = new Date()
-  const pad = (n: number) => String(n).padStart(2, '0')
   downloadBlob(
     md,
     'text/markdown;charset=utf-8',
-    `area-ai-informe-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.md`
+    exportFilename('informe', 'md')
   )
 }
 
