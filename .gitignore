@@ -61,5 +61,6 @@ server.log
 /.zscripts/
 /download/
 /scripts/*.png
+*.pid
 # generated documentation assets are versioned, but keep raw captures out
 !/docs/screenshots/

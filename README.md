@@ -84,7 +84,15 @@ El sistema funciona sin configuración (usa `z-ai-web-dev-sdk` integrado). Para 
 3. Pulsa **Descargar modelos** para sincronizar el catálogo real del proveedor y selecciona el modelo.
 4. La siguiente campaña usará ese motor. La configuración se persiste en la BD (la key solo se devuelve enmascarada).
 
-También es posible configurarlo por variables de entorno: `OPENAI_API_KEY` (+ opcionales `OPENAI_BASE_URL`, `OPENAI_MODEL`).
+También es posible configurarlo por variables de entorno — o directamente en `.env` (ver `.env.example`):
+
+| Variable | Obligatoria | Descripción |
+|---|---|---|
+| `DATABASE_URL` | Sí | Ruta de la base de datos SQLite (`file:../db/custom.db`) |
+| `LAB_PORT` | No | Puerto del laboratorio HTTP (por defecto `4403`, bind en `127.0.0.1`) |
+| `OPENAI_API_KEY` | No | API key del proveedor LLM (alternativa a la configuración desde `/modelos`) |
+| `OPENAI_BASE_URL` | No | Endpoint compatible con la API de OpenAI |
+| `OPENAI_MODEL` | No | Modelo a utilizar |
 
 ## Seguridad
 

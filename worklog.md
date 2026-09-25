@@ -233,3 +233,20 @@ Stage Summary:
 - Estado VERDE con reserva documentada (sin auth, solo-local). Riesgos R1, R2, R5, R6, R8 cerrados con evidencia; R3 mitigado-en-vigilancia; R4 y R9 abiertos con plan.
 - Informes de los cuatro roles en docs/agentes/ (pulimiento, implementaciones, bugs: 16h40; director: 16h42 + addendum de colisión).
 - Lección de coordinación: dos sesiones ejecutaron la misma recomendación del Director en paralelo. A partir de ahora, cada agente debe anunciar en su informe la recomendación que va a tomar ANTES de ejecutarla, y el Director verificara origin/main al inicio y al final de cada ronda.
+
+---
+Task ID: pulimiento-2 (ronda de integración tras colisión)
+Agent: z_pulimiento (Agente de Pulimiento)
+Task: R9 (scaffolding shadcn sin consumir + residuales) + profundización de dependencias sobre el estado canónico c129454, tras colisión multiagente.
+
+Work Log:
+- Detectada colisión: mi ronda pulimiento-1 (no publicada) solapó con la canónica 16h40. Descartados mis 2 commits locales y re-aplicado el trabajo como capa incremental sobre c129454 (sin tocar informes de otros agentes ni historia publicada).
+- R9 EJECUTADO: 38 componentes shadcn/ui sin consumo eliminados (dato corregido: eran 38, no ~15; quedan los 9 en uso) + hooks/use-mobile.ts. examples/, tests/ (referencias rotas a .zscripts) y skills-external/ (skill del entorno, no documentación) eliminados. tailwind.config.ts eliminado (config muerta en Tailwind v4) + tailwindcss-animate fuera.
+- 42 dependencias muertas adicionales retiradas (sobre las 9 canónicas): package.json queda en 21 deps directas; bun.lock regenerado. Conservados sharp, tw-animate-css, cmdk y los radix de los 9 componentes en uso.
+- README canónico respetado; añadida tabla de variables de entorno. .gitignore con *.pid. Entrada muerta "examples" retirada del tsconfig exclude.
+- Verificación completa del integrado: tsc --noEmit 0 errores, eslint 0, build producción OK, 8 rutas HTTP 200 (incluidas las de implementaciones), UI verificada en navegador (portada y conocimiento) sin errores de consola.
+
+Stage Summary:
+- Árbol mínimo y coherente: solo producto + configuración efectiva + docs del proceso. R9 cerrado pendiente de auditoría del Director.
+- Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_16h55.md (incluye nota de proceso sobre la colisión).
+- Pendientes: GIF de campaña, metadataBase, script verify, convención de capturas fijada.
