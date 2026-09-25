@@ -14,7 +14,13 @@
 /// <reference types="bun-types" />
 
 import { afterEach, describe, expect, test } from 'bun:test'
-import { clientKey, isMutationAuthorized, rateLimit } from '../src/lib/net/access'
+import {
+  clientKey,
+  contentLengthExceeds,
+  isMutationAuthorized,
+  isSameOrigin,
+  rateLimit,
+} from '../src/lib/net/access'
 
 const TOKEN = 'secreto-de-prueba-1234'
 
@@ -190,5 +196,69 @@ describe('rateLimit — bucket compartido de mutaciones admin (Ronda 11)', () =>
     expect(rateLimit('admin:a', 2, 60_000)).toBe(true)
     expect(rateLimit('admin:a', 2, 60_000)).toBe(false)
     expect(rateLimit('admin:b', 2, 60_000)).toBe(true) // no comparte con a
+  })
+})
+
+// ─────────────────────────────────────────────────────────────
+// Regresión Ronda 12 de bugs — same-origin (CSRF) y tope de
+// cuerpo pre-parse.
+// ─────────────────────────────────────────────────────────────
+
+describe('isSameOrigin — CSRF en mutaciones (Ronda 12)', () => {
+  test('sin cabecera Origin → permitido (curl, humo, verificación server-side)', () => {
+    expect(isSameOrigin(new Headers({ host: 'localhost:3000' }))).toBe(true)
+    expect(isSameOrigin(new Headers())).toBe(true)
+  })
+
+  test('Origin mismo host:puerto → permitido (UI same-origin)', () => {
+    expect(
+      isSameOrigin(new Headers({ origin: 'http://localhost:3000', host: 'localhost:3000' }))
+    ).toBe(true)
+  })
+
+  test('Origin mismo host sin puerto explícito → permitido (puerto por defecto)', () => {
+    expect(isSameOrigin(new Headers({ origin: 'http://example.com', host: 'example.com' }))).toBe(true)
+  })
+
+  test('Origin distinto host → rechazado (cross-site)', () => {
+    expect(
+      isSameOrigin(new Headers({ origin: 'http://evil.example', host: 'localhost:3000' }))
+    ).toBe(false)
+  })
+
+  test('Origin mismo host, puerto distinto → rechazado', () => {
+    expect(
+      isSameOrigin(new Headers({ origin: 'http://localhost:3001', host: 'localhost:3000' }))
+    ).toBe(false)
+  })
+
+  test('Origin: null (iframe arenero) → rechazado', () => {
+    expect(isSameOrigin(new Headers({ origin: 'null', host: 'localhost:3000' }))).toBe(false)
+  })
+
+  test('Origin no parseable → rechazado sin lanzar', () => {
+    expect(isSameOrigin(new Headers({ origin: 'http://[::1', host: 'localhost:3000' }))).toBe(false)
+  })
+
+  test('sin Host con Origin presente → rechazado (no acreditado)', () => {
+    expect(isSameOrigin(new Headers({ origin: 'http://localhost:3000' }))).toBe(false)
+  })
+})
+
+describe('contentLengthExceeds — tope pre-parse (Ronda 12)', () => {
+  test('Content-Length dentro del tope → false', () => {
+    expect(contentLengthExceeds(new Headers({ 'content-length': '512' }), 1024)).toBe(false)
+  })
+
+  test('Content-Length sobre el tope → true', () => {
+    expect(contentLengthExceeds(new Headers({ 'content-length': '2048' }), 1024)).toBe(true)
+  })
+
+  test('sin Content-Length (chunked) → false (se acota tras el parseo, documentado)', () => {
+    expect(contentLengthExceeds(new Headers(), 1024)).toBe(false)
+  })
+
+  test('Content-Length no numérico → false sin lanzar', () => {
+    expect(contentLengthExceeds(new Headers({ 'content-length': 'abc' }), 1024)).toBe(false)
   })
 })

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProviderConfig } from '@/lib/sim/provider-config'
 import { classifyTarget, isLocalRequest } from '@/lib/net/target-guard'
-import { isMutationAuthorized, rateLimit, clientKey } from '@/lib/net/access'
+import { isMutationAuthorized, isSameOrigin, contentLengthExceeds, rateLimit, clientKey } from '@/lib/net/access'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,6 +20,19 @@ interface RawModel {
  */
 export async function POST(req: NextRequest) {
   try {
+    // CSRF (hallazgo Ronda 12 de bugs): primera barrera, idéntica al resto
+    // de mutaciones (settings, campaigns, autopilot).
+    if (!isSameOrigin(req.headers)) {
+      return NextResponse.json(
+        { ok: false, error: 'Origen cruzado no permitido en mutaciones' },
+        { status: 403 }
+      )
+    }
+    // Tope de cuerpo pre-parse (hallazgo Ronda 12): 16 KB holgados para
+    // baseUrl + apiKey.
+    if (contentLengthExceeds(req.headers, 16384)) {
+      return NextResponse.json({ ok: false, error: 'Cuerpo demasiado grande' }, { status: 413 })
+    }
     // Rate limit antes de la verificación del token (hallazgo Ronda 11:
     // fuerza bruta de ADMIN_TOKEN sin techo en este endpoint). Mismo
     // bucket `admin:` que /api/settings — los intentos se comparten.

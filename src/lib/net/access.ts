@@ -70,6 +70,66 @@ function dummyCompare(a: string, b: string): void {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Verificación de same-origin para mutaciones (CSRF).
+//
+// (Hallazgo Ronda 12 de bugs) Las mutaciones se protegían solo con
+// ADMIN_TOKEN; en modo local abierto (caso soportado por defecto, R4)
+// una página maliciosa podía lanzar POST cross-site contra
+// http://localhost:3000 SIN preflight usando `Content-Type: text/plain`
+// (Request.json() parsea el cuerpo con independencia del Content-Type):
+//   · POST /api/campaigns → lanzar campañas (gasto LLM).
+//   · POST /api/autopilot → activar el modo continuo (gasto LLM en bucle).
+//   · POST /api/settings  → redirigir el proveedor LLM a un proxy propio
+//     (exfiltraría la API key en el siguiente uso del motor).
+// El POST cross-site de formulario es "simple" (text/plain) y no dispara
+// CORS preflight; la única barrera era SameSite=Lax de la cookie, que solo
+// aplica cuando ADMIN_TOKEN está definido (y la UI usa X-Admin-Token).
+//
+// Regla (compatible con clientes no-navegador):
+//   · Sin cabecera Origin → PERMITIR (curl, humo de pruebas,
+//     scripts de verificación, server-to-server). El navegador envía
+//     Origin en todo POST, así que esta rama nunca aplica a un navegador.
+//   · Origin: null → RECHAZAR (iframe arenero, redirects cross-origin).
+//   · Origin con host distinto del Host de la petición → RECHAZAR.
+//     El Caddyfile del repo preserva el Host (`header_up Host {host}`),
+//     así que la comparación también es válida tras el proxy. Solo se
+//     compara host[:puerto], no el esquema (http de apoyo y https
+//     públicos comparten host en el despliegue documentado).
+// ─────────────────────────────────────────────────────────────
+
+export function isSameOrigin(headers: Headers): boolean {
+  const origin = headers.get('origin')
+  if (origin === null) return true // cliente no-navegador
+  if (origin === 'null') return false // sandbox/redirect: nunca es la UI
+  const host = headers.get('host')
+  if (!host) return false // sin Host no se puede acreditar el origen
+  try {
+    return new URL(origin).host === host.trim().toLowerCase()
+  } catch {
+    return false // Origin no parseable → no acreditado
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Tope de tamaño de cuerpo ANTES de parsear (DoS de memoria).
+//
+// (Hallazgo Ronda 12 de bugs) Los route handlers parsean el cuerpo
+// completo en memoria (`req.json()`) antes de cualquier validación de
+// tamaño: un cliente podía POSTear cientos de MB/GB y agotar la memoria
+// del proceso único. Con Content-Length presente se rechaza de entrada;
+// limitación documentada: peticiones chunked sin Content-Length no se
+// pueden acotar sin consumir el stream, desproporcionado para el modelo
+// de despliegue de proceso único del proyecto.
+// ─────────────────────────────────────────────────────────────
+
+export function contentLengthExceeds(headers: Headers, maxBytes: number): boolean {
+  const raw = headers.get('content-length')
+  if (!raw) return false // chunked / sin longitud: se acota tras el parseo
+  const n = Number(raw)
+  return Number.isFinite(n) && n > maxBytes
+}
+
+// ─────────────────────────────────────────────────────────────
 // Rate limit en memoria para POST /api/campaigns: evita que un
 // cliente lance campañas en bucle (gasto de créditos LLM).
 // Válido para despliegue de proceso único (standalone/bun), que

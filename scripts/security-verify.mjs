@@ -1,4 +1,4 @@
-// Verificación end-to-end de los fixes de seguridad de la Ronda 11 de bugs
+// Verificación end-to-end de los fixes de seguridad de las rondas 11-12 de bugs
 // sobre el servidor standalone de producción (mismo arranque que el canon).
 //
 //   1. Cabeceras de seguridad en / y /api/state
@@ -6,9 +6,14 @@
 //   3. Rate limit compartido de mutaciones admin → 429 al agotar 30/min
 //   4. Tope de tamaño en POST /api/settings → 413
 //   5. Guard SSRF: literales IPv6 con corchetes → 403 (antes: bypass 'public')
+//   6. CSRF/same-origin (Ronda 12): POST cross-site con Origin ajeno → 403 en
+//      las 4 mutaciones; Origin: null → 403; same-origin y sin Origin pasan.
+//   7. Coerción estricta del autopiloto (Ronda 12): enabled:"false" NO activa.
+//   8. Tope de cuerpo pre-parse (Ronda 12): Content-Length > 1KB en autopilot → 413.
 //
 // Uso: bun scripts/security-verify.mjs   (requiere .next/standalone ya construido)
 import { spawn } from 'node:child_process'
+import { request as httpRequest } from 'node:http'
 import { resolve } from 'node:path'
 
 const ROOT = resolve(import.meta.dir, '..')
@@ -54,6 +59,22 @@ for (const path of ['/', '/api/state']) {
 }
 
 const authHeaders = (extra = {}) => ({ 'x-admin-token': TOKEN, ...extra })
+
+// POST crudo con node:http — control exacto de cabeceras (Origin es
+// "forbidden header name" en la spec fetch y algunos runtimes la silencian).
+const rawPost = (path, headers, body) =>
+  new Promise((resolveP) => {
+    const req = httpRequest(
+      { host: '127.0.0.1', port: PORT, path, method: 'POST', headers },
+      (res) => {
+        let data = ''
+        res.on('data', (c) => (data += c))
+        res.on('end', () => resolveP({ status: res.statusCode, body: data }))
+      }
+    )
+    req.on('error', (e) => resolveP({ status: 0, body: String(e) }))
+    req.end(body)
+  })
 
 // 2 ── Cookie malformada → 401, no 500
 const badCookie = await fetch(`${BASE}/api/settings`, {
@@ -109,6 +130,63 @@ for (let i = 0; i < 60 && !up; i++) {
   up = await fetch(`${BASE}/api`).then((r) => r.ok).catch(() => false)
 }
 if (!up) { console.error('NO ARRANCÓ (2):\n' + log.slice(-400)); process.exit(1) }
+
+// 6 ── CSRF/same-origin (Ronda 12): Origin ajeno → 403 ANTES de 401/429/413
+// (llevamos token válido: si respondiera 401, el check de origen no sería el primero)
+const csrfTargets = ['/api/campaigns', '/api/autopilot', '/api/settings', '/api/models']
+for (const t of csrfTargets) {
+  const r = await rawPost(t, {
+    origin: 'http://evil.example',
+    host: '127.0.0.1:' + PORT,
+    'content-type': 'text/plain', // POST simple sin preflight — el vector clásico
+    'x-admin-token': TOKEN,
+  }, JSON.stringify({ baseUrl: 'https://api.example.com/v1', model: 'm', enabled: true }))
+  check(`CSRF cross-origin ${t} → 403`, r.status === 403, `status=${r.status}`)
+}
+
+// Origin: null (iframe arenero) → 403
+const nullOrigin = await rawPost('/api/settings', {
+  origin: 'null',
+  host: '127.0.0.1:' + PORT,
+  'content-type': 'text/plain',
+  'x-admin-token': TOKEN,
+}, JSON.stringify({ baseUrl: 'https://api.example.com/v1', model: 'm' }))
+check('CSRF Origin: null → 403', nullOrigin.status === 403, `status=${nullOrigin.status}`)
+
+// same-origin (Origin === Host) con token válido → llega al handler (UI intacta)
+const sameOrigin = await rawPost('/api/autopilot', {
+  origin: 'http://127.0.0.1:' + PORT,
+  host: '127.0.0.1:' + PORT,
+  'content-type': 'text/plain',
+  'x-admin-token': TOKEN,
+}, JSON.stringify({ enabled: false }))
+check('POST same-origin con token → 200 (UI intacta)', sameOrigin.status === 200 && /"enabled":false/.test(sameOrigin.body),
+  `status=${sameOrigin.status}`)
+
+// sin Origin (curl / humo / verificación) con token válido → llega al handler
+const noOrigin = await rawPost('/api/autopilot', {
+  host: '127.0.0.1:' + PORT,
+  'content-type': 'application/json',
+  'x-admin-token': TOKEN,
+}, JSON.stringify({ enabled: false }))
+check('POST sin Origin (curl/humo) → 200', noOrigin.status === 200, `status=${noOrigin.status}`)
+
+// 7 ── Coerción estricta del autopiloto (Ronda 12): la cadena "false" NO activa
+const stringFalse = await rawPost('/api/autopilot', {
+  host: '127.0.0.1:' + PORT,
+  'content-type': 'application/json',
+  'x-admin-token': TOKEN,
+}, JSON.stringify({ enabled: 'false' }))
+check('enabled:"false" (cadena) NO activa el modo continuo', stringFalse.status === 200 && /"enabled":false/.test(stringFalse.body),
+  `status=${stringFalse.status}`)
+
+// 8 ── Tope de cuerpo pre-parse (Ronda 12): Content-Length > 1KB en autopilot → 413
+const fatBody = await rawPost('/api/autopilot', {
+  host: '127.0.0.1:' + PORT,
+  'content-type': 'application/json',
+  'x-admin-token': TOKEN,
+}, JSON.stringify({ enabled: false, junk: 'x'.repeat(3000) }))
+check('cuerpo > 1KB en autopilot → 413 pre-parse', fatBody.status === 413, `status=${fatBody.status}`)
 
 // 4 ── Tope de tamaño → 413
 const huge = 'x'.repeat(3000)

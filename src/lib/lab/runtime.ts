@@ -25,7 +25,13 @@ const g = globalThis as unknown as {
 }
 
 export function labPort(): number {
-  return Number(process.env.LAB_PORT || 4403)
+  // Validación de rango (hallazgo Ronda 12 de bugs): `Number()` puro
+  // aceptaba NaN ("LAB_PORT=abc"), 0, negativos y puertos > 65535 —
+  // cualquier valor inválido lanzaba una excepción dentro del camino del
+  // motor (server.listen) en la primera campaña. Valor inválido → defecto.
+  const n = Number(process.env.LAB_PORT || 4403)
+  if (!Number.isInteger(n) || n < 1 || n > 65535) return 4403
+  return n
 }
 
 /** Arranca el servidor HTTP del laboratorio si no está ya corriendo (o si cambió la revisión). Devuelve el puerto. */

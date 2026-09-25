@@ -5,7 +5,7 @@ import {
   maskKey,
 } from '@/lib/sim/provider-config'
 import { classifyTarget, isLocalRequest } from '@/lib/net/target-guard'
-import { isMutationAuthorized, rateLimit, clientKey } from '@/lib/net/access'
+import { isMutationAuthorized, isSameOrigin, contentLengthExceeds, rateLimit, clientKey } from '@/lib/net/access'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,6 +35,22 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    // CSRF (hallazgo Ronda 12 de bugs): en modo local abierto, un POST
+    // cross-site text/plain sin preflight podía redirigir el proveedor LLM
+    // a un proxy propio (la API key se enviaría al siguiente uso del motor).
+    if (!isSameOrigin(req.headers)) {
+      return NextResponse.json(
+        { ok: false, error: 'Origen cruzado no permitido en mutaciones' },
+        { status: 403 }
+      )
+    }
+    // Tope de cuerpo pre-parse (hallazgo Ronda 12): los topes de campo
+    // (413 abajo) actúan DESPUÉS de req.json() — sin este control, un
+    // cuerpo de cientos de MB se parseaba íntegro en memoria. 16 KB cubre
+    // con holgura los máximos de baseUrl+apiKey+model.
+    if (contentLengthExceeds(req.headers, 16384)) {
+      return NextResponse.json({ ok: false, error: 'Cuerpo demasiado grande' }, { status: 413 })
+    }
     // Rate limit ANTES de la verificación del token (hallazgo Ronda 11):
     // con ADMIN_TOKEN definido, este endpoint era el único de mutación sin
     // límite — un atacante podía probar tokens sin techo. 30/min es

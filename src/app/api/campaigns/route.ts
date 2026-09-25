@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { startCampaign } from '@/lib/sim/engine'
 import { db } from '@/lib/db'
-import { isMutationAuthorized, rateLimit, clientKey } from '@/lib/net/access'
+import {
+  isMutationAuthorized,
+  isSameOrigin,
+  contentLengthExceeds,
+  rateLimit,
+  clientKey,
+} from '@/lib/net/access'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,6 +51,19 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    // CSRF (hallazgo Ronda 12 de bugs): en modo local abierto, un POST
+    // cross-site text/plain sin preflight lanzaba campañas (gasto LLM).
+    if (!isSameOrigin(req.headers)) {
+      return NextResponse.json(
+        { ok: false, error: 'Origen cruzado no permitido en mutaciones' },
+        { status: 403 }
+      )
+    }
+    // Tope de cuerpo pre-parse (hallazgo Ronda 12): el payload legítimo es
+    // { scenarioId } — 4 KB es un orden de magnitud holgado.
+    if (contentLengthExceeds(req.headers, 4096)) {
+      return NextResponse.json({ ok: false, error: 'Cuerpo demasiado grande' }, { status: 413 })
+    }
     if (!isMutationAuthorized(req.headers)) {
       return NextResponse.json(
         { ok: false, error: 'No autorizado: falta el token de administración (X-Admin-Token)' },
