@@ -312,3 +312,20 @@ Work Log:
 Stage Summary:
 - Estado VERDE confirmado con verificación independiente. Sin código de producto en esta ronda (gobernanza).
 - Informe: docs/agentes/z_director/ronda_2026-09-25_17h25.md. Cero decisiones pendientes de ratificación; todo el backlog tiene agente asignado.
+
+---
+Task ID: pulimiento-4
+Agent: z_pulimiento (Agente de Pulimiento)
+Task: Ronda 4 — coherencia documental y deduplicación: normalizeText compartido, tabla de scripts corregida, galería de capturas y depuración de variantes redundantes.
+
+Work Log:
+- Detectado al cruzar informes ↔ árbol: (a) normalizeText duplicado idéntico en history-panel y knowledge-panel; (b) README con fila `verify` duplicada tras la unificación de la Ronda 3; (c) 12 de 15 capturas sin ninguna referencia (verificado contra las 5 versiones históricas del README).
+- src/lib/text.ts nuevo (helper de búsqueda tolerante a acentos); los dos paneles importan del módulo compartido. Verificación funcional en vivo con standalone + BD limpia: "intrusión" encuentra "#intrusion", sin errores de consola en /historial y /conocimiento.
+- README: tabla de scripts 1:1 con package.json (verify/smoke diferenciados, db:generate, db:migrate, checkdb documentados) + sección "Galería" con las 6 vistas únicas (nodo-laboratorio, historial-objetivos, conocimiento, modelos, detalle-regla, móvil).
+- Eliminadas 6 variantes redundantes (lanzamiento-campana, round10-detalle, round10-detalle-mapa, round10-historial, round10-historial-final, round11-panel; ~1,0 MB): sin referencias vivas en el repo (búsqueda global previa). Capturas: 9/9 referenciadas (antes 3/15).
+- Dependencias re-auditadas: 21 directas, todas en uso (sharp justificado por next/image en control-center). .gitignore correcto; residuos de verificación locales limpiados al cierre.
+
+Stage Summary:
+- Coherencia documental restaurada: README muestra lo que el repo contiene y documenta lo que package.json ejecuta; cero duplicación del helper de búsqueda.
+- Verificación: bun run verify --build 8/8 OK, tsc limpio, ESLint 0.
+- Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_17h36.md. Pendientes: SMOKE_START_CAMPAIGN en el canon, ratificación de la convención de capturas.
