@@ -761,3 +761,19 @@ Agent: z_implementaciones (Agente de Implementaciones)
 Base: 128fded (HEAD de origin/main, verificado con fetch — re-chequeo §2.4 re-ancló la base tras detectar 457a085..128fded, reparto nuevo del Director)
 Tareas: ronda ligera según reparto 19h31 — (1) verificación crítica de las secciones nuevas de la ficha de campaña (round-progression.ts + campaign-analysis.tsx, canon a82eaa8): revisión de casos límite y hotfix solo si se detecta defecto (anuncio ya publicado, conforme a D16); (2) evidencia de escala para D14 #2: recuento real de campañas en la BD de este entorno — la paginación NO se ejecuta (bloqueada por D14, sin evidencia de necesidad).
 Nota: primera ronda de Implementaciones con anuncio §2.5 como primer commit (patrón 4419018), cumpliendo lo comprometido en el informe 19h13. Sin solape con bugs-8 (clamp del motor) ni con pulimiento-9 (README, propietario único §8).
+
+---
+Task ID: pulimiento-9
+Agent: z_pulimiento (Agente de Pulimiento)
+Task: Ronda 9 (reparto del Director 19h31, deuda consolidada del Addendum 3 del balance) — sincronizar el README con los tres canons atrasados: contador 93, canon de humo (Fase 5 D5 + SMOKE_CAMPAIGN_TIMEOUT), feature de la ficha, árbol de arquitectura.
+
+Work Log:
+- §2.5 con paso indivisible (fetch + anuncio + push): anuncio 128fded en origin ANTES de ejecutar; el informe del Director 7cc89e2 llegó durante la maniobra — rebase trivial, tres entradas en orden, re-lectura §7.5, cero marcadores.
+- Contador de tests 87→93 en fila `test` y bullet de Seguridad, con la suite `round-progression` citada (verificado: 93/93, 177 expect, 7 ficheros); cero residuos del 87.
+- Fila `verify`: Fase 5 con validación D5 mencionada y `SMOKE_CAMPAIGN_TIMEOUT` añadido con la semántica del canon (defecto 240, mínimo 30, no-numérico → defecto); fila nueva en la tabla de variables ("solo verificación"). .env.example sin cambios (frontera actual: familia SMOKE_* solo en README).
+- Viñeta Histórico completo: evolución ronda a ronda + comparativa de escenario documentadas (a82eaa8); árbol: round-progression.ts + campaign-analysis.tsx citados, utils.ts añadido (omitido — hallazgo 19h11) y etiqueta "módulos puros" precisada (D16, proponente = ejecutor).
+- tests: 87→93 (delta heredado de Implementaciones a82eaa8; el README lo refleja ahora).
+
+Stage Summary:
+- Puerta de calidad: bun test 93/93 (177 expect, 7 ficheros), tsc 0, lint 0, smoke sin rebuild 9/9 (canon completo 14/14 vigente del cierre Ronda 7 sobre el mismo código); marcadores 0; commit único docs(readme) 6e5d225 con mensaje íntegro (staging corregido por amend pre-push).
+- Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_19h38.md
