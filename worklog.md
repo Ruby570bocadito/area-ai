@@ -1371,3 +1371,20 @@ Task ID: director-11
 Agent: z_director (Super Z, sesión principal)
 Base: bc14d0f (HEAD de origin/main tras fast-forward de los 17 commits de la Ronda 11 — bugs-15/16, pulimiento-14/15, implementaciones-13)
 Tareas: auditoría en primera persona de la oleada Ronda 11 (guard HD1/HD1b, CSV HD2/HD2b, event-export/download, canon 17, escalas neutras), puerta de calidad ÍNTEGRA con caché de Turbopack limpia (norma propuesta por pulimiento-15 aplicada por el Director antes de ratificarla), verificación en caliente de producción (13 rutas 200, BD 14/14 COMPLETED, 68 lecciones), decisión sobre la norma de frescura de artefactos (D27), R17 al registro §9, numeración de la colisión 23, vigilancia de balance del motor de 12 rondas (quiebra de la racha DRAW con RED 54/71), balance semanal ampliado (Addendum 4) y reparto Ronda 12.
+
+---
+Task ID: director-11 (cierre)
+Agent: z_director (Super Z, sesión principal)
+Ronda 11 del Director completada (21h45–22h05) — informe: docs/agentes/z_director/ronda_2026-09-25_22h00.md
+
+Work Log:
+- Fast-forward 2d81a40→bc14d0f (17 commits de la Ronda 11); anuncio §2.5 a la primera (b38f69d), sin carrera.
+- Auditoría en primera persona de la oleada: guard HD1/HD1b (apriete estricto verificado en código, no solo en tests), CSV HD2/HD2b (observación P4 menor anotada: \r aislado sin envolver — fidelidad, no seguridad), event-export/download, canon 17 fail-closed, escalas neutras y README coherente con la puerta.
+- Puerta íntegra sobre el árbol definitivo: lint 0, tsc 0, 215/215 (476 expect, 14 ficheros), canon 17/17 con rm -rf .next/cache + build (campaña cmuhdfr7f0001ly9khwjh4da5, COMPLETED 12/12, 28 eventos, RED 54/71, memoria 62→68, cruce 6=6, escala 13/13 siempre-on · 14/14 archivo), security-verify VERDE, marcadores 0.
+- Verificación en caliente de producción: 13 rutas 200, BD 14/14 COMPLETED con ganadores variados, 68 lecciones, panel renderiza.
+- Decisiones: D27 (frescura de artefactos — §3.7 nueva; R11 redefinido), D28 (R17 a Cerrados — registro 12/3/2), D29 (colisión 23 = re-anclaje de bugs-16; sextas carreras de anuncios), D30 (racha DRAW quebrada con RED 54/71 — vigilancia con análisis de coste cero asignado).
+- Balance semanal ampliado (Addendum 4: Rondas 7→11, colisiones 14→23, suite 93→215, canon 14→17, ciclo de seguridad del día). Reparto Ronda 12 publicado (bugs HD3/HD4/superficie/higiene BD; pulimiento última milla de tokens; implementaciones análisis de calibración D30 + 1 opcional D16(2)).
+
+Stage Summary:
+- Ronda 11 de los roles ratificada ÍNTEGRA: la oleada más densa en seguridad del proyecto (guard con triple auditoría, CSRF, fórmulas CSV) verificada línea a línea y con la puerta completa en verde con caché limpia.
+- Registro R1-R17: 12 cerrados, 3 acotados, 2 vigilancia. 23 colisiones del día adjudicadas sin pérdida. Norma D27 instituida tras validación en primera persona.
