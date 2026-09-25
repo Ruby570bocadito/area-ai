@@ -16,7 +16,7 @@ const PHASES = ['RECON', 'ARMADO', 'INTRUSION', 'ESCALADA', 'LATERAL', 'OBJETIVO
 const RESULT_BADGE: Record<string, { label: string; cls: string }> = {
   EXITO: { label: 'ÉXITO', cls: 'border-[#fecdca] bg-[#fef3f2] text-[#b42318]' },
   PARCIAL: { label: 'PARCIAL', cls: 'border-[#fedf89] bg-[#fffaeb] text-[#b54708]' },
-  FALLO: { label: 'FALLO', cls: 'border-[#e4e7ec] bg-[#f9fafb] text-[#667085]' },
+  FALLO: { label: 'FALLO', cls: 'border-[#e4e7ec] bg-[#f9fafb] text-ink-500' },
   BLOQUEADO: { label: 'BLOQUEADO', cls: 'border-[#b2ddff] bg-[#f0f9ff] text-[#026aa2]' },
   DETECTADO: { label: 'DETECTADO', cls: 'border-[#a6f4c5] bg-[#ecfdf3] text-[#067647]' },
   CONTENIDO: { label: 'CONTENIDO', cls: 'border-[#ddd6fe] bg-[#f5f3ff] text-[#6941c6]' },
@@ -53,10 +53,10 @@ function TurnOperator({
               <span className="font-mono-tight truncate text-[11.5px] font-bold tracking-wide" style={{ color: deep }}>
                 {agent.codename}
               </span>
-              <span className="hidden truncate text-[10.5px] text-[#667085] sm:inline">{agent.role}</span>
+              <span className="hidden truncate text-[10.5px] text-ink-500 sm:inline">{agent.role}</span>
             </>
           ) : (
-            <span className="font-mono-tight text-[11px] text-[#98a2b3]">
+            <span className="font-mono-tight text-[11px] text-ink-400">
               {team === 'red' ? 'RED sin acciones aún' : 'BLUE sin acciones aún'}
             </span>
           )}
@@ -70,19 +70,19 @@ function TurnOperator({
       </div>
       {event && (
         <>
-          <p className="mt-1.5 flex items-center gap-1.5 text-[12.5px] font-semibold leading-snug text-[#101828]">
+          <p className="mt-1.5 flex items-center gap-1.5 text-[12.5px] font-semibold leading-snug text-ink-900">
             <Target className="h-3 w-3 shrink-0" style={{ color: accent }} />
             {event.action}
             {event.targetNode && (
-              <span className="ml-1 rounded bg-[#f2f4f7] px-1.5 py-px font-mono-tight text-[9px] font-normal text-[#667085]">
+              <span className="ml-1 rounded bg-[#f2f4f7] px-1.5 py-px font-mono-tight text-[9px] font-normal text-ink-500">
                 {event.targetNode}
               </span>
             )}
           </p>
-          <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-[#667085]">{event.detail}</p>
+          <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-ink-500">{event.detail}</p>
           {event.command && (
             <p className="mt-1.5 truncate rounded-md border border-[#e4e7ec] bg-[#f9fafb] px-2 py-1 font-mono-tight text-[9.5px] text-[#475467]" title={event.command}>
-              <TerminalSquare className="mr-1 inline h-3 w-3 text-[#98a2b3]" />
+              <TerminalSquare className="mr-1 inline h-3 w-3 text-ink-400" />
               {event.command}
             </p>
           )}
@@ -202,8 +202,8 @@ export function ArenaLive({
         <div className="relative z-10 flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2.5">
-              <Swords className={cn('h-4 w-4', running ? 'text-[#b54708] pulse-dot' : 'text-[#98a2b3]')} />
-              <h3 className="font-mono-tight text-base font-bold tracking-[0.12em] text-[#101828] sm:text-lg">
+              <Swords className={cn('h-4 w-4', running ? 'text-[#b54708] pulse-dot' : 'text-ink-400')} />
+              <h3 className="font-mono-tight text-base font-bold tracking-[0.12em] text-ink-900 sm:text-lg">
                 {campaign.scenario.codename}
               </h3>
               {running ? (
@@ -211,12 +211,12 @@ export function ArenaLive({
                   <span className="h-1.5 w-1.5 rounded-full bg-[#d97706] pulse-dot" /> EN VIVO
                 </span>
               ) : (
-                <span className="rounded-full border border-[#e4e7ec] bg-[#f9fafb] px-2.5 py-0.5 font-mono-tight text-[10px] font-bold text-[#667085]">
+                <span className="rounded-full border border-[#e4e7ec] bg-[#f9fafb] px-2.5 py-0.5 font-mono-tight text-[10px] font-bold text-ink-500">
                   FINALIZADA
                 </span>
               )}
             </div>
-            <p className="mt-1 flex items-center gap-1.5 text-xs text-[#667085]">
+            <p className="mt-1 flex items-center gap-1.5 text-xs text-ink-500">
               <Building2 className="h-3 w-3" />
               {campaign.scenario.company} · {campaign.scenario.industry} · dificultad {campaign.scenario.difficulty}/5
             </p>
@@ -225,7 +225,7 @@ export function ArenaLive({
           <div className="flex flex-col items-end gap-2">
             <button
               onClick={downloadReport}
-              className="flex items-center gap-1.5 rounded-md border border-[#e4e7ec] bg-white px-2.5 py-1 font-mono-tight text-[10px] font-bold text-[#667085] shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-[#101828]"
+              className="flex items-center gap-1.5 rounded-md border border-[#e4e7ec] bg-white px-2.5 py-1 font-mono-tight text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-ink-900"
               title="Descargar informe de la campaña en Markdown"
             >
               <Download className="h-3 w-3" /> Informe
@@ -243,7 +243,7 @@ export function ArenaLive({
                   title={`Ronda ${i + 1}`}
                 />
               ))}
-              <span className="ml-2 font-mono-tight text-[11px] text-[#667085]">
+              <span className="ml-2 font-mono-tight text-[11px] text-ink-500">
                 Ronda {campaign.round}/{campaign.maxRounds}
               </span>
             </div>
@@ -260,7 +260,7 @@ export function ArenaLive({
                   ? 'border-[#fec84b] bg-[#fffaeb] text-[#b54708]'
                   : i < phaseIdx || (i <= phaseIdx && !running)
                     ? 'border-[#d0d5dd] bg-[#f2f4f7] text-[#475467]'
-                    : 'border-[#f2f4f7] bg-transparent text-[#98a2b3]'
+                    : 'border-[#f2f4f7] bg-transparent text-ink-400'
               )}
             >
               {p}
@@ -277,7 +277,7 @@ export function ArenaLive({
                   {events.slice(-8).map((ev) => (
                     <span
                       key={`${copy}-${ev.id}`}
-                      className="mx-4 flex items-center gap-2 font-mono-tight text-[10px] text-[#667085]"
+                      className="mx-4 flex items-center gap-2 font-mono-tight text-[10px] text-ink-500"
                     >
                       <span
                         className={cn(
@@ -352,7 +352,7 @@ export function ArenaLive({
                   <NumberFlow value={campaign.redScore} />
                 </p>
               </div>
-              <p className="mt-1 font-mono-tight text-[9.5px] uppercase tracking-[0.2em] text-[#98a2b3]">Impacto rojo</p>
+              <p className="mt-1 font-mono-tight text-[9.5px] uppercase tracking-[0.2em] text-ink-400">Impacto rojo</p>
             </div>
             <motion.div
               animate={running ? { scale: [1, 1.12, 1] } : {}}
@@ -375,7 +375,7 @@ export function ArenaLive({
                   <NumberFlow value={campaign.blueScore} />
                 </p>
               </div>
-              <p className="mt-1 font-mono-tight text-[9.5px] uppercase tracking-[0.2em] text-[#98a2b3]">Defensa azul</p>
+              <p className="mt-1 font-mono-tight text-[9.5px] uppercase tracking-[0.2em] text-ink-400">Defensa azul</p>
             </div>
           </div>
           <div className="relative z-10 space-y-3.5">
@@ -418,7 +418,7 @@ export function ArenaLive({
         {infraNodes.length > 0 ? (
           <NetworkMap nodes={infraNodes} events={events} running={running} phase={campaign.phase} liveLab={liveLab} />
         ) : (
-          <div className="panel rounded-xl p-6 text-sm text-[#667085]">Sin mapa disponible.</div>
+          <div className="panel rounded-xl p-6 text-sm text-ink-500">Sin mapa disponible.</div>
         )}
         <EventFeed events={events} className="max-h-[420px] min-h-[280px]" />
       </div>
@@ -475,10 +475,10 @@ export function ArenaLive({
               <p className="mt-0.5 font-mono-tight text-[10.5px] text-[#475467]">
                 {explainWinner(winner, campaign.redProgress, campaign.blueProgress)}
               </p>
-              <p className="mt-1 text-[13px] leading-relaxed text-[#667085]">{campaign.narrative}</p>
+              <p className="mt-1 text-[13px] leading-relaxed text-ink-500">{campaign.narrative}</p>
             </div>
             <span
-              className="hidden cursor-help items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white/70 px-2.5 py-1.5 font-mono-tight text-[9.5px] font-bold text-[#667085] sm:flex"
+              className="hidden cursor-help items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white/70 px-2.5 py-1.5 font-mono-tight text-[9.5px] font-bold text-ink-500 sm:flex"
               title={VICTORY_RULE_DETAIL}
             >
               <Info className="h-3 w-3" /> regla: progreso, no puntos

@@ -21,7 +21,7 @@ import type { EventDTO } from '@/lib/api-types'
 const RESULT_STYLE: Record<string, { label: string; cls: string; icon: LucideIcon }> = {
   EXITO: { label: 'ÉXITO', cls: 'bg-[#fef3f2] text-[#b42318] border-[#fecdca]', icon: Zap },
   PARCIAL: { label: 'PARCIAL', cls: 'bg-[#fffaeb] text-[#b54708] border-[#fedf89]', icon: AlertTriangle },
-  FALLO: { label: 'FALLO', cls: 'bg-[#f9fafb] text-[#667085] border-[#e4e7ec]', icon: ShieldX },
+  FALLO: { label: 'FALLO', cls: 'bg-[#f9fafb] text-ink-500 border-[#e4e7ec]', icon: ShieldX },
   BLOQUEADO: { label: 'BLOQUEADO', cls: 'bg-[#f0f9ff] text-[#026aa2] border-[#b2ddff]', icon: ShieldCheck },
   DETECTADO: { label: 'DETECTADO', cls: 'bg-[#ecfdf3] text-[#067647] border-[#a6f4c5]', icon: Eye },
   CONTENIDO: { label: 'CONTENIDO', cls: 'bg-[#f5f3ff] text-[#6941c6] border-[#ddd6fe]', icon: Lock },
@@ -46,15 +46,15 @@ function parseEvidence(raw: string | null): EvidenceParsed | null {
 }
 
 function statusTone(status: number): string {
-  if (status === 0) return 'bg-[#f9fafb] text-[#667085] border-[#e4e7ec]'
+  if (status === 0) return 'bg-[#f9fafb] text-ink-500 border-[#e4e7ec]'
   if (status < 300) return 'bg-[#ecfdf3] text-[#067647] border-[#a6f4c5]'
   if (status < 400) return 'bg-[#f0f9ff] text-[#026aa2] border-[#b2ddff]'
   return 'bg-[#fef3f2] text-[#b42318] border-[#fecdca]'
 }
 
 const SEVERITY_COLOR: Record<string, string> = {
-  INFO: 'text-[#98a2b3]',
-  LOW: 'text-[#98a2b3]',
+  INFO: 'text-ink-400',
+  LOW: 'text-ink-400',
   MEDIUM: 'text-[#b54708]',
   HIGH: 'text-[#b93815]',
   CRITICAL: 'text-[#b42318]',
@@ -135,7 +135,7 @@ export function EventFeed({
                   >
                     {ev.agentCodename ?? 'SISTEMA'}
                   </span>
-                  <span className={cn('font-mono-tight text-[9px] uppercase', SEVERITY_COLOR[ev.severity] ?? 'text-[#98a2b3]')}>
+                  <span className={cn('font-mono-tight text-[9px] uppercase', SEVERITY_COLOR[ev.severity] ?? 'text-ink-400')}>
                     R{ev.round}·{ev.phase}
                   </span>
                   {res && ResIcon && (
@@ -146,18 +146,18 @@ export function EventFeed({
                     </span>
                   )}
                   {ev.targetNode && (
-                    <span className="rounded bg-[#f2f4f7] px-1.5 py-px font-mono-tight text-[9px] text-[#667085]">
+                    <span className="rounded bg-[#f2f4f7] px-1.5 py-px font-mono-tight text-[9px] text-ink-500">
                       → {ev.targetNode}
                     </span>
                   )}
                 </div>
-                <p className="mt-0.5 text-[12px] font-semibold leading-snug text-[#101828]">{ev.action}</p>
-                <p className="text-[11px] leading-snug text-[#667085]">{ev.detail}</p>
+                <p className="mt-0.5 text-[12px] font-semibold leading-snug text-ink-900">{ev.action}</p>
+                <p className="text-[11px] leading-snug text-ink-500">{ev.detail}</p>
                 {ev.command && (
                   <div className="mt-1.5 overflow-hidden rounded-md border border-[#e4e7ec] bg-white">
                     <div className="flex items-center gap-1.5 border-b border-[#f2f4f7] px-2 py-1">
-                      <TerminalSquare className="h-3 w-3 shrink-0 text-[#98a2b3]" />
-                      <span className="font-mono-tight text-[8.5px] font-bold uppercase tracking-[0.14em] text-[#98a2b3]">
+                      <TerminalSquare className="h-3 w-3 shrink-0 text-ink-400" />
+                      <span className="font-mono-tight text-[8.5px] font-bold uppercase tracking-[0.14em] text-ink-400">
                         comando real · laboratorio
                       </span>
                       {evidence?.exchanges && evidence.exchanges.length > 0 && (
@@ -194,7 +194,7 @@ export function EventFeed({
         })}
       </AnimatePresence>
       {shown.length === 0 && (
-        <div className="flex h-full min-h-32 flex-col items-center justify-center gap-2 text-[#98a2b3]">
+        <div className="flex h-full min-h-32 flex-col items-center justify-center gap-2 text-ink-400">
           <Info className="h-5 w-5" />
           <p className="text-xs">Sin eventos todavía — las acciones de los agentes aparecerán aquí.</p>
         </div>

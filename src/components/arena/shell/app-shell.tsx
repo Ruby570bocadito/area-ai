@@ -92,7 +92,7 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
                   transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                 />
               )}
-              <item.icon className={cn('h-4 w-4 shrink-0', active ? 'text-white' : 'text-[#667085]')} />
+              <item.icon className={cn('h-4 w-4 shrink-0', active ? 'text-white' : 'text-ink-500')} />
               <span className="truncate">{item.label}</span>
               {item.href === '/arena' && running && (
                 <span className="ml-auto flex h-1.5 w-1.5 shrink-0 rounded-full bg-[#d97706] pulse-dot" />
@@ -105,7 +105,7 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
       {/* Estado del laboratorio */}
       <div className="mx-3 mb-5 rounded-xl border border-[#e4e7ec] bg-[#f9fafb] p-3.5">
         <div className="flex items-center justify-between gap-2">
-          <span className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.16em] text-[#667085]">
+          <span className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.16em] text-ink-500">
             <Cpu className="h-3 w-3" /> Motor
           </span>
           <span
@@ -121,7 +121,7 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
         <p className="mt-2 truncate font-mono-tight text-[10.5px] text-[#475467]">
           {state?.provider ?? 'z-ai-sdk'}
         </p>
-        <div className="mt-2.5 flex items-center justify-between border-t border-[#e4e7ec] pt-2.5 font-mono-tight text-[9.5px] text-[#667085]">
+        <div className="mt-2.5 flex items-center justify-between border-t border-[#e4e7ec] pt-2.5 font-mono-tight text-[9.5px] text-ink-500">
           <span>{state?.stats.totalCampaigns ?? 0} campañas</span>
           <span className="flex items-center gap-1">
             {state?.autopilot && <InfinityIcon className="h-3 w-3 text-[#7c3aed]" />}
@@ -171,10 +171,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     transition={{ duration: 0.18 }}
                     className="min-w-0"
                   >
-                    <p className="font-display truncate text-[15px] font-semibold leading-tight text-[#101828]">
+                    <p className="font-display truncate text-[15px] font-semibold leading-tight text-ink-900">
                       {meta.title}
                     </p>
-                    <p className="hidden truncate text-[11px] leading-tight text-[#667085] sm:block">{meta.sub}</p>
+                    <p className="hidden truncate text-[11px] leading-tight text-ink-500 sm:block">{meta.sub}</p>
                   </motion.div>
                 </AnimatePresence>
               </div>
@@ -187,7 +187,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   'flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono-tight text-[10px] font-bold uppercase tracking-wider',
                   running
                     ? 'status-live'
-                    : 'border-[#e4e7ec] bg-white text-[#667085]'
+                    : 'border-[#e4e7ec] bg-white text-ink-500'
                 )}
               >
                 <Radio className="h-3 w-3" />
@@ -212,7 +212,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileOpen(false)}
-              className="fixed inset-0 z-40 bg-[#101828]/40 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-40 bg-ink-900/40 backdrop-blur-sm lg:hidden"
               aria-hidden
             />
             <motion.aside
@@ -228,7 +228,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 type="button"
                 onClick={() => setMobileOpen(false)}
                 aria-label="Cerrar navegación"
-                className="absolute right-3 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-[#667085] transition-colors hover:bg-[#f2f4f7] hover:text-[#101828]"
+                className="absolute right-3 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 transition-colors hover:bg-[#f2f4f7] hover:text-ink-900"
               >
                 <X className="h-4 w-4" />
               </button>

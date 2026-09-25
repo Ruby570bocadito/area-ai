@@ -62,24 +62,24 @@ export function RoundEvolution({ events, maxRounds }: { events: EventDTO[]; maxR
   return (
     <section className="mt-4">
       <div className="mb-2.5 flex items-center gap-2">
-        <Activity className="h-4 w-4 text-[#667085]" />
+        <Activity className="h-4 w-4 text-ink-500" />
         <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.2em] text-[#475467]">
           Evolución ronda a ronda
         </h3>
-        <span className="rounded-full border border-[#e4e7ec] bg-white px-2 py-0.5 font-mono-tight text-[9.5px] font-bold text-[#667085]">
+        <span className="rounded-full border border-[#e4e7ec] bg-white px-2 py-0.5 font-mono-tight text-[9.5px] font-bold text-ink-500">
           {p.roundsPlayed}/{maxRounds} rondas con actividad
         </span>
       </div>
 
       {p.isEmpty ? (
-        <p className="panel rounded-xl px-4 py-5 text-center text-[12.5px] text-[#667085]">
+        <p className="panel rounded-xl px-4 py-5 text-center text-[12.5px] text-ink-500">
           Esta campaña aún no registra acciones de los equipos — la evolución aparecerá con los primeros
           eventos.
         </p>
       ) : (
         <div className="panel rounded-xl p-4">
           <div className="mb-2 flex items-center justify-between">
-            <div className="flex items-center gap-3 font-mono-tight text-[10px] text-[#667085]">
+            <div className="flex items-center gap-3 font-mono-tight text-[10px] text-ink-500">
               <span className="flex items-center gap-1.5">
                 <span className="h-1.5 w-4 rounded-full" style={{ background: RED }} /> RED
               </span>
@@ -87,7 +87,7 @@ export function RoundEvolution({ events, maxRounds }: { events: EventDTO[]; maxR
                 <span className="h-1.5 w-4 rounded-full" style={{ background: BLUE }} /> BLUE
               </span>
             </div>
-            <span className="font-mono-tight text-[9.5px] uppercase tracking-wider text-[#98a2b3]">
+            <span className="font-mono-tight text-[9.5px] uppercase tracking-wider text-ink-400">
               impacto acumulado · máx {max}
             </span>
           </div>
@@ -118,7 +118,7 @@ export function RoundEvolution({ events, maxRounds }: { events: EventDTO[]; maxR
             {p.rows.map((r, i) => {
               const x = PAD_X + (i * (W - 2 * PAD_X)) / Math.max(1, p.rows.length - 1)
               return (
-                <text key={`x-${r.round}`} x={x} y={H - 2} textAnchor="middle" className="fill-[#98a2b3] font-mono-tight" fontSize="8">
+                <text key={`x-${r.round}`} x={x} y={H - 2} textAnchor="middle" className="fill-ink-400 font-mono-tight" fontSize="8">
                   R{r.round}
                 </text>
               )
@@ -212,14 +212,14 @@ export function RoundEvolution({ events, maxRounds }: { events: EventDTO[]; maxR
                 )}
                 title={`Ronda ${r.round}: RED ${r.redActions} acciones (+${r.redImpact}) con ${r.redHits} aciertos · BLUE ${r.blueActions} acciones (+${r.blueImpact}) con ${r.blueHits} aciertos`}
               >
-                <p className="font-mono-tight text-[9px] font-bold uppercase tracking-wider text-[#98a2b3]">R{r.round}</p>
+                <p className="font-mono-tight text-[9px] font-bold uppercase tracking-wider text-ink-400">R{r.round}</p>
                 <p className="font-mono-tight text-[10.5px] font-bold text-[#b42318]">▲ {r.redImpact}</p>
                 <p className="font-mono-tight text-[10.5px] font-bold text-[#026aa2]">▼ {r.blueImpact}</p>
               </div>
             ))}
           </div>
 
-          <p className="mt-2.5 flex items-center gap-1.5 font-mono-tight text-[10px] text-[#667085]">
+          <p className="mt-2.5 flex items-center gap-1.5 font-mono-tight text-[10px] text-ink-500">
             {p.turningPoints.length > 0 && <TrendingUp className="h-3 w-3 text-[#b54708]" />}
             {momentumNote}
           </p>
@@ -243,7 +243,7 @@ function SiblingBadge({ status, winner }: { status: string; winner: string | nul
     )
   if (status !== 'COMPLETED')
     return (
-      <span className="flex items-center gap-1 rounded-full border border-[#e4e7ec] bg-[#f9fafb] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#667085]">
+      <span className="flex items-center gap-1 rounded-full border border-[#e4e7ec] bg-[#f9fafb] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-ink-500">
         ABORTADA
       </span>
     )
@@ -303,11 +303,11 @@ export function ScenarioSiblings({
   return (
     <section className="mt-4">
       <div className="mb-2.5 flex items-center gap-2">
-        <Layers className="h-4 w-4 text-[#667085]" />
+        <Layers className="h-4 w-4 text-ink-500" />
         <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.2em] text-[#475467]">
           Otras campañas en este escenario
         </h3>
-        <span className="rounded-full border border-[#e4e7ec] bg-white px-2 py-0.5 font-mono-tight text-[9.5px] font-bold text-[#667085]">
+        <span className="rounded-full border border-[#e4e7ec] bg-white px-2 py-0.5 font-mono-tight text-[9.5px] font-bold text-ink-500">
           {rows.length} · {current.scenario.codename}
         </span>
       </div>
@@ -324,7 +324,7 @@ export function ScenarioSiblings({
           >
             <SiblingBadge status={r.status} winner={r.winner} />
             {r.isCurrent && (
-              <span className="rounded bg-[#101828] px-1.5 py-0.5 font-mono-tight text-[8.5px] font-bold uppercase tracking-wider text-white">
+              <span className="rounded bg-ink-900 px-1.5 py-0.5 font-mono-tight text-[8.5px] font-bold uppercase tracking-wider text-white">
                 esta campaña
               </span>
             )}
@@ -338,7 +338,7 @@ export function ScenarioSiblings({
                 {r.redProgress}/{r.blueProgress} de 100
               </span>
             </span>
-            <span className="ml-auto flex items-center gap-3 font-mono-tight text-[10px] text-[#98a2b3]">
+            <span className="ml-auto flex items-center gap-3 font-mono-tight text-[10px] text-ink-400">
               <span className="flex items-center gap-1" title="Duración">
                 <Clock className="h-3 w-3" /> {formatDuration(r.endedAt ? new Date(r.endedAt).getTime() - new Date(r.startedAt).getTime() : NaN)}
               </span>
@@ -346,7 +346,7 @@ export function ScenarioSiblings({
               {!r.isCurrent && (
                 <Link
                   href={`/historial/${r.id}`}
-                  className="rounded-md border border-[#e4e7ec] bg-white px-2 py-0.5 font-bold text-[#667085] transition-colors hover:border-[#d0d5dd] hover:text-[#101828]"
+                  className="rounded-md border border-[#e4e7ec] bg-white px-2 py-0.5 font-bold text-ink-500 transition-colors hover:border-[#d0d5dd] hover:text-ink-900"
                 >
                   Ver ficha
                 </Link>
@@ -354,7 +354,7 @@ export function ScenarioSiblings({
             </span>
           </div>
         ))}
-        <p className="border-t border-[#f2f4f7] bg-[#f9fafb]/60 px-3.5 py-2 font-mono-tight text-[9.5px] text-[#667085]">
+        <p className="border-t border-[#f2f4f7] bg-[#f9fafb]/60 px-3.5 py-2 font-mono-tight text-[9.5px] text-ink-500">
           {siblings.length === 0
             ? 'Es la primera campaña registrada de este escenario.'
             : `Media del escenario (${completed.length} finalizadas): RED ${avgRed ?? '—'} pts · BLUE ${avgBlue ?? '—'} pts · progreso ${avgRedProgress ?? '—'}/${avgBlueProgress ?? '—'} de 100`}

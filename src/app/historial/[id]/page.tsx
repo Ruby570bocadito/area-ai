@@ -68,18 +68,18 @@ function DetailPage() {
       <PageContainer>
         <div className="panel flex flex-col items-center gap-3 rounded-2xl px-6 py-16 text-center">
           <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#e4e7ec] bg-[#f2f4f7]">
-            <FileWarning className="h-5 w-5 text-[#667085]" />
+            <FileWarning className="h-5 w-5 text-ink-500" />
           </span>
           <div>
-            <h2 className="font-display text-base font-bold text-[#101828]">Campaña no encontrada</h2>
-            <p className="mx-auto mt-1 max-w-md text-[12.5px] leading-relaxed text-[#667085]">
+            <h2 className="font-display text-base font-bold text-ink-900">Campaña no encontrada</h2>
+            <p className="mx-auto mt-1 max-w-md text-[12.5px] leading-relaxed text-ink-500">
               No se pudo cargar la ficha de esta campaña ({error}). Puede que el identificador sea
               incorrecto o que la campaña se haya eliminado del archivo.
             </p>
           </div>
           <Link
             href="/historial"
-            className="flex items-center gap-1.5 rounded-lg bg-[#101828] px-4 py-2 text-[12.5px] font-semibold text-white shadow-sm transition-colors hover:bg-[#182230]"
+            className="flex items-center gap-1.5 rounded-lg bg-ink-900 px-4 py-2 text-[12.5px] font-semibold text-white shadow-sm transition-colors hover:bg-[#182230]"
           >
             <ArrowLeft className="h-3.5 w-3.5" /> Volver al historial
           </Link>
@@ -97,7 +97,7 @@ function DetailPage() {
             transition={{ duration: 2.4, repeat: Infinity, ease: 'linear' }}
             className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#e4e7ec] bg-white shadow-sm"
           >
-            <Swords className="h-6 w-6 text-[#667085]" />
+            <Swords className="h-6 w-6 text-ink-500" />
           </motion.div>
         </div>
       </PageContainer>
@@ -121,7 +121,7 @@ function DetailPage() {
         kicker={
           <Link
             href="/historial"
-            className="flex items-center gap-1.5 font-mono-tight text-[10.5px] font-bold uppercase tracking-[0.2em] text-[#98a2b3] transition-colors hover:text-[#101828]"
+            className="flex items-center gap-1.5 font-mono-tight text-[10.5px] font-bold uppercase tracking-[0.2em] text-ink-400 transition-colors hover:text-ink-900"
           >
             <ArrowLeft className="h-3 w-3" /> Archivo / Detalle
           </Link>
@@ -153,10 +153,10 @@ function DetailPage() {
           { label: 'Duración', value: durationLabel },
         ].map((m) => (
           <div key={m.label} className="panel rounded-xl px-3.5 py-3">
-            <p className="font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.16em] text-[#98a2b3]">
+            <p className="font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.16em] text-ink-400">
               {m.label}
             </p>
-            <p className="mt-1 font-mono-tight text-[15px] font-bold text-[#101828]">{m.value}</p>
+            <p className="mt-1 font-mono-tight text-[15px] font-bold text-ink-900">{m.value}</p>
           </div>
         ))}
       </div>
@@ -176,16 +176,16 @@ function DetailPage() {
       {/* Lecciones que archivó esta campaña */}
       <section className="mt-4">
         <div className="mb-2.5 flex items-center gap-2">
-          <BrainCircuit className="h-4 w-4 text-[#667085]" />
+          <BrainCircuit className="h-4 w-4 text-ink-500" />
           <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.2em] text-[#475467]">
             Memoria archivada por esta campaña
           </h3>
-          <span className="rounded-full border border-[#e4e7ec] bg-white px-2 py-0.5 font-mono-tight text-[9.5px] font-bold text-[#667085]">
+          <span className="rounded-full border border-[#e4e7ec] bg-white px-2 py-0.5 font-mono-tight text-[9.5px] font-bold text-ink-500">
             {detail.knowledge.length}
           </span>
         </div>
         {detail.knowledge.length === 0 ? (
-          <p className="panel rounded-xl px-4 py-5 text-center text-[12.5px] text-[#667085]">
+          <p className="panel rounded-xl px-4 py-5 text-center text-[12.5px] text-ink-500">
             Esta campaña no archivó lecciones nuevas en la memoria del sistema.
           </p>
         ) : (
@@ -202,12 +202,12 @@ function DetailPage() {
                     {CATEGORY_LABEL[k.category] ?? k.category}
                   </span>
                   {k.agentCodename && (
-                    <span className="font-mono-tight text-[9.5px] text-[#98a2b3]">{k.agentCodename}</span>
+                    <span className="font-mono-tight text-[9.5px] text-ink-400">{k.agentCodename}</span>
                   )}
                 </div>
-                <h4 className="mt-2 text-[13px] font-semibold leading-snug text-[#101828]">{k.title}</h4>
-                <p className="mt-1 line-clamp-3 text-[11.5px] leading-relaxed text-[#667085]">{k.content}</p>
-                <div className="mt-3 flex items-center justify-between font-mono-tight text-[10px] text-[#667085]">
+                <h4 className="mt-2 text-[13px] font-semibold leading-snug text-ink-900">{k.title}</h4>
+                <p className="mt-1 line-clamp-3 text-[11.5px] leading-relaxed text-ink-500">{k.content}</p>
+                <div className="mt-3 flex items-center justify-between font-mono-tight text-[10px] text-ink-500">
                   <span>
                     Confianza {Math.round(k.confidence * 100)}% · {k.timesUsed} usos
                   </span>

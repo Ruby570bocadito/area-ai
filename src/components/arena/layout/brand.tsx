@@ -17,7 +17,7 @@ export function BrandMark({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        'relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/15 bg-[#101828]',
+        'relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/15 bg-ink-900',
         className
       )}
     >
@@ -59,7 +59,7 @@ export function Wordmark({
       <span
         className={cn(
           'font-display block text-[15px] font-extrabold tracking-tight',
-          tone === 'light' ? 'text-white' : 'text-[#101828]'
+          tone === 'light' ? 'text-white' : 'text-ink-900'
         )}
       >
         area<span className="bg-gradient-to-r from-[#d92d20] to-[#0086c9] bg-clip-text text-transparent">·</span>ai
@@ -68,7 +68,7 @@ export function Wordmark({
         <span
           className={cn(
             'mt-0.5 hidden font-mono-tight text-[8.5px] uppercase tracking-[0.28em] sm:block',
-            tone === 'light' ? 'text-[#8a94a6]' : 'text-[#667085]'
+            tone === 'light' ? 'text-[#8a94a6]' : 'text-ink-500'
           )}
         >
           Adversarial Lab

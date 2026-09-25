@@ -162,7 +162,7 @@ export function AgentCard({
           >
             {agent.codename}
           </p>
-          <p className="truncate text-[11px] text-[#667085]">{agent.role}</p>
+          <p className="truncate text-[11px] text-ink-500">{agent.role}</p>
         </div>
       </div>
       {lastAction && (
@@ -185,7 +185,7 @@ export function AgentCard({
             transition={{ duration: 0.8, ease: 'easeOut' }}
           />
         </div>
-        <span className="font-mono-tight text-[10px] text-[#667085]">
+        <span className="font-mono-tight text-[10px] text-ink-500">
           {agent.xp} XP · {agent.victories}🏆
         </span>
       </div>

@@ -35,17 +35,17 @@ import { EventFeed } from '@/components/arena/event-feed'
 
 const QUICK_LINKS = [
   { href: '/arena', label: 'Operaciones', desc: 'Mapa y telemetría en vivo', icon: Radio, tint: 'text-[#0086c9] bg-[#f0f9ff] border-[#bae6fd]' },
-  { href: '/agentes', label: 'Agentes', desc: 'Roster y actividad real', icon: Users, tint: 'text-[#101828] bg-[#f2f4f7] border-[#e4e7ec]' },
+  { href: '/agentes', label: 'Agentes', desc: 'Roster y actividad real', icon: Users, tint: 'text-ink-900 bg-[#f2f4f7] border-[#e4e7ec]' },
   { href: '/conocimiento', label: 'Conocimiento', desc: 'Lecciones que evolucionan', icon: BrainCircuit, tint: 'text-[#7c3aed] bg-[#f5f3ff] border-[#ddd6fe]' },
   { href: '/historial', label: 'Historial', desc: 'Archivo de campañas', icon: History, tint: 'text-[#b54708] bg-[#fffaeb] border-[#fedf89]' },
   { href: '/analitica', label: 'Analítica', desc: 'Balance y evolución', icon: BarChart3, tint: 'text-[#067647] bg-[#ecfdf3] border-[#a6f4c5]' },
-  { href: '/modelos', label: 'Modelos', desc: 'Motor LLM del sistema', icon: SlidersHorizontal, tint: 'text-[#101828] bg-[#f2f4f7] border-[#e4e7ec]' },
+  { href: '/modelos', label: 'Modelos', desc: 'Motor LLM del sistema', icon: SlidersHorizontal, tint: 'text-ink-900 bg-[#f2f4f7] border-[#e4e7ec]' },
 ] as const
 
 const RESULT_CHIP: Record<string, string> = {
   EXITO: 'bg-[#fef3f2] text-[#b42318] border-[#fecdca]',
   PARCIAL: 'bg-[#fffaeb] text-[#b54708] border-[#fedf89]',
-  FALLO: 'bg-[#f9fafb] text-[#667085] border-[#e4e7ec]',
+  FALLO: 'bg-[#f9fafb] text-ink-500 border-[#e4e7ec]',
   BLOQUEADO: 'bg-[#f0f9ff] text-[#026aa2] border-[#b2ddff]',
   DETECTADO: 'bg-[#ecfdf3] text-[#067647] border-[#a6f4c5]',
   CONTENIDO: 'bg-[#f5f3ff] text-[#6941c6] border-[#ddd6fe]',
@@ -86,14 +86,14 @@ function KpiCard({
       className="panel rounded-xl p-4"
     >
       <div className="flex items-center justify-between">
-        <p className="font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-[#98a2b3]">{label}</p>
-        <Icon className="h-3.5 w-3.5 text-[#98a2b3]" />
+        <p className="font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-ink-400">{label}</p>
+        <Icon className="h-3.5 w-3.5 text-ink-400" />
       </div>
-      <p className="font-display mt-2 text-[26px] font-extrabold leading-none tracking-tight text-[#101828]">
+      <p className="font-display mt-2 text-[26px] font-extrabold leading-none tracking-tight text-ink-900">
         <NumberFlow value={value} />
-        {suffix && <span className="ml-1 text-[13px] font-semibold text-[#667085]">{suffix}</span>}
+        {suffix && <span className="ml-1 text-[13px] font-semibold text-ink-500">{suffix}</span>}
       </p>
-      {sub && <div className="mt-1.5 text-[11px] leading-snug text-[#667085]">{sub}</div>}
+      {sub && <div className="mt-1.5 text-[11px] leading-snug text-ink-500">{sub}</div>}
     </motion.div>
   )
 }
@@ -109,53 +109,53 @@ function LabStatusCard({ delay }: { delay: number }) {
   return (
     <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay, duration: 0.4 }} className="panel rounded-xl p-4">
       <div className="flex items-center justify-between gap-2">
-        <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-[#98a2b3]">
+        <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-ink-400">
           <Server className="h-3 w-3" /> Laboratorio real
         </p>
         <span
           className={cn(
             'flex items-center gap-1.5 rounded-full px-2 py-0.5 font-mono-tight text-[9px] font-bold uppercase tracking-wider',
-            lab.online ? 'bg-[#ecfdf3] text-[#067647]' : 'bg-[#f2f4f7] text-[#667085]'
+            lab.online ? 'bg-[#ecfdf3] text-[#067647]' : 'bg-[#f2f4f7] text-ink-500'
           )}
         >
-          <span className={cn('h-1.5 w-1.5 rounded-full', lab.online ? 'bg-[#12b76a] pulse-dot' : 'bg-[#98a2b3]')} />
+          <span className={cn('h-1.5 w-1.5 rounded-full', lab.online ? 'bg-[#12b76a] pulse-dot' : 'bg-ink-400')} />
           {lab.online ? 'operativo' : 'en espera'}
         </span>
       </div>
       {lab.online || liveLab ? (
         <div className="mt-3 grid grid-cols-2 gap-2">
           <div className="rounded-lg border border-[#f2f4f7] bg-[#f9fafb] px-2.5 py-1.5">
-            <p className="font-mono-tight text-[9px] uppercase tracking-wider text-[#98a2b3]">Servicios HTTP</p>
-            <p className="font-mono-tight text-[13px] font-bold text-[#101828]">
+            <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Servicios HTTP</p>
+            <p className="font-mono-tight text-[13px] font-bold text-ink-900">
               127.0.0.1:{lab.port ?? '—'}
             </p>
           </div>
           <div className="rounded-lg border border-[#f2f4f7] bg-[#f9fafb] px-2.5 py-1.5">
-            <p className="font-mono-tight text-[9px] uppercase tracking-wider text-[#98a2b3]">Intercambios reales</p>
-            <p className="font-mono-tight text-[13px] font-bold text-[#101828]">
+            <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Intercambios reales</p>
+            <p className="font-mono-tight text-[13px] font-bold text-ink-900">
               <NumberFlow value={lab.exchanges} />
             </p>
           </div>
           <div className="rounded-lg border border-[#f2f4f7] bg-[#f9fafb] px-2.5 py-1.5">
-            <p className="font-mono-tight text-[9px] uppercase tracking-wider text-[#98a2b3]">Sesiones activas</p>
-            <p className="font-mono-tight text-[13px] font-bold text-[#101828]">
+            <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Sesiones activas</p>
+            <p className="font-mono-tight text-[13px] font-bold text-ink-900">
               <NumberFlow value={liveLab?.sessions ?? 0} />
             </p>
           </div>
           <div className="rounded-lg border border-[#f2f4f7] bg-[#f9fafb] px-2.5 py-1.5">
-            <p className="font-mono-tight text-[9px] uppercase tracking-wider text-[#98a2b3]">Reglas SIEM</p>
-            <p className="font-mono-tight text-[13px] font-bold text-[#101828]">
+            <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Reglas SIEM</p>
+            <p className="font-mono-tight text-[13px] font-bold text-ink-900">
               <NumberFlow value={activeMonitors} />
             </p>
           </div>
         </div>
       ) : (
-        <p className="mt-3 text-[11.5px] leading-relaxed text-[#667085]">
+        <p className="mt-3 text-[11.5px] leading-relaxed text-ink-500">
           Al iniciar una campaña se despliega un ciber range con servicios HTTP reales por nodo, política de red por
           segmentos y SIEM. Cada acción de los agentes es un intercambio verificable.
         </p>
       )}
-      <p className="mt-2.5 border-t border-[#f2f4f7] pt-2 text-[10px] leading-snug text-[#98a2b3]">
+      <p className="mt-2.5 border-t border-[#f2f4f7] pt-2 text-[10px] leading-snug text-ink-400">
         {running && liveLab
           ? `${liveLab.exchanges} intercambios HTTP en la campaña en curso · ${liveLab.nodes.filter((n) => n.compromised).length} nodos comprometidos · ${liveLab.nodes.filter((n) => n.isolated).length} aislados`
           : 'Los resultados se derivan de respuestas reales, no de dados.'}
@@ -177,26 +177,26 @@ function RecentActivity() {
       aria-label="Actividad del laboratorio entre campañas"
     >
       <div className="flex items-center justify-between">
-        <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-[#98a2b3]">
+        <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-ink-400">
           <Activity className="h-3 w-3" /> Actividad del laboratorio
         </p>
-        <span className="font-mono-tight text-[9px] uppercase tracking-wider text-[#98a2b3]">últimos eventos reales</span>
+        <span className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">últimos eventos reales</span>
       </div>
       <ul className="mt-3 space-y-1.5">
         {state.recentActivity.slice(0, 8).map((e) => (
           <li key={e.id} className="flex items-center gap-2.5 rounded-lg border border-[#f2f4f7] bg-[#f9fafb] px-2.5 py-1.5">
             <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', e.team === 'RED' ? 'bg-[#d92d20]' : 'bg-[#0086c9]')} />
-            <span className="font-mono-tight text-[10.5px] font-bold tracking-wide text-[#101828]">{e.agentCodename}</span>
+            <span className="font-mono-tight text-[10.5px] font-bold tracking-wide text-ink-900">{e.agentCodename}</span>
             <span className="min-w-0 flex-1 truncate text-[11px] text-[#475467]">{e.action}</span>
             {e.result && (
-              <span className={cn('shrink-0 rounded border px-1.5 py-px font-mono-tight text-[9px] font-bold', RESULT_CHIP[e.result] ?? 'border-[#e4e7ec] bg-white text-[#667085]')}>
+              <span className={cn('shrink-0 rounded border px-1.5 py-px font-mono-tight text-[9px] font-bold', RESULT_CHIP[e.result] ?? 'border-[#e4e7ec] bg-white text-ink-500')}>
                 {e.result}
               </span>
             )}
-            <span className="hidden shrink-0 rounded bg-white border border-[#f2f4f7] px-1.5 py-px font-mono-tight text-[9px] text-[#98a2b3] sm:block">
+            <span className="hidden shrink-0 rounded bg-white border border-[#f2f4f7] px-1.5 py-px font-mono-tight text-[9px] text-ink-400 sm:block">
               {e.campaignCodename}
             </span>
-            <span className="shrink-0 font-mono-tight text-[9px] text-[#98a2b3]">{relTime(e.createdAt)}</span>
+            <span className="shrink-0 font-mono-tight text-[9px] text-ink-400">{relTime(e.createdAt)}</span>
           </li>
         ))}
       </ul>
@@ -223,7 +223,7 @@ function TopOperatorsAndSpark() {
     >
       <div className="panel rounded-xl p-4">
         <div className="flex items-center justify-between">
-          <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-[#98a2b3]">
+          <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-ink-400">
             <Flame className="h-3 w-3" /> Top operadores
           </p>
           <Link href="/agentes" className="flex items-center gap-1 text-[11px] font-semibold text-[#026aa2] hover:underline">
@@ -233,9 +233,9 @@ function TopOperatorsAndSpark() {
         <ul className="mt-3 space-y-2">
           {top.map((a, i) => (
             <li key={a.id} className="flex items-center gap-2.5">
-              <span className="w-4 shrink-0 text-center font-mono-tight text-[10px] font-bold text-[#98a2b3]">{i + 1}</span>
+              <span className="w-4 shrink-0 text-center font-mono-tight text-[10px] font-bold text-ink-400">{i + 1}</span>
               <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', a.team === 'RED' ? 'bg-[#d92d20]' : 'bg-[#0086c9]')} />
-              <span className="w-[74px] shrink-0 truncate font-mono-tight text-[10.5px] font-bold tracking-wide text-[#101828]">{a.codename}</span>
+              <span className="w-[74px] shrink-0 truncate font-mono-tight text-[10.5px] font-bold tracking-wide text-ink-900">{a.codename}</span>
               <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-[#f2f4f7]">
                 <motion.div
                   initial={{ width: 0 }}
@@ -244,7 +244,7 @@ function TopOperatorsAndSpark() {
                   className={cn('h-full rounded-full', a.team === 'RED' ? 'bg-[#d92d20]' : 'bg-[#0086c9]')}
                 />
               </div>
-              <span className="shrink-0 font-mono-tight text-[10px] text-[#667085]">
+              <span className="shrink-0 font-mono-tight text-[10px] text-ink-500">
                 Nv{a.level} · {a.xp} XP
               </span>
             </li>
@@ -254,10 +254,10 @@ function TopOperatorsAndSpark() {
 
       <div className="panel rounded-xl p-4">
         <div className="flex items-center justify-between">
-          <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-[#98a2b3]">
+          <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-ink-400">
             <BrainCircuit className="h-3 w-3" /> Conocimiento por día
           </p>
-          <span className="font-mono-tight text-[9px] uppercase tracking-wider text-[#98a2b3]">14 días · {sparkTotal} lecciones</span>
+          <span className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">14 días · {sparkTotal} lecciones</span>
         </div>
         <div className="mt-3 flex h-[74px] items-end gap-[5px]">
           {spark.map((v, i) => (
@@ -271,7 +271,7 @@ function TopOperatorsAndSpark() {
             />
           ))}
         </div>
-        <p className="mt-2 border-t border-[#f2f4f7] pt-2 text-[10px] leading-snug text-[#98a2b3]">
+        <p className="mt-2 border-t border-[#f2f4f7] pt-2 text-[10px] leading-snug text-ink-400">
           Cada lección nace de una campaña real y se reutiliza en las siguientes con su tasa de éxito.
         </p>
       </div>
@@ -294,8 +294,8 @@ function DashboardPage() {
         title="Panel de mando"
         subtitle="Ciber range real: los agentes ejecutan comandos verificables contra servicios desplegados, archivan conocimiento y evolucionan campaña tras campaña."
         actions={
-          <span className="flex items-center gap-1.5 rounded-full border border-[#e4e7ec] bg-white px-3 py-1.5 font-mono-tight text-[10px] font-bold uppercase tracking-wider text-[#667085] shadow-sm">
-            <InfinityIcon className={cn('h-3.5 w-3.5', state.autopilot ? 'text-[#7c3aed]' : 'text-[#98a2b3]')} />
+          <span className="flex items-center gap-1.5 rounded-full border border-[#e4e7ec] bg-white px-3 py-1.5 font-mono-tight text-[10px] font-bold uppercase tracking-wider text-ink-500 shadow-sm">
+            <InfinityIcon className={cn('h-3.5 w-3.5', state.autopilot ? 'text-[#7c3aed]' : 'text-ink-400')} />
             {state.autopilot ? 'Operación continua activa' : 'Motor listo'}
           </span>
         }
@@ -365,24 +365,24 @@ function DashboardPage() {
             className="panel rounded-xl p-4"
           >
             <div className="flex items-center justify-between gap-2">
-              <p className="font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-[#98a2b3]">
+              <p className="font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-ink-400">
                 {running ? 'Campaña en curso' : liveCampaign ? 'Última campaña' : 'Arena'}
               </p>
               {running && <span className="status-live rounded-full border px-2 py-0.5 font-mono-tight text-[9px] font-bold">EN DIRECTO</span>}
             </div>
             {liveCampaign ? (
               <Link href="/arena" className="group mt-3 block">
-                <p className="font-mono-tight text-[13px] font-bold tracking-wide text-[#101828] group-hover:text-[#026aa2]">
+                <p className="font-mono-tight text-[13px] font-bold tracking-wide text-ink-900 group-hover:text-[#026aa2]">
                   {liveCampaign.scenario.codename}
                 </p>
-                <p className="mt-0.5 truncate text-[11.5px] text-[#667085]">
+                <p className="mt-0.5 truncate text-[11.5px] text-ink-500">
                   {liveCampaign.scenario.company} · {liveCampaign.scenario.industry}
                 </p>
                 <div className="mt-3 flex items-center gap-3">
                   <span className="flex items-center gap-1.5 font-mono-tight text-[13px] font-extrabold text-[#b42318]">
                     <Crosshair className="h-3 w-3" /> {liveCampaign.redScore}
                   </span>
-                  <span className="font-mono-tight text-[9px] uppercase tracking-wider text-[#98a2b3]">
+                  <span className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">
                     R{liveCampaign.round}/{liveCampaign.maxRounds}
                   </span>
                   <span className="flex items-center gap-1.5 font-mono-tight text-[13px] font-extrabold text-[#026aa2]">
@@ -394,7 +394,7 @@ function DashboardPage() {
                 </span>
               </Link>
             ) : (
-              <p className="mt-3 text-[12px] leading-relaxed text-[#667085]">
+              <p className="mt-3 text-[12px] leading-relaxed text-ink-500">
                 No hay ninguna campaña todavía. Lanza la primera desde el centro de mando o activa
                 la operación continua para que el motor encadene campañas solo.
               </p>
@@ -417,8 +417,8 @@ function DashboardPage() {
                 <span className={cn('flex h-7 w-7 items-center justify-center rounded-lg border', l.tint)}>
                   <l.icon className="h-3.5 w-3.5" />
                 </span>
-                <p className="mt-2 text-[12.5px] font-semibold text-[#101828]">{l.label}</p>
-                <p className="mt-0.5 text-[10.5px] leading-snug text-[#667085]">{l.desc}</p>
+                <p className="mt-2 text-[12.5px] font-semibold text-ink-900">{l.label}</p>
+                <p className="mt-0.5 text-[10.5px] leading-snug text-ink-500">{l.desc}</p>
               </Link>
             ))}
           </motion.div>
@@ -435,7 +435,7 @@ function DashboardPage() {
           aria-label="Actividad reciente"
         >
           <div className="mb-2.5 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 font-mono-tight text-[10.5px] font-bold uppercase tracking-[0.2em] text-[#667085]">
+            <h2 className="flex items-center gap-2 font-mono-tight text-[10.5px] font-bold uppercase tracking-[0.2em] text-ink-500">
               <History className="h-3.5 w-3.5" /> Telemetría de la campaña en curso
             </h2>
             <Link href="/arena" className="flex items-center gap-1 text-[11.5px] font-semibold text-[#026aa2] hover:underline">

@@ -60,7 +60,7 @@ export function CommandPalette() {
       <button
         onClick={() => setOpen(true)}
         aria-label="Abrir paleta de comandos"
-        className="hidden items-center gap-1.5 rounded-md border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] text-[#667085] shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-[#101828] md:flex"
+        className="hidden items-center gap-1.5 rounded-md border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] text-ink-500 shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-ink-900 md:flex"
         title="Paleta de comandos (⌘K)"
       >
         <span className="text-[11px]">⌘</span>K
@@ -82,9 +82,9 @@ export function CommandPalette() {
                 <Swords className="h-3.5 w-3.5 text-[#d92d20]" />
                 <span className="flex-1">
                   Lanzar <b>{s.codename}</b>
-                  <span className="ml-1.5 text-[#667085]">· {s.company}</span>
+                  <span className="ml-1.5 text-ink-500">· {s.company}</span>
                 </span>
-                <span className="font-mono-tight text-[9px] text-[#667085]">dif {s.difficulty}/5</span>
+                <span className="font-mono-tight text-[9px] text-ink-500">dif {s.difficulty}/5</span>
               </CommandItem>
             ))}
           </CommandGroup>
@@ -93,9 +93,9 @@ export function CommandPalette() {
           <CommandGroup heading="Navegación">
             {ROUTES.map((s) => (
               <CommandItem key={s.href} value={`ir a ${s.label}`} onSelect={() => go(s.href)} className="gap-2.5">
-                <s.icon className="h-3.5 w-3.5 text-[#667085]" />
+                <s.icon className="h-3.5 w-3.5 text-ink-500" />
                 <span className="flex-1">{s.label}</span>
-                <ArrowUpRight className="h-3 w-3 text-[#98a2b3]" />
+                <ArrowUpRight className="h-3 w-3 text-ink-400" />
               </CommandItem>
             ))}
           </CommandGroup>

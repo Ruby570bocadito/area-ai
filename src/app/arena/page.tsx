@@ -40,11 +40,11 @@ function ArenaPage() {
           className="panel flex flex-col items-center gap-3.5 rounded-2xl px-6 py-14 text-center"
         >
           <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#e4e7ec] bg-[#f2f4f7]">
-            <Radio className="h-5 w-5 text-[#667085]" />
+            <Radio className="h-5 w-5 text-ink-500" />
           </span>
           <div>
-            <h2 className="font-display text-base font-bold text-[#101828]">Sin operaciones todavía</h2>
-            <p className="mx-auto mt-1 max-w-md text-[12.5px] leading-relaxed text-[#667085]">
+            <h2 className="font-display text-base font-bold text-ink-900">Sin operaciones todavía</h2>
+            <p className="mx-auto mt-1 max-w-md text-[12.5px] leading-relaxed text-ink-500">
               Cuando lances una campaña, aquí verás el mapa de la infraestructura, los haces de
               ataque y defensa, las decisiones de cada agente y el registro completo de eventos.
             </p>
@@ -53,7 +53,7 @@ function ArenaPage() {
             type="button"
             onClick={() => void handleStart()}
             disabled={running}
-            className="shine-sweep flex items-center gap-2 rounded-lg bg-[#101828] px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-[#182230] disabled:cursor-not-allowed disabled:opacity-50"
+            className="shine-sweep flex items-center gap-2 rounded-lg bg-ink-900 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-[#182230] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Swords className="h-4 w-4" />
             Lanzar primera campaña

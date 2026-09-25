@@ -57,7 +57,7 @@ function HistorialPage() {
       />
       <Suspense
         fallback={
-          <div className="panel flex min-h-[200px] items-center justify-center rounded-xl text-[#98a2b3]">
+          <div className="panel flex min-h-[200px] items-center justify-center rounded-xl text-ink-400">
             <Swords className="h-5 w-5 animate-spin" />
           </div>
         }

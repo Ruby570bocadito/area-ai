@@ -267,7 +267,7 @@ export function HistoryPanel({
 
   if (campaigns.length === 0) {
     return (
-      <div className="panel flex flex-col items-center gap-2 rounded-xl p-8 text-center text-[#667085]">
+      <div className="panel flex flex-col items-center gap-2 rounded-xl p-8 text-center text-ink-500">
         <History className="h-5 w-5" />
         <p className="text-sm">Aún no hay campañas finalizadas. Lanza la primera desde el panel de mando.</p>
       </div>
@@ -281,12 +281,12 @@ export function HistoryPanel({
       {/* Barra de herramientas: búsqueda + filtros + exportación */}
       <div className="panel flex flex-wrap items-center gap-2 rounded-xl p-2.5">
         <label className="relative min-w-[180px] flex-1 sm:max-w-[260px]">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#98a2b3]" />
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-400" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por codename, empresa…"
-            className="w-full rounded-lg border border-[#e4e7ec] bg-white py-1.5 pl-8 pr-2.5 text-[12px] text-[#101828] placeholder:text-[#98a2b3] focus:border-[#d0d5dd] focus:outline-none focus:ring-2 focus:ring-[#eaecf0]"
+            className="w-full rounded-lg border border-[#e4e7ec] bg-white py-1.5 pl-8 pr-2.5 text-[12px] text-ink-900 placeholder:text-ink-400 focus:border-[#d0d5dd] focus:outline-none focus:ring-2 focus:ring-[#eaecf0]"
           />
         </label>
 
@@ -297,7 +297,7 @@ export function HistoryPanel({
               type="button"
               onClick={() => setResult(f.key)}
               data-active={result === f.key}
-              className="rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-[#667085] transition-colors hover:border-[#d0d5dd] hover:text-[#101828] data-[active=true]:border-[#101828] data-[active=true]:bg-[#101828] data-[active=true]:text-white"
+              className="rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 transition-colors hover:border-[#d0d5dd] hover:text-ink-900 data-[active=true]:border-ink-900 data-[active=true]:bg-ink-900 data-[active=true]:text-white"
             >
               {f.label}
             </button>
@@ -317,14 +317,14 @@ export function HistoryPanel({
         </select>
 
         <div className="ml-auto flex items-center gap-2">
-          <span className="font-mono-tight text-[10px] text-[#98a2b3]">
+          <span className="font-mono-tight text-[10px] text-ink-400">
             {filtered.length} de {campaigns.length}
           </span>
           <button
             type="button"
             onClick={handleCopyReport}
             disabled={filtered.length === 0}
-            className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-[#667085] shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-[#101828] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-ink-900 disabled:cursor-not-allowed disabled:opacity-50"
             title="Copiar el informe agregado en Markdown de la selección filtrada al portapapeles (mismo contenido que la descarga del botón Informe)"
           >
             {copyState === 'copied' ? (
@@ -345,7 +345,7 @@ export function HistoryPanel({
             type="button"
             onClick={() => exportMarkdown(filtered, filtersDesc)}
             disabled={filtered.length === 0}
-            className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-[#667085] shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-[#101828] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-ink-900 disabled:cursor-not-allowed disabled:opacity-50"
             title="Descargar un informe agregado en Markdown de la selección filtrada (resumen ejecutivo + una sección por campaña)"
           >
             <FileText className="h-3 w-3" /> Informe
@@ -354,7 +354,7 @@ export function HistoryPanel({
             type="button"
             onClick={() => exportCsv(filtered)}
             disabled={filtered.length === 0}
-            className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-[#667085] shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-[#101828] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-ink-900 disabled:cursor-not-allowed disabled:opacity-50"
             title="Descargar la lista filtrada en CSV"
           >
             <Download className="h-3 w-3" /> CSV
@@ -363,7 +363,7 @@ export function HistoryPanel({
       </div>
 
       {hasFilters && filtered.length === 0 ? (
-        <div className="panel flex flex-col items-center gap-2 rounded-xl p-8 text-center text-[#667085]">
+        <div className="panel flex flex-col items-center gap-2 rounded-xl p-8 text-center text-ink-500">
           <Search className="h-5 w-5" />
           <p className="text-sm">Ninguna campaña coincide con los filtros aplicados.</p>
         </div>
@@ -384,11 +384,11 @@ export function HistoryPanel({
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="font-mono-tight text-[12px] font-bold tracking-wider text-[#101828]">
+                    <p className="font-mono-tight text-[12px] font-bold tracking-wider text-ink-900">
                       {c.scenario.codename}
-                      <span className="ml-2 font-normal text-[#667085]">· {c.scenario.company}</span>
+                      <span className="ml-2 font-normal text-ink-500">· {c.scenario.company}</span>
                     </p>
-                    <p className="mt-0.5 font-mono-tight text-[10.5px] text-[#98a2b3]">
+                    <p className="mt-0.5 font-mono-tight text-[10.5px] text-ink-400">
                       {new Date(c.startedAt).toLocaleString('es-ES', {
                         day: '2-digit',
                         month: 'short',
@@ -399,7 +399,7 @@ export function HistoryPanel({
                       {c.status === 'COMPLETED' && (
                         <span className="ml-2 inline-flex items-center gap-1">
                           · marcador <b className="text-[#475467]">{c.redScore}–{c.blueScore}</b>
-                          <span className="ml-1 text-[#98a2b3]">· {VICTORY_RULE_SHORT}:</span>
+                          <span className="ml-1 text-ink-400">· {VICTORY_RULE_SHORT}:</span>
                           <b
                             className="cursor-help text-[#475467]"
                             title={`El ganador lo decide el progreso del objetivo, no la puntuación (${c.redScore}–${c.blueScore} son puntos de actividad). ${VICTORY_RULE_DETAIL}`}
@@ -419,11 +419,11 @@ export function HistoryPanel({
                         <Hourglass className="h-2.5 w-2.5" /> EN CURSO
                       </span>
                     ) : (
-                      <span className="rounded-full border border-[#e4e7ec] bg-[#f9fafb] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#667085]">
+                      <span className="rounded-full border border-[#e4e7ec] bg-[#f9fafb] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-ink-500">
                         ABORTADA
                       </span>
                     )}
-                    <ChevronRight className="h-4 w-4 shrink-0 text-[#d0d5dd] transition-all group-hover:translate-x-0.5 group-hover:text-[#98a2b3]" />
+                    <ChevronRight className="h-4 w-4 shrink-0 text-[#d0d5dd] transition-all group-hover:translate-x-0.5 group-hover:text-ink-400" />
                   </div>
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2">

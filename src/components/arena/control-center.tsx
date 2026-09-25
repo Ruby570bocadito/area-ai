@@ -74,18 +74,18 @@ export function ControlCenter({
             <RadioTower className="h-4.5 w-4.5 text-[#344054]" />
           </span>
           <div>
-            <h3 className="font-display text-base font-semibold tracking-tight text-[#101828] sm:text-lg">
+            <h3 className="font-display text-base font-semibold tracking-tight text-ink-900 sm:text-lg">
               Centro de lanzamiento
             </h3>
-            <p className="text-xs text-[#667085]">
+            <p className="text-xs text-ink-500">
               Elige la infraestructura objetivo y lanza una campaña autónoma Red vs Blue
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1.5 rounded-full border border-[#e4e7ec] bg-white px-3 py-1.5 font-mono-tight text-[10px] text-[#667085]">
+          <span className="flex items-center gap-1.5 rounded-full border border-[#e4e7ec] bg-white px-3 py-1.5 font-mono-tight text-[10px] text-ink-500">
             <Cpu className="h-3 w-3 text-[#0086c9]" />
-            Motor: <span className="text-[#101828]">{provider}</span>
+            Motor: <span className="text-ink-900">{provider}</span>
           </span>
           <span
             className={cn(
@@ -110,14 +110,14 @@ export function ControlCenter({
           <span
             className={cn(
               'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border',
-              autopilot ? 'border-[#ddd6fe] bg-white text-[#6941c6]' : 'border-[#e4e7ec] bg-white text-[#667085]'
+              autopilot ? 'border-[#ddd6fe] bg-white text-[#6941c6]' : 'border-[#e4e7ec] bg-white text-ink-500'
             )}
           >
             <InfinityIcon className="h-4 w-4" />
           </span>
           <div className="min-w-0">
-            <p className="text-[13px] font-semibold text-[#101828]">Operación continua</p>
-            <p className="text-[11px] leading-snug text-[#667085]">
+            <p className="text-[13px] font-semibold text-ink-900">Operación continua</p>
+            <p className="text-[11px] leading-snug text-ink-500">
               {autopilot
                 ? 'Activado — el motor encadena campañas reales en segundo plano, con un breve periodo de calma entre ellas.'
                 : 'Actívalo y el motor encadenará campañas reales sin intervención, escenario tras escenario.'}
@@ -163,7 +163,7 @@ export function ControlCenter({
               className={cn(
                 'group relative overflow-hidden rounded-xl border text-left transition-all disabled:opacity-50',
                 isSel
-                  ? 'border-[#101828] bg-white shadow-[0_8px_24px_-12px_rgba(16,24,40,0.35)]'
+                  ? 'border-ink-900 bg-white shadow-[0_8px_24px_-12px_rgba(16,24,40,0.35)]'
                   : 'border-[#e4e7ec] bg-white hover:border-[#d0d5dd] hover:shadow-[0_4px_16px_-8px_rgba(16,24,40,0.18)]'
               )}
             >
@@ -171,7 +171,7 @@ export function ControlCenter({
               {isSel && (
                 <motion.span
                   layoutId="sel-halo"
-                  className="pointer-events-none absolute inset-0 z-20 rounded-xl ring-2 ring-[#101828]/15"
+                  className="pointer-events-none absolute inset-0 z-20 rounded-xl ring-2 ring-ink-900/15"
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 />
               )}
@@ -197,21 +197,21 @@ export function ControlCenter({
                     layoutId="sel-check"
                     initial={{ scale: 0.6, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="absolute right-2.5 top-2.5 z-10 flex items-center gap-1 rounded-full bg-[#101828] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-white shadow-lg"
+                    className="absolute right-2.5 top-2.5 z-10 flex items-center gap-1 rounded-full bg-ink-900 px-2 py-0.5 font-mono-tight text-[9px] font-bold text-white shadow-lg"
                   >
                     <Check className="h-2.5 w-2.5" /> SELECCIONADO
                   </motion.span>
                 )}
               </div>
               <div className="p-3.5">
-                <p className="flex items-center gap-1.5 text-sm font-semibold text-[#101828]">
-                  <Building2 className="h-3.5 w-3.5 shrink-0 text-[#98a2b3]" />
+                <p className="flex items-center gap-1.5 text-sm font-semibold text-ink-900">
+                  <Building2 className="h-3.5 w-3.5 shrink-0 text-ink-400" />
                   <span className="truncate">{s.company}</span>
                 </p>
-                <p className="mt-0.5 font-mono-tight text-[10px] uppercase tracking-wider text-[#98a2b3]">
+                <p className="mt-0.5 font-mono-tight text-[10px] uppercase tracking-wider text-ink-400">
                   {s.industry}
                 </p>
-                <p className="mt-2 line-clamp-2 text-[11.5px] leading-relaxed text-[#667085]">{s.description}</p>
+                <p className="mt-2 line-clamp-2 text-[11.5px] leading-relaxed text-ink-500">{s.description}</p>
               </div>
             </motion.button>
           )
@@ -228,7 +228,7 @@ export function ControlCenter({
           disabled={disabled || starting}
           className={cn(
             'shine-sweep relative flex items-center gap-2.5 rounded-lg px-8 py-3.5 text-sm font-semibold transition-all',
-            'bg-[#101828] text-white shadow-[0_8px_24px_-10px_rgba(16,24,40,0.5)] hover:bg-[#182230]',
+            'bg-ink-900 text-white shadow-[0_8px_24px_-10px_rgba(16,24,40,0.5)] hover:bg-[#182230]',
             (disabled || starting) && 'cursor-not-allowed opacity-50'
           )}
         >
@@ -248,7 +248,7 @@ export function ControlCenter({
             </>
           )}
         </motion.button>
-        <p className="max-w-md text-center text-[11.5px] leading-relaxed text-[#667085]">
+        <p className="max-w-md text-center text-[11.5px] leading-relaxed text-ink-500">
           Los agentes combatirán durante 8 rondas. El conocimiento generado se archiva
           automáticamente y se inyecta en las próximas campañas.
         </p>

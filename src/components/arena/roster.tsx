@@ -34,7 +34,7 @@ function RosterCard({ agent, index, onSelect }: { agent: AgentDTO; index: number
       className="panel panel-hover spot-card group relative cursor-pointer overflow-hidden rounded-xl p-4"
     >
       {/* indicador de ficha */}
-      <span className="absolute right-2.5 top-2.5 z-10 flex h-5 w-5 items-center justify-center rounded-md border border-[#e4e7ec] bg-white text-[#98a2b3] opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:scale-110">
+      <span className="absolute right-2.5 top-2.5 z-10 flex h-5 w-5 items-center justify-center rounded-md border border-[#e4e7ec] bg-white text-ink-400 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:scale-110">
         <Maximize2 className="h-2.5 w-2.5" />
       </span>
       {/* aura sutil */}
@@ -52,7 +52,7 @@ function RosterCard({ agent, index, onSelect }: { agent: AgentDTO; index: number
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <h4 className="font-display truncate text-sm font-bold tracking-wide text-[#101828]">
+            <h4 className="font-display truncate text-sm font-bold tracking-wide text-ink-900">
               {agent.codename}
             </h4>
             <span
@@ -65,22 +65,22 @@ function RosterCard({ agent, index, onSelect }: { agent: AgentDTO; index: number
             </span>
           </div>
           <p className="text-[11.5px] font-medium text-[#344054]">{agent.role}</p>
-          <p className="mt-0.5 text-[11px] italic text-[#98a2b3]">{agent.specialty}</p>
+          <p className="mt-0.5 text-[11px] italic text-ink-400">{agent.specialty}</p>
         </div>
       </div>
-      <p className="mt-3 min-h-[48px] text-[11.5px] leading-relaxed text-[#667085]">{agent.description}</p>
+      <p className="mt-3 min-h-[48px] text-[11.5px] leading-relaxed text-ink-500">{agent.description}</p>
       <div className="mt-3 grid grid-cols-3 gap-2 border-t border-[#f2f4f7] pt-3 text-center">
         <div>
-          <p className="font-mono-tight text-sm font-bold text-[#101828]">{agent.campaigns}</p>
-          <p className="font-mono-tight text-[9px] uppercase tracking-wider text-[#98a2b3]">Campañas</p>
+          <p className="font-mono-tight text-sm font-bold text-ink-900">{agent.campaigns}</p>
+          <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Campañas</p>
         </div>
         <div>
           <p className="font-mono-tight text-sm font-bold text-[#067647]">{agent.victories}</p>
-          <p className="font-mono-tight text-[9px] uppercase tracking-wider text-[#98a2b3]">Victorias</p>
+          <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Victorias</p>
         </div>
         <div>
           <p className="font-mono-tight text-sm font-bold text-[#b54708]">{agent.xp} XP</p>
-          <p className="font-mono-tight text-[9px] uppercase tracking-wider text-[#98a2b3]">Nivel {agent.level}</p>
+          <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Nivel {agent.level}</p>
         </div>
       </div>
     </motion.article>

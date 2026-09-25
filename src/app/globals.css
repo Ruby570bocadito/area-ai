@@ -45,6 +45,9 @@
   --color-arena-red-soft: var(--arena-red-soft);
   --color-arena-blue: var(--arena-blue);
   --color-arena-blue-soft: var(--arena-blue-soft);
+  --color-ink-900: var(--ink-900);
+  --color-ink-500: var(--ink-500);
+  --color-ink-400: var(--ink-400);
 }
 
 /* ═══════════ area·ai — Design system "enterprise clarity" ═══════════
@@ -89,6 +92,14 @@
   --arena-blue: #0086c9;
   --arena-blue-soft: #f0f9ff;
   --arena-amber: #d97706;
+
+  /* Paleta neutra compartida — espejo de los tres grises de texto del sistema
+     (análogo a --arena-*): principal, secundario y terciario. Tailwind genera
+     las utilidades ink-* desde @theme (text-ink-900, bg-ink-500, border-ink-400…);
+     cambiar un valor aquí re-tiñe toda la UI de ese tono. */
+  --ink-900: #101828;
+  --ink-500: #667085;
+  --ink-400: #98a2b3;
 }
 
 html {
@@ -405,10 +416,10 @@ h1, h2, h3 { text-wrap: balance; }
 }
 .side-link:hover {
   background: #f2f4f7;
-  color: #101828;
+  color: var(--ink-900);
 }
 .side-link[data-active="true"] {
-  background: #101828;
+  background: var(--ink-900);
   color: #ffffff;
   font-weight: 600;
 }

@@ -97,15 +97,15 @@ function KnowledgeCard({ k, index, team }: { k: KnowledgeItem; index: number; te
         </span>
         {eff !== null && eff >= 50 && <TrendingUp className="h-3 w-3 text-[#12b76a]" />}
       </div>
-      <h4 className="mt-2 text-[13px] font-semibold leading-snug text-[#101828]">{k.title}</h4>
-      <p className="mt-1 line-clamp-3 text-[11.5px] leading-relaxed text-[#667085]">{k.content}</p>
+      <h4 className="mt-2 text-[13px] font-semibold leading-snug text-ink-900">{k.title}</h4>
+      <p className="mt-1 line-clamp-3 text-[11.5px] leading-relaxed text-ink-500">{k.content}</p>
       <div className="mt-2 flex flex-wrap gap-1">
         {k.tags
           .split(',')
           .filter(Boolean)
           .slice(0, 4)
           .map((t) => (
-            <span key={t} className="rounded bg-[#f2f4f7] px-1.5 py-px font-mono-tight text-[9px] text-[#667085]">
+            <span key={t} className="rounded bg-[#f2f4f7] px-1.5 py-px font-mono-tight text-[9px] text-ink-500">
               #{t.trim()}
             </span>
           ))}
@@ -121,12 +121,12 @@ function KnowledgeCard({ k, index, team }: { k: KnowledgeItem; index: number; te
             transition={{ duration: 0.9, delay: 0.15, ease: 'easeOut' }}
           />
         </div>
-        <span className="font-mono-tight text-[10px] text-[#667085]">
+        <span className="font-mono-tight text-[10px] text-ink-500">
           {Math.round(k.confidence * 100)}% · {k.timesUsed}usos
         </span>
         {isFresh && <Flame className="h-3 w-3 text-[#d97706]" />}
       </div>
-      <p className="mt-2 flex items-center gap-1.5 border-t border-[#f2f4f7] pt-2 font-mono-tight text-[9px] text-[#98a2b3]">
+      <p className="mt-2 flex items-center gap-1.5 border-t border-[#f2f4f7] pt-2 font-mono-tight text-[9px] text-ink-400">
         <CalendarClock className="h-2.5 w-2.5 shrink-0" />
         {new Date(k.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
         {k.campaignCodename && (
@@ -231,12 +231,12 @@ export function KnowledgePanel({
       {/* Barra de herramientas: búsqueda + categorías + orden */}
       <div className="panel flex flex-wrap items-center gap-2 rounded-xl p-2.5">
         <label className="relative min-w-[180px] flex-1 sm:max-w-[260px]">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#98a2b3]" />
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-400" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar lecciones, tags, agente…"
-            className="w-full rounded-lg border border-[#e4e7ec] bg-white py-1.5 pl-8 pr-2.5 text-[12px] text-[#101828] placeholder:text-[#98a2b3] focus:border-[#d0d5dd] focus:outline-none focus:ring-2 focus:ring-[#eaecf0]"
+            className="w-full rounded-lg border border-[#e4e7ec] bg-white py-1.5 pl-8 pr-2.5 text-[12px] text-ink-900 placeholder:text-ink-400 focus:border-[#d0d5dd] focus:outline-none focus:ring-2 focus:ring-[#eaecf0]"
           />
         </label>
 
@@ -245,7 +245,7 @@ export function KnowledgePanel({
             type="button"
             onClick={() => setCategory('ALL')}
             data-active={category === 'ALL'}
-            className="rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-[#667085] transition-colors hover:border-[#d0d5dd] hover:text-[#101828] data-[active=true]:border-[#101828] data-[active=true]:bg-[#101828] data-[active=true]:text-white"
+            className="rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 transition-colors hover:border-[#d0d5dd] hover:text-ink-900 data-[active=true]:border-ink-900 data-[active=true]:bg-ink-900 data-[active=true]:text-white"
           >
             Todas
           </button>
@@ -255,7 +255,7 @@ export function KnowledgePanel({
               type="button"
               onClick={() => setCategory(cat)}
               data-active={category === cat}
-              className="rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-[#667085] transition-colors hover:border-[#d0d5dd] hover:text-[#101828] data-[active=true]:border-[#101828] data-[active=true]:bg-[#101828] data-[active=true]:text-white"
+              className="rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 transition-colors hover:border-[#d0d5dd] hover:text-ink-900 data-[active=true]:border-ink-900 data-[active=true]:bg-ink-900 data-[active=true]:text-white"
             >
               {CATEGORY_LABEL[cat] ?? cat}
             </button>
@@ -263,14 +263,14 @@ export function KnowledgePanel({
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          <span className="font-mono-tight text-[10px] text-[#98a2b3]">
+          <span className="font-mono-tight text-[10px] text-ink-400">
             {exportSelection.length} de {red.length + blue.length}
           </span>
           <button
             type="button"
             onClick={handleExportCsv}
             disabled={!hasMemory || exportSelection.length === 0}
-            className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-[#667085] shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-[#101828] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-ink-900 disabled:cursor-not-allowed disabled:opacity-50"
             title={`Descargar la selección filtrada (${filtersDesc}) en CSV — mismo dialecto que el exportador de campañas: BOM UTF-8, separador «;», escapado RFC 4180`}
           >
             <FileSpreadsheet className="h-3 w-3" /> CSV
@@ -279,7 +279,7 @@ export function KnowledgePanel({
             type="button"
             onClick={handleExportJson}
             disabled={!hasMemory || exportSelection.length === 0}
-            className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-[#667085] shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-[#101828] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-ink-900 disabled:cursor-not-allowed disabled:opacity-50"
             title={`Descargar la selección filtrada (${filtersDesc}) en JSON con metadatos: instante, filtros, recuento por equipo, tasa de éxito precalculada y tags como lista`}
           >
             <FileJson className="h-3 w-3" /> JSON
@@ -324,7 +324,7 @@ export function KnowledgePanel({
             </div>
           </AnimatePresence>
           {redFiltered.length === 0 && (
-            <p className="text-sm text-[#667085]">
+            <p className="text-sm text-ink-500">
               {red.length === 0
                 ? 'Sin conocimiento ofensivo registrado todavía.'
                 : 'Ninguna lección RED coincide con la búsqueda o los filtros.'}
@@ -340,7 +340,7 @@ export function KnowledgePanel({
             </div>
           </AnimatePresence>
           {blueFiltered.length === 0 && (
-            <p className="text-sm text-[#667085]">
+            <p className="text-sm text-ink-500">
               {blue.length === 0
                 ? 'Sin conocimiento defensivo registrado todavía.'
                 : 'Ninguna lección BLUE coincide con la búsqueda o los filtros.'}

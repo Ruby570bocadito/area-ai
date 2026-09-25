@@ -69,11 +69,11 @@ function OutcomeDonut({ red, blue, draws }: { red: number; blue: number; draws: 
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="font-display text-2xl font-extrabold text-[#101828]"
+            className="font-display text-2xl font-extrabold text-ink-900"
           >
             {total}
           </motion.span>
-          <span className="font-mono-tight text-[8.5px] uppercase tracking-[0.22em] text-[#98a2b3]">
+          <span className="font-mono-tight text-[8.5px] uppercase tracking-[0.22em] text-ink-400">
             campañas
           </span>
         </div>
@@ -98,14 +98,14 @@ function OutcomeDonut({ red, blue, draws }: { red: number; blue: number; draws: 
               title={`Abrir el historial filtrado: ${row.label}`}
             >
               <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: row.color }} />
-              <span className="flex-1 truncate font-mono-tight text-[11px] text-[#667085] group-hover:text-[#101828] group-hover:underline group-hover:underline-offset-2">
+              <span className="flex-1 truncate font-mono-tight text-[11px] text-ink-500 group-hover:text-ink-900 group-hover:underline group-hover:underline-offset-2">
                 {row.label}
               </span>
-              <span className="font-mono-tight text-sm font-bold text-[#101828]">{row.v}</span>
-              <span className="w-10 text-right font-mono-tight text-[10px] text-[#98a2b3]">
+              <span className="font-mono-tight text-sm font-bold text-ink-900">{row.v}</span>
+              <span className="w-10 text-right font-mono-tight text-[10px] text-ink-400">
                 {total > 0 ? Math.round((row.v / total) * 100) : 0}%
               </span>
-              <ChevronRight className="h-3 w-3 shrink-0 text-[#d0d5dd] transition-all group-hover:translate-x-0.5 group-hover:text-[#98a2b3]" />
+              <ChevronRight className="h-3 w-3 shrink-0 text-[#d0d5dd] transition-all group-hover:translate-x-0.5 group-hover:text-ink-400" />
             </Link>
           </motion.div>
         ))}
@@ -145,7 +145,7 @@ function EvolutionChart({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
 
   if (data.length === 0) {
     return (
-      <div className="flex h-[130px] items-center justify-center text-[12px] text-[#98a2b3]">
+      <div className="flex h-[130px] items-center justify-center text-[12px] text-ink-400">
         Lanza campañas para ver la curva de evolución.
       </div>
     )
@@ -154,7 +154,7 @@ function EvolutionChart({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <div className="flex items-center gap-3 font-mono-tight text-[10px] text-[#667085]">
+        <div className="flex items-center gap-3 font-mono-tight text-[10px] text-ink-500">
           <span className="flex items-center gap-1.5">
             <span className="h-1.5 w-4 rounded-full" style={{ background: RED }} /> RED
           </span>
@@ -162,7 +162,7 @@ function EvolutionChart({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
             <span className="h-1.5 w-4 rounded-full" style={{ background: BLUE }} /> BLUE
           </span>
         </div>
-        <span className="font-mono-tight text-[9.5px] uppercase tracking-wider text-[#98a2b3]">
+        <span className="font-mono-tight text-[9.5px] uppercase tracking-wider text-ink-400">
           últimas {data.length} · máx {max}
         </span>
       </div>
@@ -255,7 +255,7 @@ function Leaderboard({ agents }: { agents: AgentDTO[] }) {
             className="group"
           >
             <div className="mb-1 flex items-center gap-2.5">
-              <span className={cn('w-5 shrink-0 text-center font-mono-tight text-[11px] font-bold', i === 0 ? 'text-[#b54708]' : 'text-[#98a2b3]')}>
+              <span className={cn('w-5 shrink-0 text-center font-mono-tight text-[11px] font-bold', i === 0 ? 'text-[#b54708]' : 'text-ink-400')}>
                 {i + 1}
               </span>
               <AgentAvatar agent={a} size="sm" />
@@ -263,11 +263,11 @@ function Leaderboard({ agents }: { agents: AgentDTO[] }) {
                 <p className={cn('truncate font-mono-tight text-[11.5px] font-bold', isRed ? 'text-[#b42318]' : 'text-[#026aa2]')}>
                   {a.codename}
                 </p>
-                <p className="truncate text-[10px] text-[#667085]">{a.role}</p>
+                <p className="truncate text-[10px] text-ink-500">{a.role}</p>
               </div>
               <div className="shrink-0 text-right">
-                <p className="font-mono-tight text-[11px] font-bold text-[#101828]">{a.xp} XP</p>
-                <p className="font-mono-tight text-[9px] text-[#98a2b3]">
+                <p className="font-mono-tight text-[11px] font-bold text-ink-900">{a.xp} XP</p>
+                <p className="font-mono-tight text-[9px] text-ink-400">
                   {a.victories}🏆 · Nv{a.level}
                 </p>
               </div>
@@ -302,7 +302,7 @@ function KnowledgeEffectiveness({ items, team }: { items: KnowledgeDTO[]; team: 
   )
   if (top.length === 0) {
     return (
-      <p className="flex h-full min-h-[80px] items-center justify-center px-4 text-center text-[11.5px] text-[#98a2b3]">
+      <p className="flex h-full min-h-[80px] items-center justify-center px-4 text-center text-[11.5px] text-ink-400">
         Sin usos registrados todavía — se activará cuando los agentes apliquen estas lecciones en combate.
       </p>
     )
@@ -321,7 +321,7 @@ function KnowledgeEffectiveness({ items, team }: { items: KnowledgeDTO[]; team: 
             className="rounded-lg border border-[#f2f4f7] bg-[#f9fafb] p-2.5"
           >
             <div className="flex items-center justify-between gap-2">
-              <p className="truncate text-[11.5px] font-medium text-[#101828]">{k.title}</p>
+              <p className="truncate text-[11.5px] font-medium text-ink-900">{k.title}</p>
               <span className={cn('shrink-0 font-mono-tight text-[10px] font-bold', isRed ? 'text-[#b42318]' : 'text-[#026aa2]')}>
                 {rate}%
               </span>
@@ -336,7 +336,7 @@ function KnowledgeEffectiveness({ items, team }: { items: KnowledgeDTO[]; team: 
                   transition={{ duration: 0.8, delay: 0.25 + i * 0.09 }}
                 />
               </div>
-              <span className="shrink-0 font-mono-tight text-[9px] text-[#667085]">
+              <span className="shrink-0 font-mono-tight text-[9px] text-ink-500">
                 {k.timesWorked}/{k.timesUsed} usos · conf {Math.round(k.confidence * 100)}%
               </span>
             </div>
@@ -358,7 +358,7 @@ function ScenarioMatrix({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
 
   if (rows.length === 0) {
     return (
-      <div className="flex h-[100px] items-center justify-center text-[12px] text-[#98a2b3]">
+      <div className="flex h-[100px] items-center justify-center text-[12px] text-ink-400">
         Lanza campañas para ver el balance por escenario.
       </div>
     )
@@ -384,14 +384,14 @@ function ScenarioMatrix({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="truncate font-mono-tight text-[11.5px] font-bold tracking-wide text-[#101828] group-hover:underline group-hover:underline-offset-2">
+                  <p className="truncate font-mono-tight text-[11.5px] font-bold tracking-wide text-ink-900 group-hover:underline group-hover:underline-offset-2">
                     {s.codename}
                   </p>
-                  <p className="truncate text-[10px] text-[#667085]">
+                  <p className="truncate text-[10px] text-ink-500">
                     {s.company} · dificultad {s.difficulty}/5
                   </p>
                 </div>
-                <span className="shrink-0 font-mono-tight text-[9.5px] text-[#98a2b3]">
+                <span className="shrink-0 font-mono-tight text-[9.5px] text-ink-400">
                   {s.total} campaña{s.total === 1 ? '' : 's'}
                 </span>
               </div>
@@ -409,12 +409,12 @@ function ScenarioMatrix({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
                   <span className="font-bold text-[#026aa2]" title="Victorias BLUE">B {s.blue}</span>
                   <span className="font-bold text-[#b54708]" title="Empates">E {s.draws}</span>
                   {s.running > 0 && (
-                    <span className="text-[#98a2b3]" title="En curso">· {s.running} en curso</span>
+                    <span className="text-ink-400" title="En curso">· {s.running} en curso</span>
                   )}
                 </div>
-                <span className="flex shrink-0 items-center font-mono-tight text-[9px] text-[#98a2b3]">
+                <span className="flex shrink-0 items-center font-mono-tight text-[9px] text-ink-400">
                   {s.completed > 0 ? `${s.redPct}% RED` : 'sin datos'}
-                  <ChevronRight className="h-3 w-3 text-[#d0d5dd] transition-all group-hover:translate-x-0.5 group-hover:text-[#98a2b3]" />
+                  <ChevronRight className="h-3 w-3 text-[#d0d5dd] transition-all group-hover:translate-x-0.5 group-hover:text-ink-400" />
                 </span>
               </div>
             </Link>
@@ -461,7 +461,7 @@ export function Analytics({
           <div className="mt-4 flex items-center gap-2.5 rounded-lg border border-[#fedf89] bg-[#fffaeb] p-2.5">
             <Crown className="h-4 w-4 shrink-0 text-[#b54708]" />
             <div className="min-w-0 flex-1">
-              <p className="font-mono-tight text-[9px] uppercase tracking-wider text-[#98a2b3]">Agente MVP</p>
+              <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Agente MVP</p>
               <p className={cn('truncate font-mono-tight text-[11.5px] font-bold', mvp.team === 'RED' ? 'text-[#b42318]' : 'text-[#026aa2]')}>
                 {mvp.codename} · {mvp.xp} XP
               </p>
@@ -480,17 +480,17 @@ export function Analytics({
         className="panel relative overflow-hidden rounded-2xl p-5"
       >
         <div className="mb-4 flex items-center gap-2">
-          <TrendingUp className="h-3.5 w-3.5 text-[#667085]" />
+          <TrendingUp className="h-3.5 w-3.5 text-ink-500" />
           <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-[#475467]">
             Evolución de puntuaciones
           </h3>
         </div>
         <EvolutionChart campaigns={campaigns} />
         <div className="mt-3 flex items-center justify-between border-t border-[#f2f4f7] pt-3">
-          <span className="flex items-center gap-1.5 font-mono-tight text-[10px] text-[#667085]">
+          <span className="flex items-center gap-1.5 font-mono-tight text-[10px] text-ink-500">
             <Target className="h-3 w-3 text-[#b42318]" /> RED gana {redWinRate}% de las campañas
           </span>
-          <span className="font-mono-tight text-[10px] text-[#667085]">
+          <span className="font-mono-tight text-[10px] text-ink-500">
             {stats.blueWins + stats.redWins + stats.draws > 0
               ? `ventaja ${stats.redWins > stats.blueWins ? 'RED' : stats.blueWins > stats.redWins ? 'BLUE' : '—'}`
               : 'sin datos'}
@@ -524,11 +524,11 @@ export function Analytics({
         className="panel relative overflow-hidden rounded-2xl p-5 lg:col-span-3"
       >
         <div className="mb-4 flex items-center gap-2">
-          <Map className="h-3.5 w-3.5 text-[#667085]" />
+          <Map className="h-3.5 w-3.5 text-ink-500" />
           <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-[#475467]">
             Balance por escenario
           </h3>
-          <span className="font-mono-tight text-[9.5px] normal-case tracking-normal text-[#98a2b3]">
+          <span className="font-mono-tight text-[9.5px] normal-case tracking-normal text-ink-400">
             — clic en un escenario para abrir el historial prefiltrado
           </span>
         </div>
@@ -544,11 +544,11 @@ export function Analytics({
         className="panel relative overflow-hidden rounded-2xl p-5 lg:col-span-3"
       >
         <div className="mb-4 flex items-center gap-2">
-          <BrainCircuit className="h-3.5 w-3.5 text-[#667085]" />
+          <BrainCircuit className="h-3.5 w-3.5 text-ink-500" />
           <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-[#475467]">
             Conocimiento más efectivo
           </h3>
-          <span className="font-mono-tight text-[9.5px] normal-case tracking-normal text-[#98a2b3]">
+          <span className="font-mono-tight text-[9.5px] normal-case tracking-normal text-ink-400">
             — lecciones con mayor tasa de éxito al aplicarse en combate
           </span>
         </div>

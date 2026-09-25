@@ -130,7 +130,7 @@ export function AgentDetailDialog({
                   </span>
                 </div>
                 <p className="mt-0.5 text-[12.5px] font-medium text-[#344054]">{agent.role}</p>
-                <p className="mt-1 flex items-start gap-1.5 text-[11.5px] italic text-[#98a2b3]">
+                <p className="mt-1 flex items-start gap-1.5 text-[11.5px] italic text-ink-400">
                   <Quote className="mt-0.5 h-3 w-3 shrink-0 opacity-50" />
                   {agent.specialty}
                 </p>
@@ -142,7 +142,7 @@ export function AgentDetailDialog({
         {/* Stats */}
         <div className="grid grid-cols-3 gap-2 px-6">
           {[
-            { icon: Swords, label: 'Campañas', value: agent.campaigns, color: 'text-[#101828]' },
+            { icon: Swords, label: 'Campañas', value: agent.campaigns, color: 'text-ink-900' },
             { icon: Trophy, label: 'Victorias', value: agent.victories, color: 'text-[#067647]' },
             { icon: GraduationCap, label: 'Nivel', value: agent.level, color: 'text-[#b54708]' },
           ].map((s, i) => (
@@ -155,7 +155,7 @@ export function AgentDetailDialog({
             >
               <s.icon className={cn('mx-auto h-3.5 w-3.5', s.color)} />
               <p className={cn('font-display mt-1 text-lg font-extrabold', s.color)}>{s.value}</p>
-              <p className="font-mono-tight text-[8.5px] uppercase tracking-[0.18em] text-[#98a2b3]">{s.label}</p>
+              <p className="font-mono-tight text-[8.5px] uppercase tracking-[0.18em] text-ink-400">{s.label}</p>
             </motion.div>
           ))}
         </div>
@@ -163,7 +163,7 @@ export function AgentDetailDialog({
         {/* XP + winrate */}
         <div className="space-y-3 px-6 pt-4">
           <div>
-            <div className="mb-1 flex items-center justify-between font-mono-tight text-[10px] text-[#667085]">
+            <div className="mb-1 flex items-center justify-between font-mono-tight text-[10px] text-ink-500">
               <span>Progreso a nivel {agent.level + 1}</span>
               <span>
                 {xpIntoLevel}/{XP_PER_LEVEL} XP
@@ -180,7 +180,7 @@ export function AgentDetailDialog({
             </div>
           </div>
           <div>
-            <div className="mb-1 flex items-center justify-between font-mono-tight text-[10px] text-[#667085]">
+            <div className="mb-1 flex items-center justify-between font-mono-tight text-[10px] text-ink-500">
               <span>Tasa de victorias</span>
               <span>{winRate}%</span>
             </div>
@@ -198,7 +198,7 @@ export function AgentDetailDialog({
         {/* Fases donde el motor le da la iniciativa */}
         {phases.length > 0 && (
           <div className="px-6 pt-4">
-            <p className="font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.2em] text-[#98a2b3]">
+            <p className="font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.2em] text-ink-400">
               Fases con iniciativa en el motor
             </p>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -218,24 +218,24 @@ export function AgentDetailDialog({
         {/* Actividad real desde la BD */}
         <div className="px-6 pt-4">
           <div className="flex items-center justify-between">
-            <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.2em] text-[#98a2b3]">
+            <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.2em] text-ink-400">
               <History className="h-3 w-3" /> Actividad registrada
             </p>
-            {loading && <Loader2 className="h-3 w-3 animate-spin text-[#98a2b3]" />}
+            {loading && <Loader2 className="h-3 w-3 animate-spin text-ink-400" />}
           </div>
 
           {sum && sum.totalActions > 0 ? (
             <>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <div className="rounded-lg border border-[#f2f4f7] bg-[#f9fafb] p-2.5 text-center">
-                  <p className="font-display text-base font-extrabold text-[#101828]">{sum.totalActions}</p>
-                  <p className="font-mono-tight text-[8.5px] uppercase tracking-[0.16em] text-[#98a2b3]">Acciones totales</p>
+                  <p className="font-display text-base font-extrabold text-ink-900">{sum.totalActions}</p>
+                  <p className="font-mono-tight text-[8.5px] uppercase tracking-[0.16em] text-ink-400">Acciones totales</p>
                 </div>
                 <div className="rounded-lg border border-[#f2f4f7] bg-[#f9fafb] p-2.5 text-center">
                   <p className="font-display text-base font-extrabold" style={{ color: sum.successRate >= 50 ? '#067647' : soft }}>
                     {sum.successRate}%
                   </p>
-                  <p className="font-mono-tight text-[8.5px] uppercase tracking-[0.16em] text-[#98a2b3]">
+                  <p className="font-mono-tight text-[8.5px] uppercase tracking-[0.16em] text-ink-400">
                     {isRed ? 'Tasa de éxito' : 'Tasa de acierto'}
                   </p>
                 </div>
@@ -243,11 +243,11 @@ export function AgentDetailDialog({
 
               {sum.techniques.length > 0 && (
                 <div className="mt-2.5">
-                  <p className="font-mono-tight text-[9px] uppercase tracking-[0.16em] text-[#98a2b3]">Técnicas más usadas</p>
+                  <p className="font-mono-tight text-[9px] uppercase tracking-[0.16em] text-ink-400">Técnicas más usadas</p>
                   <div className="mt-1 flex flex-wrap gap-1.5">
                     {sum.techniques.slice(0, 4).map((t) => (
                       <span key={t.name} className="rounded bg-[#f2f4f7] px-1.5 py-0.5 text-[10px] text-[#344054]" title={`${t.count} usos`}>
-                        {t.name} <span className="font-mono-tight text-[#667085]">×{t.count}</span>
+                        {t.name} <span className="font-mono-tight text-ink-500">×{t.count}</span>
                       </span>
                     ))}
                   </div>
@@ -256,10 +256,10 @@ export function AgentDetailDialog({
 
               {sum.byPhase.length > 0 && (
                 <div className="mt-2.5 space-y-1">
-                  <p className="font-mono-tight text-[9px] uppercase tracking-[0.16em] text-[#98a2b3]">Rendimiento por fase</p>
+                  <p className="font-mono-tight text-[9px] uppercase tracking-[0.16em] text-ink-400">Rendimiento por fase</p>
                   {sum.byPhase.map((p) => (
                     <div key={p.phase} className="flex items-center gap-2">
-                      <span className="w-16 shrink-0 font-mono-tight text-[9.5px] text-[#667085]">{PHASE_SHORT[p.phase] ?? p.phase}</span>
+                      <span className="w-16 shrink-0 font-mono-tight text-[9.5px] text-ink-500">{PHASE_SHORT[p.phase] ?? p.phase}</span>
                       <div className="h-1 flex-1 overflow-hidden rounded-full bg-[#f2f4f7]">
                         <motion.div
                           className="h-full rounded-full"
@@ -269,7 +269,7 @@ export function AgentDetailDialog({
                           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                         />
                       </div>
-                      <span className="shrink-0 font-mono-tight text-[9px] text-[#667085]">
+                      <span className="shrink-0 font-mono-tight text-[9px] text-ink-500">
                         {p.success}/{p.total}
                       </span>
                     </div>
@@ -290,16 +290,16 @@ export function AgentDetailDialog({
                       className="flex items-start gap-2"
                     >
                       <span
-                        className={cn('mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm', good ? 'bg-[#ecfdf3] text-[#12b76a]' : 'bg-[#f2f4f7] text-[#98a2b3]')}
+                        className={cn('mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm', good ? 'bg-[#ecfdf3] text-[#12b76a]' : 'bg-[#f2f4f7] text-ink-400')}
                       >
                         {isRed ? <Bug className="h-2.5 w-2.5" /> : <ShieldCheck className="h-2.5 w-2.5" />}
                       </span>
                       <div className="min-w-0">
-                        <p className="truncate text-[11px] font-semibold text-[#101828]">
+                        <p className="truncate text-[11px] font-semibold text-ink-900">
                           {e.action}
-                          {e.targetNode && <span className="ml-1 font-mono-tight text-[9px] font-normal text-[#98a2b3]">{e.targetNode}</span>}
+                          {e.targetNode && <span className="ml-1 font-mono-tight text-[9px] font-normal text-ink-400">{e.targetNode}</span>}
                         </p>
-                        <p className="truncate font-mono-tight text-[9px] text-[#667085]">
+                        <p className="truncate font-mono-tight text-[9px] text-ink-500">
                           {e.campaignCodename} · R{e.round} {e.phase}
                         </p>
                       </div>
@@ -310,7 +310,7 @@ export function AgentDetailDialog({
             </>
           ) : (
             !loading && (
-              <p className="mt-2 flex items-center gap-1.5 rounded-lg border border-[#f2f4f7] bg-[#f9fafb] p-2.5 text-[11px] text-[#667085]">
+              <p className="mt-2 flex items-center gap-1.5 rounded-lg border border-[#f2f4f7] bg-[#f9fafb] p-2.5 text-[11px] text-ink-500">
                 <Activity className="h-3.5 w-3.5" />
                 Sin acciones registradas todavía — entrará en combate en las campañas próximas.
               </p>
@@ -323,7 +323,7 @@ export function AgentDetailDialog({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.5 }}
-          className="mt-4 border-t border-[#f2f4f7] px-6 py-4 text-[12px] leading-relaxed text-[#667085]"
+          className="mt-4 border-t border-[#f2f4f7] px-6 py-4 text-[12px] leading-relaxed text-ink-500"
         >
           {agent.description}
         </motion.p>
