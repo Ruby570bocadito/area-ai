@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { formatDateTime, formatDuration, normalizeText } from '../src/lib/text'
+import { csvEscapeCell, formatDateTime, formatDuration, normalizeText } from '../src/lib/text'
 
 // ─────────────────────────────────────────────────────────────
 // Contrato de las utilidades puras de src/lib/text.ts.
@@ -74,5 +74,76 @@ describe('formatDateTime', () => {
 
   test('cadena no parseable: degradación explícita a guion largo (nunca "Invalid Date")', () => {
     expect(formatDateTime('no-es-una-fecha')).toBe('—')
+  })
+})
+
+// ─────────────────────────────────────────────────────────────
+// Contrato DIRECTO de csvEscapeCell (hardening HD2/HD2b — Ronda 16
+// de bugs, D23 del reparto 11). Hasta ahora la fuente única del
+// dialecto CSV solo tenía pinza indirecta vía knowledge-export;
+// estos tests fijan byte a byte los dos mecanismos: neutralización
+// de fórmulas (OWASP — prefijos =,+,-,@,tab,CR llevan apóstrofe) y
+// escapado RFC 4180 (separador/comillas/saltos → comillas dobles).
+// Cubre a las DOS exportaciones existentes (knowledge-export,
+// history-panel) y a la tercera anunciada (telemetría de la ficha).
+// ─────────────────────────────────────────────────────────────
+
+describe('csvEscapeCell — neutralización de fórmulas (HD2, técnica OWASP)', () => {
+  test('celda que empieza por = se prefija con apóstrofe (no evaluable como fórmula)', () => {
+    // Contiene comillas → además del apóstrofe aplica el envuelto RFC 4180:
+    // en la hoja la celda vale '=HYPERLINK("http://evil.example","clic") (texto).
+    expect(csvEscapeCell('=HYPERLINK("http://evil.example","clic")')).toBe(
+      '"\'=HYPERLINK(""http://evil.example"",""clic"")"'
+    )
+    // Sin comillas dobles ni separador → solo apóstrofe, sin envuelto RFC 4180.
+    expect(csvEscapeCell('=1+cmd|\' /C calc\'!A0')).toBe('\'=1+cmd|\' /C calc\'!A0')
+  })
+
+  test('celdas que empiezan por +, - y @ llevan apóstrofe', () => {
+    expect(csvEscapeCell('+1')).toBe("'+1")
+    expect(csvEscapeCell('-2')).toBe("'-2")
+    expect(csvEscapeCell('@SUM(1)')).toBe("'@SUM(1)")
+  })
+
+  test('tab y CR iniciales llevan apóstrofe (smuggling de prefijo)', () => {
+    expect(csvEscapeCell('\t=cmd')).toBe("'\t=cmd")
+    expect(csvEscapeCell('\r=cmd')).toBe("'\r=cmd")
+  })
+
+  test('el apóstrofe solo toca el PRIMER carácter: prefijos en medio del texto intactos', () => {
+    expect(csvEscapeCell('evolución -2% respecto de ayer')).toBe('evolución -2% respecto de ayer')
+    expect(csvEscapeCell('lección: usar @función de apoyo')).toBe('lección: usar @función de apoyo')
+  })
+
+  test('celda con espacio inicial ya es texto inerte: sin apóstrofe, sin recortar el dato', () => {
+    expect(csvEscapeCell(' =cmd')).toBe(' =cmd')
+  })
+
+  test('números no negativos de los exportadores quedan intactos', () => {
+    expect(csvEscapeCell(0)).toBe('0')
+    expect(csvEscapeCell(78)).toBe('78')
+    expect(csvEscapeCell(100)).toBe('100')
+  })
+})
+
+describe('csvEscapeCell — escapado RFC 4180 (contrato preexistente, ahora pinzado directo)', () => {
+  test('celda normal sin caracteres especiales no se toca', () => {
+    expect(csvEscapeCell('Lección: persistencia')).toBe('Lección: persistencia')
+    expect(csvEscapeCell('RED')).toBe('RED')
+  })
+
+  test('separador, comillas y salto de línea envuelven en comillas dobles', () => {
+    expect(csvEscapeCell('a;b')).toBe('"a;b"')
+    expect(csvEscapeCell('dijo "hola"')).toBe('"dijo ""hola"""')
+    expect(csvEscapeCell('linea1\nlinea2')).toBe('"linea1\nlinea2"')
+  })
+
+  test('la neutralización combina con el escapado en una sola celda', () => {
+    // '=' inicial → apóstrofe; luego contiene ';' y '"' → envuelto y duplicado
+    expect(csvEscapeCell('=1+2;="x"')).toBe('"\'=1+2;=""x"""')
+  })
+
+  test('apóstrofe de neutralización dentro de celda con salto: ambos mecanismos en orden', () => {
+    expect(csvEscapeCell('@x\ny')).toBe('"\'@x\ny"')
   })
 })

