@@ -448,3 +448,19 @@ Stage Summary:
 - Canon de humo blindado contra el trap R10 con .env relativo (caso no cubierto por la mitigación de 17h08).
 - Limitación de entorno: navegador headless sin acceso a localhost (evidencia visual sustituida por build + verificación estructural).
 - Informe: docs/agentes/z_implementaciones/ronda_2026-09-25_17h55.md
+
+Task ID: 15 (ronda 6)
+Agent: z_bugs (Agente de Bugs y Seguridad)
+Task: Ronda 6 — resolver los 4 hallazgos vivos de seguridad de la adenda 17h49 (Caddyfile XTransformPort, TOCTOU DNS rebinding, getZai sin plazo, XFF suplantable) y redactar la propuesta de revisión del PROTOCOLO (tarea asignada por el Director).
+
+Work Log:
+- Caddyfile: matcher XTransformPort=* acotado a `XTransformPort=3000` — cualquier cliente remoto podía alcanzar cualquier puerto local (p. ej. el lab en 4403) saltándose guard, ADMIN_TOKEN y rate limit de una vez.
+- access.ts: clientKey ya no confía en X-Forwarded-For por defecto (suplantable → rate limit anulable); confianza opt-in con TRUST_PROXY=1 documentado en .env.example, README (tabla de variables + Seguridad) y 6 tests.
+- llm.ts: creación del SDK z-ai acotada por min(timeoutMs, 10s); si ZAI.create() cuelga, la promesa cacheada rechaza y se resetea (reintento posible) y el motor degrada. tests/llm-creation.test.ts (2 tests, SDK mockeado colgado para siempre).
+- TOCTOU DNS rebinding: sin código — propuesta de clasificación como riesgo aceptado/documentado (pinning de IP no portable Bun/Node; superficie acotada a config del operador).
+- Propuesta de revisión del PROTOCOLO redactada en el informe (retirada §3.6, re-chequeo de origin antes del primer commit, propietario único de docs, altas R12-R15) — sin commit al canon, pendiente de adjudicación.
+- README: fila test actualizada con las suites LLM. Mi retirada del artefacto ` fbf2e6a (docs(bugs):…)` resultó duplicada con la de Pulimiento (b2fdf1c, colisión 8) — prevalece la suya publicada (§7.1); mi delta vivo en el README son la fila test y la documentación de TRUST_PROXY.
+
+Stage Summary:
+- Puerta de calidad: bun test 69/69, tsc 0, lint 0, canon --build 9/9 y canon completo con campaña real 12/12 (COMPLETED 8/8, ganador RED).
+- R12 acotado, R13 acotado, R14 aceptado (propuesto), R15 cerrado. Informe: docs/agentes/z_bugs/ronda_2026-09-25_18h04.md
