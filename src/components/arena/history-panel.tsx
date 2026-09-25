@@ -40,21 +40,25 @@ const RESULT_FILTERS: Array<{ key: ResultFilter; label: string }> = [
   { key: 'RUNNING', label: 'En curso' },
 ]
 
+// El ganador se decide por progreso de objetivos (no por la puntuación,
+// que refleja impacto y detecciones) — se explica en los tooltips.
+const RULE_HINT = 'Puntuación por impacto/detecciones. El ganador se decide por progreso de objetivos (≥70 y por delante del rival).'
+
 function WinnerBadge({ winner }: { winner: string | null }) {
   if (winner === 'RED')
     return (
-      <span className="flex items-center gap-1 rounded-full border border-[#fecdca] bg-[#fef3f2] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#b42318]">
+      <span title={RULE_HINT} className="flex items-center gap-1 rounded-full border border-[#fecdca] bg-[#fef3f2] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#b42318]">
         <Swords className="h-2.5 w-2.5" /> GANA RED
       </span>
     )
   if (winner === 'BLUE')
     return (
-      <span className="flex items-center gap-1 rounded-full border border-[#b2ddff] bg-[#f0f9ff] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#026aa2]">
+      <span title={RULE_HINT} className="flex items-center gap-1 rounded-full border border-[#b2ddff] bg-[#f0f9ff] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#026aa2]">
         <ShieldCheck className="h-2.5 w-2.5" /> GANA BLUE
       </span>
     )
   return (
-    <span className="flex items-center gap-1 rounded-full border border-[#fedf89] bg-[#fffaeb] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#b54708]">
+    <span title={RULE_HINT} className="flex items-center gap-1 rounded-full border border-[#fedf89] bg-[#fffaeb] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#b54708]">
       <Minus className="h-2.5 w-2.5" /> EMPATE
     </span>
   )
@@ -226,8 +230,9 @@ export function HistoryPanel({ campaigns }: { campaigns: CampaignListItemDTO[] }
                       })}{' '}
                       · dificultad {c.scenario.difficulty}/5
                       {c.status === 'COMPLETED' && (
-                        <span className="ml-2">
+                        <span className="ml-2" title={RULE_HINT}>
                           · resultado <b className="text-[#475467]">{c.redScore}–{c.blueScore}</b>
+                          <span className="ml-1.5 text-[#98a2b3]">· objetivos RED {c.redProgress}% vs BLU {c.blueProgress}%</span>
                         </span>
                       )}
                     </p>

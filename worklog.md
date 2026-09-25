@@ -266,3 +266,21 @@ Work Log:
 Stage Summary:
 - La puerta de calidad de ronda ya existe y está probada (`bun run verify`); propuesta al Director para hacerla obligatoria.
 - Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_17h11.md. Pendientes: ratificar convención de capturas, GIF complementario opcional, audit profundo si hay despliegue.
+
+---
+Task ID: implementaciones-2 (ronda 2 de implementaciones)
+Agent: z_implementaciones (Agente de Implementaciones)
+Task: Ronda 2 — "Visibilidad del bucle en segundo plano + protección del golden path": toast de fin de campaña, regla de victoria transparente y test de humo automatizado. Sin tocar el motor.
+
+Work Log:
+- Contexto: leídos el informe del Director (único existente) y el propio de la ronda 1; sin informes nuevos de Pulimiento/Bugs. Backlog ronda 1 + recomendación del Director definen la ronda.
+- Toast de fin de campaña (src/hooks/use-arena-state.ts): el sondeo compartido observa la transición RUNNING→COMPLETED y dispara toast con resultado/marcador/objetivos en cualquier página; sin falsos avisos al abrir la app (lastSeenRef). Fix durante verificación: Radix ToastProvider auto-cierra a 5s y el aviso se perdía → duration 12000 en este toast. Verificado en vivo con vigilancia cada 2s: toast visible ~2s tras la finalización ("Empate táctico — OPERACIÓN TITANIO · Marcador 56–64 · objetivos...").
+- Regla de victoria transparente (history-panel.tsx + arena-live.tsx): filas del historial muestran "· objetivos RED X% vs BLU Y%" junto al marcador; tooltips en badges y marcador con la regla (ganador por objetivos ≥70 y por delante; puntuación = impacto/detecciones); banner de resolución de la ficha añade "Decidido por progreso de objetivos — RED X/100 vs BLUE Y/100".
+- Test de humo (scripts/smoke-test.mjs + script npm "smoke", recomendación del Director): tsc + arranque real de next dev en puerto aparte (SMOKE_PORT, 3100 por defecto) + readiness de /api/state + validación de 4 APIs (state/campaigns/knowledge/ficha) + 7 rutas de página + opción SMOKE_START_CAMPAIGN=1 (campaña end-to-end). Fix durante verificación: fetch con signal del controller en vez de ctrl.signal (RequestInit AbortSignal error). Ejecución real: 🟢 SMOKE OK (10 comprobaciones).
+- Verificación ronda: eslint 0 en ficheros tocados; tsc limpio; 3 campañas reales ejecutadas durante las pruebas; móvil 390px sin overflow.
+
+Stage Summary:
+- El bucle en segundo plano ahora avisa (toast de resultado en cualquier página) y se entiende (regla de victoria explicada donde antes confundía); el golden path queda protegido por `bun run smoke` para todas las rondas futuras de todos los agentes.
+- Ficheros clave: src/hooks/use-arena-state.ts, src/components/arena/{history-panel,arena-live}.tsx, scripts/smoke-test.mjs (nuevo), package.json (+smoke), docs/agentes/z_implementaciones/ronda_2026-09-25_15h07.md (nuevo).
+- Capturas: docs/screenshots/round11-{detalle-regla,historial-objetivos,panel}.png (reubicadas según la convención del repo; /download/ ignorado)
+

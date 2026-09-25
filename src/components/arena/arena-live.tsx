@@ -471,6 +471,12 @@ export function ArenaLive({
                     : 'Empate táctico'}
               </p>
               <p className="mt-1 text-[13px] leading-relaxed text-[#667085]">{campaign.narrative}</p>
+              <p
+                className="mt-2 inline-flex font-mono-tight text-[9.5px] uppercase tracking-[0.14em] text-[#98a2b3]"
+                title="La puntuación refleja impacto causado y detecciones; el resultado se decide por el progreso de los objetivos."
+              >
+                Decidido por progreso de objetivos — RED {campaign.redProgress}/100 vs BLUE {campaign.blueProgress}/100
+              </p>
             </div>
           </div>
         </motion.div>

@@ -8,8 +8,16 @@ import type { StateResponse } from '@/lib/api-types'
 // ─────────────────────────────────────────────────────────────
 // Estado vivo del laboratorio: carga + sondeo adaptativo +
 // lanzamiento de campañas. Compartido vía ArenaProvider para
-// toda la aplicación multi-página.
+// toda la aplicación multi-página. Además, avisa con un toast
+// cuando una campaña que estaba en directo finaliza (visible
+// sobre todo con "Operación continua" activada).
 // ─────────────────────────────────────────────────────────────
+
+function winnerLabel(winner: string | null): string {
+  if (winner === 'RED') return 'Victoria del RED TEAM'
+  if (winner === 'BLUE') return 'Victoria del BLUE TEAM'
+  return 'Empate táctico'
+}
 
 export function useArenaState() {
   const [state, setState] = useState<StateResponse | null>(null)
@@ -42,6 +50,26 @@ export function useArenaState() {
     const id = setInterval(() => void load(), running ? 2000 : 6000)
     return () => clearInterval(id)
   }, [state?.activeCampaign, load])
+
+  // Aviso de fin de campaña: transición RUNNING→COMPLETED observada
+  // en el sondeo (no se avisa si la campaña ya estaba finalizada al abrir).
+  const lastSeenRef = useRef<{ id: string; status: string } | null>(null)
+  const liveId = state?.liveCampaign?.id
+  const liveStatus = state?.liveCampaign?.status
+  useEffect(() => {
+    const live = state?.liveCampaign
+    if (!live) return
+    const prev = lastSeenRef.current
+    lastSeenRef.current = { id: live.id, status: live.status }
+    if (prev && prev.id === live.id && prev.status === 'RUNNING' && live.status === 'COMPLETED') {
+      toast({
+        title: `${winnerLabel(live.winner)} — ${live.scenario.codename}`,
+        description: `Marcador ${live.redScore}–${live.blueScore} · progreso de objetivos RED ${live.redProgress}% vs BLUE ${live.blueProgress}% (el ganador se decide por objetivos). La ficha completa está en Historial.`,
+        // el provider de radix auto-cierra a 5s: este aviso merece más tiempo
+        duration: 12000,
+      })
+    }
+  }, [liveId, liveStatus, state?.liveCampaign, toast])
 
   const handleStart = useCallback(
     async (scenarioId?: string) => {
