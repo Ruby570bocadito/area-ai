@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ChevronRight, Trophy, TrendingUp, BrainCircuit, Crown, Target, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { ARENA_BLUE as BLUE, ARENA_RED as RED } from '@/lib/arena-colors'
 import { AgentAvatar } from './agent-avatar'
 import type { AgentDTO, CampaignListItemDTO, KnowledgeDTO } from '@/lib/api-types'
 
@@ -13,8 +14,6 @@ import type { AgentDTO, CampaignListItemDTO, KnowledgeDTO } from '@/lib/api-type
 // /analitica — gráficos SVG animados a medida
 // ─────────────────────────────────────────────────────────────
 
-const RED = '#d92d20'
-const BLUE = '#0086c9'
 const AMBER = '#d97706'
 
 /* ---------- Donut de resultados ---------- */

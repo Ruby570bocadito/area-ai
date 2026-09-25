@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { Activity, Clock, Layers, Minus, ShieldCheck, Swords, TrendingUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDuration } from '@/lib/text'
+import { ARENA_BLUE as BLUE, ARENA_RED as RED } from '@/lib/arena-colors'
 import { buildRoundProgression } from '@/lib/round-progression'
 import { VICTORY_RULE_SHORT } from '@/lib/victory'
 import type { CampaignSiblingDTO, CampaignSummaryDTO, EventDTO } from '@/lib/api-types'
@@ -23,9 +24,6 @@ import type { CampaignSiblingDTO, CampaignSummaryDTO, EventDTO } from '@/lib/api
 //                       mismo escenario: marcador, progreso,
 //                       duración y medias del escenario.
 // ─────────────────────────────────────────────────────────────
-
-const RED = '#d92d20'
-const BLUE = '#0086c9'
 
 function fmtDate(d: string): string {
   return new Date(d).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
