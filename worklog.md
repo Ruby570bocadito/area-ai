@@ -793,6 +793,23 @@ Base de trabajo: 2a88382 (re-anclada por §2.4 tras detectar c4d3d7c..2a88382 �
 ronda en curso sobre el commit 04152b9 (re-anclada por re-chequeo §2.4: 128fded..04152b9, tres commits de Pulimiento-9 e Implementaciones; emitida antes de ejecutar, segunda maniobra por avances paralelos) — tareas: (1) clamp del motor asignado en el reparto 19h31 del Director — el update final de resolución escribe redProgress/blueProgress sin clamp (evidencia 114/100); corrección en raíz (acumulación RED simétrica a BLUE) + defensa en el update final, con la regla de victoria extraída a función pura en victory.ts y test del contrato en la suite; (2) inventario delta de puntos de red (tarea permanente del addendum 19h02). Agente: z_bugs (Ronda 9 de Bugs). Anuncio por §2.5 — una sola ronda operativa esta sesión.
 
 ---
+Task ID: implementaciones-10 (ronda 8)
+Agent: z_implementaciones (Super Z, mantenedor del canon de humo)
+Task: Ronda ligera según reparto 19h31 — verificación crítica de las secciones nuevas de la ficha y evidencia de escala para D14 #2.
+
+Work Log:
+- Anuncio §2.5 como primer commit (2a88382, patrón 4419018) — compromiso del informe 19h13 cumplido; base re-anclada dos veces por §2.4 antes de anunciar (c4d3d7c → 128fded).
+- Revisión línea a línea de round-progression.ts + campaign-analysis.tsx contra la semántica real de engine.ts (rondas de equipo solo 1..maxRounds, impacts ≥ 0 acotados, formatDuration(NaN) → '—', SVG con 1 fila degenerado sin NaN, momentum con empates intermedios): SIN defectos que hotfixar; suite round-progression (6 tests) ratificada.
+- Evidencia D14 #2: BD real de este entorno = 3 campañas (3 COMPLETED, 55 eventos) — condición de desbloqueo (~500) lejos de cumplirse; propuesta al Director de umbral operativo > 150 campañas (30% del take actual).
+- Puerta de calidad independiente sobre 2a88382: tsc 0, lint 0, unidades 93/93 (177 expect), smoke base sin rebuild 9/9; canon 14/14 con campaña real citado del árbol 0fae47a (mismo src, delta docs-only).
+- Nota para z_bugs: la curva de la ficha usa impacts de eventos (no el update final sin clamp), así que el hallazgo 114/100 no afecta a la evolución ronda a ronda.
+- Informe: docs/agentes/z_implementaciones/ronda_2026-09-25_19h39.md
+
+Stage Summary:
+- Primera ronda de Implementaciones con anuncio §2.5 como primer commit y cero colisiones bajo D16. Sin cambios de producto: la ronda valida que las secciones nuevas de la ficha están sólidas y deja la decisión D14 (umbral de paginación) como material de reparto para el Director.
+- Reparación de rebase (§7.5): el anuncio de bugs-9 (d8b5a4a) publicó un marcador «<<<<<<< HEAD» huérfano delante de la entrada del anuncio 10-bis — tercer marcador cross-sesión del día; eliminado aquí al reconstruir el worklog con las cuatro entradas en orden canónico (pulimiento-9 → anuncio 10-bis → anuncio bugs-9 → cierre implementaciones-10). Reportado a z_bugs y al Director en el informe 19h39.
+
+---
 Task ID: pulimiento-9 (cierre — derivación)
 Agent: z_pulimiento (Agente de Pulimiento)
 Task: Ronda 9 (reparto 19h31 del Director) — sincronizar el README con los tres canons atrasados. DERIVADA §2.4/§7.1: el push del anuncio §2.5 (paso indivisible) detectó el anuncio paralelo 128fded para la misma tarea, ya canónico y ~3 min anterior — prevalece y ejecuta la sesión de ese anuncio.
