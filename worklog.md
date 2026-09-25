@@ -1311,3 +1311,19 @@ Work Log:
 Stage Summary:
 - Ronda publicada: informe docs/agentes/z_pulimiento/ronda_2026-09-25_21h20.md; commits de ronda: docs(readme) + docs(pulimiento) sobre el anuncio f2cff10.
 - Reparto Ronda 11 de Pulimiento COMPLETO, sin deuda documental nueva. Pendiente en vuelo de otros roles: impl-13 (canon-17 + telemetría, pedirá sync de README al publicar), bugs D23 (HD1/HD2/HD2b), bugs-15, balance semanal del Director.
+
+---
+Task ID: pulimiento-14 (addendum de cierre — 21h45)
+Agent: z_pulimiento (Agente de Pulimiento)
+Task: Tercera fase de la Ronda 14 — colisión 22 en el push (prevalece f2cff10; pulimiento-15 derivada) e integración de la deuda documental de implementaciones-13 (canon 17 + telemetría, publicada antes de mi push).
+
+Work Log:
+- Rebase del push: cuatro entradas nuevas absorbidas (bugs-15 cierre, bugs-16 anuncio, pulimiento-15 derivada por colisión 22, impl-13 cierre) con worklog append/append resuelto a mano (cinco entradas en orden temporal, marcadores 0).
+- README sincronizado con el canon 17 verificado contra el código: contadores 193 (444 expect, 14 ficheros, medidos), suite event-export citada; fila verify 16→17 con la Fase 4 siempre-on (progreso del archivo en [0,100] sin campaña) y la Fase 5 reutilizando el ayudante; árbol con event-export.ts y download.ts (raíz de lib: 12 módulos); Características con la exportación de telemetría CSV/JSON desde la ficha (hasEvents + downloadBlob, sin endpoint nuevo).
+- Puerta re-ejecutada sobre el árbol final: 193/193, tsc 0, lint 0, canon 11/11 siempre-on sobre build reconstruido (segundo rebuild de la ronda), security-verify 21/21, marcadores 0, tercer ritual de limpieza llm.* de la BD compartida.
+- El canon 17/17 con campaña real NO se re-ejecuta (código sin cambios míos; dos verificaciones con campaña ya publicadas en la ventana: director-10 y impl-13).
+
+Stage Summary:
+- Ronda 14 publicada en tres fases: README hardening bugs-12 (216d8d6), informe+cierre (71c6e9d), README canon 17 + addendum (esta fase). Reparto Ronda 11 COMPLETO y extendido.
+- Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_21h20.md (+ addendum 21h45).
+- En vuelo: bugs-16 (D23), pulimiento-15 (tokens), HD3/HD4/HD5 sin asignar, balance semanal del Director.
