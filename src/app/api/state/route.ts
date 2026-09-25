@@ -4,15 +4,11 @@ import { ensureSeed } from '@/lib/sim/seed'
 import { recoverOrphanCampaigns } from '@/lib/sim/engine'
 import { getAutopilot, maybeRunAutopilot } from '@/lib/sim/autopilot'
 import { llmProviderName } from '@/lib/sim/llm'
+import { knowledgeScore } from '@/lib/sim/knowledge-score'
 import { labInfo } from '@/lib/lab/store'
 import type { Infrastructure } from '@/lib/sim/types'
 
 export const dynamic = 'force-dynamic'
-
-function knowledgeScore(k: { confidence: number; timesUsed: number; timesWorked: number }) {
-  const ratio = k.timesUsed > 0 ? k.timesWorked / k.timesUsed : 0.5
-  return k.confidence * 0.6 + ratio * 0.3 + Math.min(1, k.timesUsed / 10) * 0.1
-}
 
 export async function GET() {
   try {

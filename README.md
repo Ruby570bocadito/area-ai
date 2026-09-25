@@ -111,7 +111,7 @@ También es posible configurarlo por variables de entorno — o directamente en 
 
 | Variable | Obligatoria | Descripción |
 |---|---|---|
-| `DATABASE_URL` | Sí | Ruta de la base de datos SQLite (`file:../db/custom.db`) |
+| `DATABASE_URL` | Sí | Ruta de la base de datos SQLite — usa **ruta absoluta** (p. ej. `file:/ruta/a/area-ai/db/custom.db`); las relativas se resuelven de forma distinta entre la CLI de Prisma y el runtime |
 | `LAB_PORT` | No | Puerto del laboratorio HTTP (por defecto `4403`, bind en `127.0.0.1`) |
 | `OPENAI_API_KEY` | No | API key del proveedor LLM (alternativa a la configuración desde `/modelos`) |
 | `OPENAI_BASE_URL` | No | Endpoint compatible con la API de OpenAI |

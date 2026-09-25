@@ -2,6 +2,7 @@ import { db } from '@/lib/db'
 import { llmJson } from './llm'
 import { ensureSeed } from './seed'
 import { ensureProgressionMigration, levelForXp } from './progression'
+import { knowledgeScore } from './knowledge-score'
 import { RED_AGENTS, BLUE_AGENTS } from './roster'
 import {
   PHASE_ORDER,
@@ -117,11 +118,6 @@ export async function startCampaign(scenarioId?: string) {
 // ─────────────────────────────────────────────────────────────
 // Memoria institucional (conocimiento) por equipo
 // ─────────────────────────────────────────────────────────────
-
-function knowledgeScore(k: { confidence: number; timesUsed: number; timesWorked: number }): number {
-  const ratio = k.timesUsed > 0 ? k.timesWorked / k.timesUsed : 0.5
-  return k.confidence * 0.6 + ratio * 0.3 + Math.min(1, k.timesUsed / 10) * 0.1
-}
 
 async function loadMemory(team: 'RED' | 'BLUE'): Promise<KnowledgeRef[]> {
   const items = await db.knowledge.findMany({ where: { team } })

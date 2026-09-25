@@ -396,3 +396,20 @@ Work Log:
 Stage Summary:
 - README reparado y sincronizado con la Ronda 5; informe: docs/agentes/z_pulimiento/ronda_2026-09-25_17h55.md (con addendum de colisión).
 - Hallazgos vivos recordados (no míos por reparto): Caddyfile XTransformPort (Bugs/Director), BD del operador en smoke.mjs (Implementaciones).
+
+---
+Task ID: pulimiento-3-bis (re-aplicado tras adjudicación de colisión)
+Agent: z_pulimiento (Agente de Pulimiento)
+Task: Ronda 3 — pendientes de la ronda 2 (verify, metadataBase, GIF, convención de capturas) + dedup knowledgeScore. Mi ejecución colisionó con otra sesión que canonizó esos pendientes en origin; re-aplicado solo el valor incremental sobre a1dc9e7 (tabla de adjudicación en el informe).
+
+Work Log:
+- Ronda ejecutada sobre 8cbba22; al pushear, origin/main había avanzado a a1dc9e7 con los mismos pendientes canonizados (verify/smoke, metadataBase, normalizeText en lib/text, GIF en la misma ruta, fix SQLite + ADMIN_TOKEN/rate limit, toast de fin de campaña). Commit local f9d160f descartado según protocolo del Director; prevalece el canon.
+- RE-APLICADO (único valor incremental): knowledgeScore deduplicado — 3 copias idénticas (engine.ts, api/state/route.ts, knowledge-panel.tsx) → src/lib/sim/knowledge-score.ts, función pura documentada importable en cliente. Cero cambios de comportamiento.
+- README vivo: fila DATABASE_URL corregida (aún documentaba la ruta relativa file:../db que la sección Seguridad y .env.example declaran inválida).
+- Mi diagnóstico pre-colisión de rutas SQLite (CLI/dev → CWD, standalone → schema empaquetado; BD fuera del repo en ../db) convergió con el fix ya publicado por Bugs/Seguridad; confirmado empíricamente en verde sobre el fusionado.
+- Verificación con el canon del proyecto sobre el fusionado: bun test 64/64, bun run verify --build 9/9 OK (tsc, build standalone, healthcheck+BD, state/campaigns/knowledge, panel).
+
+Stage Summary:
+- knowledgeScore con fuente única en src/lib/sim/knowledge-score.ts (motor + agregado + UI). README coherente con el fix de rutas SQLite. Sin archivos nuevos innecesarios.
+- Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_18h25.md (con tabla de adjudicación de la colisión y lección de proceso).
+- Pendientes: marcador cross-sesión de trabajo en curso (proponer al Director), loading eager LCP (con Implementaciones), GIF Model Studio opcional, SMOKE_START_CAMPAIGN ya registrado por el Director.

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { normalizeText } from '@/lib/text'
+import { knowledgeScore } from '@/lib/sim/knowledge-score'
 import type { KnowledgeDTO } from '@/lib/api-types'
 
 // ─────────────────────────────────────────────────────────────
@@ -39,11 +40,6 @@ const SORT_OPTIONS: Array<{ key: SortKey; label: string }> = [
   { key: 'USOS', label: 'Más usadas' },
   { key: 'RECIENTES', label: 'Más recientes' },
 ]
-
-function knowledgeScore(k: KnowledgeDTO): number {
-  const ratio = k.timesUsed > 0 ? k.timesWorked / k.timesUsed : 0.5
-  return k.confidence * 0.6 + ratio * 0.3 + Math.min(1, k.timesUsed / 10) * 0.1
-}
 
 function KnowledgeCard({ k, index, team }: { k: KnowledgeItem; index: number; team: 'RED' | 'BLUE' }) {
   const isRed = team === 'RED'
