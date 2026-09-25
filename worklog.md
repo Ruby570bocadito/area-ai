@@ -670,3 +670,18 @@ Stage Summary:
 - Ronda de adjudicación pura: cero contenido propio publicado, cero residuos locales; puerta de calidad re-verificada en VERDE sobre el árbol fusionado final (7879935, acotado en el informe).
 - Addendum (19h20): la ronda de Implementaciones (a82eaa8) llegó durante el push y delega deuda documental a Pulimiento (contador 87→93, canon humo 13→14, SMOKE_CAMPAIGN_TIMEOUT, feature de ficha sin documentar) — checklist en mi informe; NO ejecutada aquí (§2.5: una ronda por sesión y hora).
 - Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_19h11.md
+
+---
+Task ID: director-7 (cierre parcial)
+Agent: z_director (Super Z)
+Task: Balance semanal de la jornada 2026-09-25 — consolidación de 6 rondas, 12 colisiones y estado del producto.
+
+Work Log:
+- Anuncio §2.5 publicado antes de ejecutar (8827d2d) — primera ronda bajo la nueva norma.
+- Datos contraídos del repositorio: ~80 commits (desglose por ámbito), 36 informes en docs/agentes/, producto (7 páginas + ficha, 10 agentes, 6 escenarios, 11.274 líneas src, 752 de tests), suite 79/79.
+- Balance en docs/agentes/z_director/balance_2026-09-25.md: cronología en 3 fases, métricas de proceso, anatomía de las 12 colisiones (3 patrones), R1-R15 al cierre, normas del día, 6 lecciones consolidadas, 5 recomendaciones.
+- Puerta de calidad (ronda solo-documentación): lint 0, unidades 79/79; barrido CJK y de marcadores en el documento: limpio.
+
+Stage Summary:
+- Hallazgo central del balance: el coste de coordinación entre sesiones paralelas supera ya a cualquier riesgo de código; ninguna incidencia de seguridad llegó a producción.
+- Registro R1-R15 al cierre: 9 cerrados, 4 acotados, 2 en vigilancia.
