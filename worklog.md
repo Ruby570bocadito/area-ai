@@ -1,6 +1,9 @@
 # Worklog
 
 ---
+# Worklog
+
+---
 Task ID: 1
 Agent: Super Z (main agent)
 Task: Construir "AEGIS ARENA" — sandbox de autoevolución Red Team vs Blue Team con agentes de IA, desde cero, con UI animada.
