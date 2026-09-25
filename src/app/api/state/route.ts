@@ -101,9 +101,18 @@ export async function GET() {
     const blueKnowledge = [...blueK].sort((a, b) => knowledgeScore(b) - knowledgeScore(a)).slice(0, 24)
 
     // infraestructura de la campaña en vivo
-    const liveInfra: Infrastructure | null = liveCampaign
-      ? JSON.parse(liveCampaign.scenario.infrastructure)
-      : null
+    // Parse defensivo: /api/state es la ruta de sondeo de toda la UI y del
+    // autopilot — un escenario con infrastructure corrupta NO debe tumbar
+    // el endpoint entero (mismo criterio que GET /api/campaigns/[id]).
+    let liveInfra: Infrastructure | null = null
+    if (liveCampaign) {
+      try {
+        const parsed = JSON.parse(liveCampaign.scenario.infrastructure) as Infrastructure
+        if (parsed && Array.isArray(parsed.nodes) && parsed.nodes.length > 0) liveInfra = parsed
+      } catch {
+        liveInfra = null
+      }
+    }
 
     return NextResponse.json({
       ok: true,

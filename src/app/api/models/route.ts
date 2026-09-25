@@ -88,6 +88,10 @@ export async function POST(req: NextRequest) {
       method: 'GET',
       headers: { Authorization: `Bearer ${apiKey}` },
       signal: controller.signal,
+      // El guard clasifica el destino INICIAL; seguir redirects permitiría
+      // evadirlo (un servidor público con 302 hacia metadata o red interna).
+      // Los proveedores OpenAI-compatibles no redirigen legítimamente.
+      redirect: 'error',
     })
     clearTimeout(timer)
 

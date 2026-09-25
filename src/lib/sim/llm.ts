@@ -84,27 +84,66 @@ async function callOpenAICompatible(
   const { getProviderConfig } = await import('./provider-config')
   const cfg = await getProviderConfig()
   if (cfg.source === 'zai' || !cfg.apiKey) return null
-  const res = await withTimeout(
-    fetch(`${cfg.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${cfg.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: cfg.model,
-        temperature: 0.8,
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: user },
-        ],
+
+  // ── Defensa en profundidad SSRF (protocolo §6) ──
+  // La baseUrl pudo guardarse en BD antes de que existiera el guard de
+  // /api/settings (o venir de env). El motor NUNCA debe alcanzar endpoints
+  // de metadata de nube. Los destinos privados se permiten (caso legítimo:
+  // Ollama en localhost configurado desde la máquina local; el guard de
+  // guardado es la barrera contra conexiones remotas).
+  try {
+    const { classifyTarget } = await import('@/lib/net/target-guard')
+    let url: URL
+    try {
+      url = new URL(cfg.baseUrl)
+    } catch {
+      return null
+    }
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null
+    if (await classifyTarget(url.hostname) === 'metadata') {
+      console.error('[llm] baseUrl del proveedor apunta a metadata de nube — petición bloqueada')
+      return null
+    }
+  } catch (e) {
+    console.error('[llm] validación SSRF falló — bloqueando llamada al proveedor:', e)
+    return null
+  }
+
+  // Sin try/catch global, un fallo de red del proveedor (ECONNREFUSED, DNS,
+  // TLS o timeout del AbortSignal) subiría por llmText → llmJson → motor y
+  // ABORTARÍA la campaña entera; el contrato de esta función es devolver
+  // null y que el motor degrade a modo determinista (igual que callZai).
+  try {
+    const res = await withTimeout(
+      fetch(`${cfg.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${cfg.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: cfg.model,
+          temperature: 0.8,
+          messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: user },
+          ],
+        }),
+        // Un proveedor legítimo no redirige a otro destino; seguir redirects
+        // permitiría evadir el guard (302 hacia metadata/red interna).
+        redirect: 'error',
+        // Aborta la conexión real al vencer el plazo (withTimeout solo
+        // abandona la promesa; sin signal el socket quedaría colgado).
+        signal: AbortSignal.timeout(timeoutMs),
       }),
-    }),
-    timeoutMs
-  )
-  if (!res.ok) return null
-  const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> }
-  return data.choices?.[0]?.message?.content ?? null
+      timeoutMs
+    )
+    if (!res.ok) return null
+    const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> }
+    return data.choices?.[0]?.message?.content ?? null
+  } catch {
+    return null
+  }
 }
 
 async function callZai(system: string, user: string, timeoutMs: number): Promise<string | null> {
