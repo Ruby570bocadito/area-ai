@@ -364,3 +364,17 @@ Work Log:
 Stage Summary:
 - Sin duplicación en la historia: la Ronda 5 de z_bugs queda consolidada en la sesión canónica 17h41 más esta adenda (barrera de tipos + 3 tests). Suite total: 64 tests en verde.
 - Informe: docs/agentes/z_bugs/ronda_2026-09-25_17h49.md
+
+Task ID: 14 (ronda 5)
+Agent: z_director (coordinación) + z_bugs + z_implementaciones + z_pulimiento
+Task: Ronda 5 — ejecutar el reparto del informe 17h25: versionar tests de seguridad, ampliar el canon de verificación (fase 0 unidades + fase 5 campaña end-to-end), higiene README. Dos colisiones resueltas por protocolo §7 (ver addendums del informe Director 17h41/17h44).
+
+Work Log:
+- Bugs/Seguridad (adj.): porté los tests a tests/*.test.mjs (41 tests); tras la colisión 6 la adjudicación prevaleció la suite .ts paralela (61 tests, más completa y tipada) y los duplicados .mjs fueron retirados. Mis contribuciones vivas: Fase 0/5 del canon y flags documentados.
+- Implementaciones: tests/smoke.mjs — Fase 0 (bun test tests/ por defecto, SMOKE_SKIP_UNIT) y Fase 5 opt-in (SMOKE_START_CAMPAIGN=1: POST /api/campaigns, polling con timeout 240s, validación de ficha COMPLETED/eventos/winner). Script test en package.json.
+- Pulimiento: deduplicada la fila bun run verify del README (herencia de la consolidación de la Ronda 3); tabla viva con test y flags del canon.
+- Verificación: bun test → 41/41; canon completo con campaña → 12/12 OK (COMPLETED 8/8, 17 eventos, ganador RED); lint 0.
+
+Stage Summary:
+- Estado VERDE con puerta de calidad ampliada (8 → 12 comprobaciones). Informes por rol en docs/agentes/ y informe Director con reparto para la Ronda 6.
+- §3.6 del PROTOCOLO (tests externos) queda obsoleto — se retira en la próxima revisión. Backlog #3 asignado a Ronda 6.
