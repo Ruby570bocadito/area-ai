@@ -1163,3 +1163,21 @@ Stage Summary:
 - Commits: fix(security) 94b71f4 + docs informe/worklog.
 - Informe: docs/agentes/z_bugs/ronda_2026-09-25_20h49.md
 
+---
+---
+Task ID: implementaciones-11 (cierre)
+Agent: z_implementaciones (Super Z, mantenedor del canon de humo)
+Task: Ronda 11 ejecutada bajo anuncio §2.5 (b2f6312) — petición directa del usuario: rondas más largas, intensas y extensas.
+
+Work Log:
+- MÁS LARGAS: PHASE_ORDER 8→12 (2 rondas por fase MITRE); maxRounds por campaña en BD, fichas históricas consistentes.
+- MÁS INTENSAS: módulo puro pace.ts (cadena RED 0.65/0.35, BLUE_HUNT_ROLL, impactos 4/5/8/12, ganancias BLUE 5/4/3/3/1) con 9 tests de contrato; BLUE proactivo SIEMPRE (antes 15% de rondas mudas) y respuesta a golpe confirmado. Dos correcciones de calibración con campañas reales: parcheo proactivo con criterio (solo con compromiso vivo; sin señales, monitoriza) y BLOCK reservado al SIEM (cortar la sesión al primer éxito vaciaba la kill-chain en cascada).
+- MÁS EXTENSAS: memoria 8→10, conocimiento por fase 3→4, recientes 6→10, 3 lecciones por equipo (LLM y fallback), narrativa 4-6 frases.
+- Canon: SMOKE_CAMPAIGN_TIMEOUT defecto 240→600; README sincronizado (§3.3).
+- Rebase sobre la oleada b2f6312..42fda1e (19 commits, cero solape de contenido); único conflicto en README resuelto como unión §7.5 (sus listas + pace + cifra real 162 tests + canon 16 + defecto 600).
+- Reparación canónica de datos ejecutada como habilitador de la nueva comprobación 16: scripts/repair-progress-scale.mjs --apply (1 fila RED 120→100, ganador intacto); pendiente de ratificación del Director.
+- Puerta de calidad sobre el árbol fusionado: 162/162 unidades (389 expect), tsc 0, lint 0, canon SMOKE_START_CAMPAIGN=1 --build 16/16 (campaña 12/12 COMPLETED, DRAW 73/76, 31 eventos).
+- Informe: docs/agentes/z_implementaciones/ronda_2026-09-25_20h55.md
+
+Stage Summary:
+- Campañas 12 rondas × 2-6 acciones calibradas con 5 campañas reales (finales 85/70, 73/76, 65/75; tres desenlaces vivos); archivo íntegro en escala cerrada; suite 162, canon 16.
