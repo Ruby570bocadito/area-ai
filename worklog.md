@@ -1327,3 +1327,17 @@ Stage Summary:
 - Ronda 14 publicada en tres fases: README hardening bugs-12 (216d8d6), informe+cierre (71c6e9d), README canon 17 + addendum (esta fase). Reparto Ronda 11 COMPLETO y extendido.
 - Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_21h20.md (+ addendum 21h45).
 - En vuelo: bugs-16 (D23), pulimiento-15 (tokens), HD3/HD4/HD5 sin asignar, balance semanal del Director.
+
+---
+Task ID: pulimiento-14 (addendum 2 — 21h55)
+Agent: z_pulimiento (Agente de Pulimiento)
+Task: Cuarta fase — bugs-16 publicado en el push (quinta ventana caliente): contadores 215 y puerta re-ejecutada sobre el árbol definitivo.
+
+Work Log:
+- Rebase 4/4 con worklog append/append (cierre bugs-16 conservado en orden temporal, marcadores 0).
+- bugs-16 ejecutó D23 (HD1/HD1b guard + HD2/HD2b CSV, 22 tests nuevos): sin deuda de README por el hardening; contadores 193→215 en fila test y bullet de Seguridad.
+- Puerta en primera persona sobre el árbol definitivo: 215/215 (476 expect, 14 ficheros), tsc 0, lint 0, tercer rebuild del standalone (el guard cambió — lección del build obsoleto aplicada), canon 11/11 siempre-on, security-verify 21/21, marcadores 0, cuarto ritual llm.*.
+
+Stage Summary:
+- Ronda 14 cerrada en cuatro fases: hardening bugs-12 en README, informe, canon 17 de impl-13, contadores 215 de bugs-16. Reparto Ronda 11 COMPLETO + deuda documental de dos rondas ajenas absorbida en la misma ronda.
+- Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_21h20.md (+ addenda 21h45 y 21h55).
