@@ -633,6 +633,7 @@ Work Log:
 Stage Summary:
 - Puerta de calidad sobre el árbol final: bun test 87/87 (138 expect), tsc 0, lint 0, guard 49/49; canon no re-ejecutado por delta de código cero (criterio addendum 18h58).
 - Informe: docs/agentes/z_bugs/ronda_2026-09-25_19h10.md
+
 ---
 Task ID: implementaciones-8 (ronda 7)
 Agent: z_implementaciones (Super Z)
@@ -653,3 +654,19 @@ Stage Summary:
 - Colisión 13: el refactor formatDuration de Pulimiento tocaba la misma ficha — merge limpio (hunks disjuntos), relectura completa y dedupe manual: mi fmtDuration local de campaign-analysis.tsx eliminado, adoptado el formatDuration canónico de @/lib/text.
 - Backlog 14h39 #4 cerrado en sus dos caras. Puerta de calidad sobre el árbol rebaseado 4419018: tsc 0, lint 0, bun test 93/93 (74 canónicos + 6 nuevos + 5 DNS + 8 text), SMOKE_START_CAMPAIGN=1 --build → 14/14 OK (COMPLETED 8/8, 17 eventos, RED; 4 lecciones, memoria 14→18, estructura válida, ficha 4 = memoria 4).
 - Informe: docs/agentes/z_implementaciones/ronda_2026-09-25_19h03.md
+
+---
+Task ID: pulimiento-8
+Agent: z_pulimiento (Agente de Pulimiento)
+Task: Ronda 8 — reparto del Director 18h50 + addendum 19h02 (D6 en README + higiene). ADJUDICADA §7.1 en su integridad a la sesión paralela pulimiento-7-bis; esta sesión aporta la verificación independiente del árbol fusionado y la documentación de la colisión 13 (tercer participante).
+
+Work Log:
+- Anuncio §2.5 escrito y commitado localmente (47ed2f0, 17h07:55 UTC) tras fetch (HEAD visto: 8827d2d); el push perdió la carrera < 2 min contra los 4 commits de la sesión bis (17h06 UTC). Descartado con reset al canon 7879935 sin publicar; traza en el informe.
+- Adjudicación verificada contra el código: D6 documentada (7879935) con referencia canónica correcta (/historial, Suspense + lista blanca) y contador 87 coherente con la suite real (dbe8296). Sin deltas que reclamar.
+- Verificación independiente del árbol final 7879935: bun test 87/87 (138 expect, 6 ficheros), lint 0, tsc 0, smoke sin rebuild 9/9 (delta solo-docs desde el canon --build 9/9 de la bis), 0 marcadores de conflicto, 10/10 assets, deps sin cambios en b7d9d51..7879935.
+- Reportado al Director (§8, no ejecutado): la línea de árbol de dbe8296 omite src/lib/utils.ts (5 de 6 ficheros de raíz) y la etiqueta "módulos puros" es imprecisa para api-types/db; §2.5 sugerido como paso indivisible (fetch + anuncio + push juntos).
+
+Stage Summary:
+- Ronda de adjudicación pura: cero contenido propio publicado, cero residuos locales; puerta de calidad re-verificada en VERDE sobre el árbol fusionado final (7879935, acotado en el informe).
+- Addendum (19h20): la ronda de Implementaciones (a82eaa8) llegó durante el push y delega deuda documental a Pulimiento (contador 87→93, canon humo 13→14, SMOKE_CAMPAIGN_TIMEOUT, feature de ficha sin documentar) — checklist en mi informe; NO ejecutada aquí (§2.5: una ronda por sesión y hora).
+- Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_19h11.md
