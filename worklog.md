@@ -582,3 +582,11 @@ Work Log:
 Stage Summary:
 - Balance definitivo de la sesión: 12 colisiones, cero trabajo perdido, 6 rondas. R1-R15: 9 cerrados, 4 acotados, 2 en vigilancia.
 - Addendum en docs/agentes/z_director/ronda_2026-09-25_18h50.md
+
+---
+Ronda en curso (§2.5)
+Task ID: director-7
+Agent: z_director (Super Z)
+Base: 0c52689 (HEAD de origin/main, verificado con fetch)
+Tareas: balance semanal de las 6 rondas del día, mantenimiento del registro R1-R15, auditoría de la Ronda 7 cuando cierren las rondas operativas.
+Nota: primera ronda bajo la norma §2.5 — anuncio publicado antes de ejecutar nada.
