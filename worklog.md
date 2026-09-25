@@ -885,3 +885,19 @@ Agent: z_pulimiento (Agente de Pulimiento)
 Base: 65e8ea9 (HEAD de origin/main, verificado con fetch — incorpora bugs-9 clamp del motor, implementaciones 10/10-bis con backlog #7 sitemap/robots + taxonomy.ts, canon 15)
 Tareas: ronda INTENSIVA (directiva del operador: rondas más intensas y extendidas) — (1) README: sync con los dos canons nuevos (contador 93→112 con suites victory y taxonomy citadas; fila verify con Fase 4 SEO sitemap/robots y Fase 5 taxonomía/tags; árbol con taxonomy.ts y sitemap/robots; viñeta SEO) + micro-nit propio del 19h40 (SMOKE_CAMPAIGN_TIMEOUT: también valores numéricos <30 caen al defecto); (2) refactor dedupe: formatDateTime compartida en text.ts adoptada por aggregate-report y arena-live, con tests (patrón §3.6); (3) refactor estilo: ARENA_RED/ARENA_BLUE compartidos en lib/arena-colors.ts (elimina constantes duplicadas en campaign-analysis y analytics); (4) refactor historial: helper único para el nombre de fichero de exportación (CSV e informe repetían pad+timestamp); (5) higiene: .gitignore sin entradas redundantes.
 Nota: ronda con delta de src/ → puerta de calidad COMPLETA al cierre (tsc, lint, test, SMOKE_START_CAMPAIGN=1 --build con campaña real 15/15). Sin solape con bugs-10 (revisión cruzada sin código). Sin features nuevas: solo dedupe, legibilidad, higiene y sync documental.
+---
+Task ID: bugs-10 (cierre)
+Agent: z_bugs (Agente de Bugs y Seguridad)
+Task: Ronda 10 — revisión cruzada del fix canónico de bugs-9 (clamp del motor), verificación independiente end-to-end en otro entorno y tarea permanente de inventario delta de red. Sin cambios de código.
+
+Work Log:
+- §2.5: anuncio 65e8ea9 sobre 769edff antes de ejecutar. Adjudicación preventiva: mi sesión no anunció ni ejecutó la ronda del clamp (turno horario propio consumido por bugs-8; al re-sincronizar el trabajo ya era canónico) — cero colisión, cero duplicación; la ronda se re-direccionó a revisión cruzada.
+- Revisión línea a línea del fix: acumulación RED acotada (~341), updates intermedios (~368/503), resolución vía resolveCampaignOutcome (~598), fila final doble-clamp (~690); semántica de escala cerrada documentada en victory.ts (saturación → empate, no finitos → 0); contrato 9 tests. VEREDICTO: CORRECTO.
+- Verificación independiente completa: 112/112 unidades, tsc 0, lint 0, canon SMOKE_START_CAMPAIGN=1 --build 15/15 (camino combinado clamp+normalización; completa el re-chequeo post-fusión que bugs-9 dejaba anotado).
+- BD directa (bun:sqlite readonly): campaña de esta ronda RED 82/100 · BLUE 54/100 en escala; HALLAZGO: fila histórica pre-fix con red 102/100 — confirma empíricamente el caveat de datos históricos de bugs-9 en un segundo entorno. Reparación/display-clamp: decisión de gobernanza, no ejecutada (sin asignación).
+- Inventario delta de red: cero puntos nuevos (taxonomy/victory puros; sitemap/robots servidos sin fetch saliente); 6 puntos server-side completos con plazo.
+- Secundadas al Director: propuesta de canon «progreso en [0,100]» (Fase 5) y lección §7.5 del marcador tras --continue.
+
+Stage Summary:
+- Puerta de calidad sobre el árbol final: 112/112, tsc 0, lint 0, canon 15/15 — todo en verde sin tocar código.
+- Informe: docs/agentes/z_bugs/ronda_2026-09-25_20h04.md
