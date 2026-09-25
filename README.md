@@ -62,6 +62,10 @@ src/
 
 **Flujo de una campaña**: el usuario (o el autopiloto) lanza una campaña → el motor elige agentes y fases según alcanzabilidad real → cada acción ejecuta una operación HTTP contra el laboratorio (`src/lib/lab/ops.ts`) → el SOC (BLUE) detecta por correlación del diario del lab y responde (bloqueo, parcheo, aislamiento, hunting) → las lecciones se archivan y la confianza del conocimiento evoluciona.
 
+### Convenciones de desarrollo
+
+- **Lectura de filtros de URL (`Suspense` + `useSearchParams` — ratificada como D6):** toda página nueva que lea filtros de la URL debe hacerlo en un componente propio y envolverlo en `<Suspense>` con un fallback coherente con la página — `useSearchParams` exige la frontera de Suspense para no degradar el prerender estático de la página completa. El valor leído se valida siempre contra la lista blanca de valores admitidos. Referencia canónica: `src/app/historial/page.tsx` (`FilteredHistoryPanel` envuelto en `Suspense`, que soporta los deep-links `?resultado=` de la analítica).
+
 ## Requisitos
 
 - [Bun](https://bun.sh) ≥ 1.1 (o Node.js ≥ 20 con npm/pnpm)
