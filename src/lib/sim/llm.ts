@@ -28,18 +28,28 @@ interface ZaiClient {
 
 let zaiPromise: Promise<ZaiClient> | null = null
 
+// Techo del plazo de creación del SDK: ZAI.create() no tiene timeout propio
+// y, si colgara (DNS/red degradada), callZai quedaría colgado aunque sus
+// llamadas posteriores sí lo tengan. La creación se acota por el plazo de
+// la llamada en curso con este máximo (10 s); el rechazo no se cachea
+// (ver getZai), de modo que el reintento posterior vuelve a intentar
+// crear y el motor degrada a modo determinista si no hay remedio.
+const CREATION_TIMEOUT_CAP_MS = 10_000
+
 function asZaiClient(instance: unknown): ZaiClient {
   return instance as ZaiClient
 }
 
-async function getZai(): Promise<ZaiClient> {
+async function getZai(timeoutMs: number): Promise<ZaiClient> {
   if (!zaiPromise) {
     zaiPromise = (async () => {
       const mod = await import('z-ai-web-dev-sdk')
       const ZAI = mod.default
       return asZaiClient(await ZAI.create())
     })()
-    // si la creación falla, no cachear el rechazo: permitir reintento
+    // la creación también respeta un plazo: si cuelga, rechaza
+    zaiPromise = withTimeout(zaiPromise, Math.min(timeoutMs, CREATION_TIMEOUT_CAP_MS))
+    // si la creación falla o supera el plazo, no cachear el rechazo: permitir reintento
     void zaiPromise.catch(() => {
       zaiPromise = null
     })
@@ -148,7 +158,7 @@ async function callOpenAICompatible(
 
 async function callZai(system: string, user: string, timeoutMs: number): Promise<string | null> {
   try {
-    const zai = await getZai()
+    const zai = await getZai(timeoutMs)
     const completion = await withTimeout(
       zai.chat.completions.create({
         messages: [

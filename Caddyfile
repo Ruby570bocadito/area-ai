@@ -1,23 +1,30 @@
 :81 {
-	@transform_port_query {
-		query XTransformPort=*
-	}
+        # SEGURIDAD (hallazgo z_bugs, ronda 2026-09-25): este listener solo
+        # acepta desviar al puerto de la app (3000). Antes el matcher
+        # `XTransformPort=*` permitía a cualquier cliente remoto indicar un
+        # puerto arbitrario y alcanzar servicios locales (p. ej. el lab de
+        # 127.0.0.1:4403), saltándose de una vez el guard SSRF, el ADMIN_TOKEN
+        # y el rate limit, que viven dentro de la app. Con el valor fijado, un
+        # XTransformPort distinto no empareja y cae en el handle por defecto.
+        @transform_port_query {
+                query XTransformPort=3000
+        }
 
-	handle @transform_port_query {
-		reverse_proxy localhost:{query.XTransformPort} {
-			header_up Host {host}
-			header_up X-Forwarded-For {remote_host}
-			header_up X-Forwarded-Proto {scheme}
-			header_up X-Real-IP {remote_host}
-		}
-	}
+        handle @transform_port_query {
+                reverse_proxy localhost:3000 {
+                        header_up Host {host}
+                        header_up X-Forwarded-For {remote_host}
+                        header_up X-Forwarded-Proto {scheme}
+                        header_up X-Real-IP {remote_host}
+                }
+        }
 
-	handle {
-		reverse_proxy localhost:3000 {
-			header_up Host {host}
-			header_up X-Forwarded-For {remote_host}
-			header_up X-Forwarded-Proto {scheme}
-			header_up X-Real-IP {remote_host}
-		}
-	}
+        handle {
+                reverse_proxy localhost:3000 {
+                        header_up Host {host}
+                        header_up X-Forwarded-For {remote_host}
+                        header_up X-Forwarded-Proto {scheme}
+                        header_up X-Real-IP {remote_host}
+                }
+        }
 }

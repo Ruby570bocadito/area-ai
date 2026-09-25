@@ -89,8 +89,22 @@ export function rateLimit(key: string, max = MAX_PER_WINDOW, windowMs = WINDOW_M
   return true
 }
 
-/** Clave de cliente para rate limit: XFF si viene de proxy, si no conexión directa */
+/**
+ * Clave de cliente para el rate limit.
+ *
+ * La cabecera X-Forwarded-For la fija el PRIMER salto y cualquier cliente
+ * puede enviarla arbitrariamente: si se confía en ella sin proxy de
+ * confianza delante, un atacante rota su clave de rate limit a voluntad
+ * (una IP falsa por petición = límite anulado). Por eso solo se usa XFF
+ * cuando el operador declara explícitamente que hay un proxy de confianza
+ * (`TRUST_PROXY=1`, p. ej. detrás del Caddyfile de este repo, que fija
+ * `X-Forwarded-For {remote_host}`). Sin él → clave única "direct": el
+ * límite pasa a ser global (más severo, nunca más débil que la verdad).
+ */
 export function clientKey(headers: Headers): string {
-  const xff = headers.get('x-forwarded-for')
-  return xff ? xff.split(',')[0].trim() : 'direct'
+  if (process.env.TRUST_PROXY === '1') {
+    const xff = headers.get('x-forwarded-for')
+    if (xff) return xff.split(',')[0].trim()
+  }
+  return 'direct'
 }
