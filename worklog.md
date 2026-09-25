@@ -953,3 +953,23 @@ Work Log:
 Stage Summary:
 - Colisión 16 documentada (tercera carrera de anuncios del día; coste: un checkout --); propuesta §8: ratificar el §2.5 indivisible y decidir la gobernanza de la BD compartida.
 - README SIN CAMBIOS por esta ronda (derivado); residuales vigilados para verificación de cobertura cuando la ronda prevaleciente publique.
+
+---
+Task ID: bugs-11
+Agent: z_bugs (Agente de Bugs y Seguridad)
+Task: Ronda 11 — auditoría intensiva de superficie completa con correcciones por prioridad (API 9/9 rutas, guard SSRF, control de acceso, configuración, esquema, dependencias, patrones profundos). Alcance disjunto del anuncio de bugs-10 (65e8ea9), que revisa clamps/victory/taxonomy/sitemap en solo-lectura.
+
+Work Log:
+- §2.5: anuncio 5d1d2f2 como primer commit, a la primera, base 65e8ea9.
+- C1 CRÍTICA corregida: bypass del guard SSRF con literales IPv6 con corchetes ([::1], [fc00::1], [::ffff:a9fe:a9fe] — URL normaliza la metadata embebida a hex) clasificaban 'public' sin tocar DNS; PoC antes/después, fix con normalización de literales + embeddedIPv4 (dotted/hex/completa) + classifyIp (metadata prevalece sobre private, IMDS + ECS 169.254.170.2, NAT64) + camino DNS clasifica cada dirección; 12 tests de regresión nuevos.
+- M1: rate limit 30/min en bucket admin: ANTES de verificar el token en /api/settings y /api/models (fuerza bruta de ADMIN_TOKEN sin techo antes).
+- M2: cookie malformada degradaba mutaciones a 500 (URIError en decodeURIComponent) → ahora 401 limpio; 4 tests.
+- M3: cabeceras de seguridad en next.config.ts (nosniff, SAMEORIGIN, Referrer-Policy, Permissions-Policy); CSP estricta documentada como pendiente que exige navegador real.
+- Menor 1: topes de tamaño en /api/settings (413; Setting.value sin límite en SQLite). Menor 2: /api/state ya no consulta Knowledge completa (where 14 días).
+- Deps (reporte a Pulimiento): 2 RCE críticas de Next (fix en 16.3.6, dentro de ^16), sharp → 0.35.4, effect/postcss transitivos.
+- Verificación end-to-end nueva versionada: scripts/security-verify.mjs — 12/12 PASS sobre standalone (cabeceras, 401, 429, 413, guard corchetes); BD limpia tras la prueba.
+
+Stage Summary:
+- Puerta de calidad: bun test 129/129 (255 expect, 9 ficheros), tsc 0, lint 0, canon --build 10/10, security-verify 12/12.
+- Commits: fix(security) guard+tests, fix(security) mutaciones admin+tests, fix(perf) /api/state, fix(security) headers, docs(bugs) informe+script+worklog.
+- Informe: docs/agentes/z_bugs/ronda_2026-09-25_20h16.md (pendientes con severidad y motivo, deuda documental para Pulimiento, notas para el Director).
