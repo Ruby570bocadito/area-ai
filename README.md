@@ -10,6 +10,10 @@ Sandbox de autoevolución **Red Team vs Blue Team**: agentes de IA ejecutan camp
 
 ![Campaña en vivo](docs/screenshots/campana-en-vivo.gif)
 
+**Lanzamiento de una campaña** — del Panel de mando a la arena en vivo: con un clic la campaña arranca y la telemetría empieza a actualizarse en directo:
+
+![Lanzamiento de una campaña](docs/screenshots/lanzamiento-campana.gif)
+
 ## Galería
 
 | | |
@@ -26,10 +30,10 @@ Sandbox de autoevolución **Red Team vs Blue Team**: agentes de IA ejecutan camp
 - **Motor de campañas**: 10 agentes (5 RED / 5 BLUE), 6 escenarios con infraestructura real (e-commerce, sanidad, SaaS, banca, energía/OT, defensa) y rondas por fases tipo MITRE (RECON → ARMADO → INTRUSIÓN → ESCALADA → LATERAL → OBJETIVO).
 - **Laboratorio real**: runtime HTTP en `127.0.0.1:4403` que sirve servicios por nodo (WEB/APP/API/VPN/AD/DB/OT/BACKUP/SIEM/ENDPOINT/CDN) con política de red por niveles, sesiones con privilegios, firewall, parcheo y clasificación de firmas (SQLI, PORT_SCAN, BOLA_ENUM, PASS_THE_HASH, DATA_EXFIL, RCE…).
 - **Evidencia verificable**: cada acción RED/BLUE es una petición HTTP real contra el lab; el resultado se deriva de códigos de estado y artefactos reales, y se guarda en `CampaignEvent` (`command` + `evidence`).
-- **Histórico completo**: ficha de detalle por campaña (`/historial/[id]`) con telemetría íntegra, comandos reales e informe `.md`; archivo con búsqueda tolerante a acentos, filtros por resultado/escenario, exportación **CSV** e **informe agregado `.md`** de la selección filtrada (resumen ejecutivo + una sección por campaña); memoria de conocimiento completa con búsqueda, categorías y ordenación por fuerza.
+- **Histórico completo**: ficha de detalle por campaña (`/historial/[id]`) con telemetría íntegra, comandos reales e informe `.md`; archivo con búsqueda tolerante a acentos, filtros por resultado/escenario, exportación **CSV**, **informe agregado `.md`** de la selección filtrada (resumen ejecutivo + una sección por campaña) y accesos directos desde la analítica (la curva de evolución y las filas del balance enlazan al archivo con el filtro aplicado); memoria de conocimiento completa con búsqueda, categorías y ordenación por fuerza.
 - **Bucle de evolución**: las lecciones generadas por LLM se archivan como `Knowledge` con confianza dinámica y se reinyectan en campañas siguientes; los agentes ganan XP/niveles con curva rebalanceada.
 - **Operación continua (autopiloto)**: con un interruptor, el motor encadena campañas reales en segundo plano mientras el motor está ocioso.
-- **UI profesional multi-página**: panel de mando, operaciones con mapa de red interactivo y clicables, fichas de agente con actividad real, conocimiento, historial, analítica y gestión de modelos LLM. Paleta de comandos con `⌘K` y exportación de informes `.md`.
+- **UI profesional multi-página**: panel de mando, operaciones con mapa de red interactivo y clicables, fichas de agente con actividad real, conocimiento, historial, analítica y gestión de modelos LLM. Paleta de comandos con `⌘K`, exportación de informes `.md` y aviso (toast) al terminar una campaña, con el resultado y acceso directo a la ficha.
 - **Motor LLM configurable**: por defecto usa `z-ai-web-dev-sdk`; se puede conectar cualquier proveedor compatible OpenAI (DeepSeek, Ollama, OpenRouter…) desde `/modelos`, con descarga real del catálogo `/v1/models`. Si el proveedor no responde o falla, el motor **degrada a modo determinista** y la campaña continúa en lugar de abortarse.
 
 ## Arquitectura
@@ -47,10 +51,10 @@ src/
 │   └── api/                # state, campaigns (GET/POST + [id]), knowledge, autopilot, settings, models, agents/[key]/activity
 ├── components/arena/       # UI del producto (mapa, feed, roster, analítica…)
 ├── lib/
-│   ├── sim/                # engine.ts (motor), roster.ts, seed.ts, llm.ts, progression.ts, autopilot.ts
+│   ├── sim/                # engine.ts (motor), roster.ts, seed.ts, llm.ts, progression.ts, autopilot.ts, knowledge-score.ts (fuerza del conocimiento)
 │   ├── lab/                # runtime.ts (servidor HTTP del lab), ops.ts (acciones RED/BLUE), store.ts
 │   └── net/                # target-guard.ts (SSRF), access.ts (token opcional + rate limit)
-└── hooks/use-arena-state.ts  # Sondeo único de /api/state compartido por toda la app
+└── hooks/use-arena-state.tsx  # Sondeo único de /api/state compartido por toda la app
 ```
 
 **Esquema de datos (Prisma + SQLite)**: `Agent`, `Scenario`, `Campaign`, `CampaignEvent`, `Knowledge`, `Setting`.
