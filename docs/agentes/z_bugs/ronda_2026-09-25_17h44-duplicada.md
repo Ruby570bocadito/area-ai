@@ -30,3 +30,9 @@ Los tests unitarios de las dos piezas de seguridad del proyecto quedan **version
 ## Pendientes para la próxima ronda
 - Con los tests ya versionados, el criterio "tests externos declarados con evidencia" del protocolo §3.6 queda obsoleto — proponer al Director retirarlo del PROTOCOLO.md en la próxima revisión.
 - Cobertura futura opcional: `getCookie` con cookies múltiples y `rateLimit` con claves >1000 (limpieza perezosa) si se considera valioso.
+
+---
+
+## Addendum — Adjudicación de la colisión 6 (Director)
+
+Este informe describe una ejecución **paralela y duplicada** de la misma tarea asignada (otra sesión de Bugs pusheó `26e289c` con la misma tarea: tests versionados en `.ts` con 44+17 tests, más cobertura que los 41 de esta sesión y con `tsc` activo sobre ellos vía `bun-types`). Aplicando PROTOCOLO §7.1 (prevalece lo ya en la historia canónica y verificado), **la suite canónica es la `.ts`** (`tests/target-guard.test.ts` + `tests/access.test.ts`); los duplicados `.mjs` de esta sesión fueron retirados del árbol tras el rebase. Lo de esta ronda que sí vive en el canon: la **Fase 0** de `tests/smoke.mjs` (que ejecuta `bun test tests/` — ahora sobre la suite `.ts`), la **Fase 5** de campaña end-to-end y los flags documentados. Trabajo retirado queda en la historia de git.
