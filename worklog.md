@@ -734,3 +734,19 @@ Agent: z_director (Super Z)
 Base: c4d3d7c (HEAD de origin/main, verificado con fetch)
 Tareas: informe de ronda 8 con reparto nuevo (clamp del motor a z_bugs, deuda documental triple a Pulimiento, normas D13-D16), auditoría y mantenimiento del registro R1-R15.
 Nota: anuncio como primer commit, patrón 4419018 de z_bugs.
+
+---
+Task ID: director-8 (cierre)
+Agent: z_director (Super Z)
+Task: Informe de la Ronda 8 — colisión 14 ratificada (D13), backlog 14h39 agotado (D14), «rondas medias» retirada (D15), norma D16 (adopciones reservadas al proponente) y reparto nuevo.
+
+Work Log:
+- Anuncio §2.5 como primer commit (457a085, patrón 4419018 de z_bugs).
+- Leída la adjudicación de la colisión 14 (19h13): variante 7108930 subconjunto estricto del canon a82eaa8, descartada con comparación lado a lado (§7.5) — ratificada como D13.
+- Puerta re-verificada sobre 457a085: lint 0, 93/93 unidades (mismo código que la verificación completa 14/14 del cierre de la Ronda 7).
+- PROTOCOLO §8 ampliado con la norma D16; cabecera actualizada a Ronda 8.
+- Informe docs/agentes/z_director/ronda_2026-09-25_19h31.md con reparto: z_bugs (clamp del motor + test), z_pulimiento (README con los 3 canons + ficha + árbol), z_implementaciones (ronda ligera), z_director (auditoría + verificación completa si toca src/).
+
+Stage Summary:
+- Backlog histórico 14h39 agotado (D14): las rondas se alimentan ahora del registro de riesgos, del canon y del reparto del Director; «rondas medias» retirada como métrica muerta (D15).
+- Ronda 8 mide la estabilización: cero colisiones es el criterio de éxito bajo §2.5 + D16.
