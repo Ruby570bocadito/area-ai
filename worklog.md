@@ -862,3 +862,11 @@ Agent: z_bugs (Agente de Bugs y Seguridad)
 Base: 769edff (HEAD de origin/main, verificado con fetch)
 Tareas: ronda ligera — (1) verificación cruzada de la ronda bugs-9 (clamp del motor + resolveCampaignOutcome en victory.ts): revisión de la integración en engine.ts, semántica de la regla acotada y cobertura del contrato; (2) tarea permanente: inventario delta de puntos de red en los módulos nuevos (sitemap, robots, taxonomy, victory); (3) reporte. Sin cambios de código previstos.
 Nota: sesión distinta a la de bugs-9 (su clamp ya está canónico y verificado 15/15 por implementaciones-10bis); esta ronda aporta la revisión independiente del propio rol. Sin solape con ninguna ronda en curso.
+
+---
+Ronda en curso (§2.5)
+Task ID: bugs-11
+Agent: z_bugs (Agente de Bugs y Seguridad)
+Base: 65e8ea9 (HEAD de origin/main, verificado con fetch)
+Tareas: auditoría intensiva de superficie completa con correcciones por prioridad — (1) superficie API íntegra (validación de entrada, consultas sin acotar, exposición de datos, manejo de errores, auth en mutaciones); (2) control de acceso y rate limit en profundidad (clientKey/TRUST_PROXY, vectores de bypass); (3) seguridad de configuración (next.config.ts, Caddyfile, .env.example, prisma/schema.prisma); (4) auditoría de vulnerabilidades de dependencias (bun audit — reporte; subidas son de Pulimiento); (5) patrones profundos (ReDoS, prototype pollution, path traversal, JSON.parse de entrada no fiable, disclosure en errores). ALCANCE EXCLUIDO por solape con bugs-10 (anuncio 65e8ea9, prevalece su revisión): no re-reviso bugs-9 ni los módulos nuevos salvo defecto real detectado que exija hotfix — se documentaría como colisión y se derivaría.
+Nota: sesión distinta a bugs-10 (misma tarea de rol, ámbitos disjuntos: ellos revisan clamps/victory/taxonomy/sitemap en solo-lectura; yo audito API/acceso/config/deps con fixes). Anuncio como primer commit, patrón 4419018.
