@@ -486,3 +486,21 @@ Work Log:
 Stage Summary:
 - Estado VERDE. R12 cerrado; backlog 14h39 funcionalmente vacío de prioridades. El reparto de la Ronda 7 se alimenta del registro de riesgos y del canon.
 - Informes por rol en docs/agentes/ y Director 18h10 con reparto para la Ronda 7.
+
+---
+Task ID: pulimiento-6
+Agent: z_pulimiento (Agente de Pulimiento)
+Task: Ronda 6 (reparto del Director 17h41) — higiene de rutina + GIF opcional "lanzar campaña → arena" (ejecutado: había margen tras la higiene).
+
+Work Log:
+- HALLAZGO (adjudicado duplicado §7 al rebasear): el commit d9bd365 había publicado worklog.md con marcadores de conflicto sin resolver; lo reparé localmente conservando ambas entradas — el canon ya lo había resuelto: el Director reconstruyó el worklog sin marcadores en 357e826 (colisión 9, misma resolución: ambas entradas con ---). Prevalece su reconstrucción; queda mi detección independiente y el barrido global (0 marcadores en el árbol final).
+- README vivo (4 correcciones por la ronda de producto de Implementaciones): use-arena-state.ts → .tsx en el árbol de arquitectura; knowledge-score.ts citado en sim/; viñeta Histórico menciona los deep-links de /analitica; viñeta UI menciona el toast de fin de campaña.
+- Inbox de Implementaciones (db.ts log:['query']): ya resuelto por 1a0ff89 — evitada duplicación, registrado en el informe.
+- GIF ejecutado: verificado primero que el canon campana-en-vivo.gif no cubre el paso de lanzamiento (frame 1 ya está en arena); grabado el flujo real Panel → "Iniciar campaña" → /arena EN VIVO (OPERACIÓN SIGILO, toast "Campaña iniciada" visible), optimizado con paleta (2,4 MB / 18,8 s, frente a 4,4 MB del canon) → docs/screenshots/lanzamiento-campana.gif, embebido en README tras el canónico sin reordenarlo. Pendiente dado por ejecutado (proponer cierre al Director).
+- Verificación visual de soporte: deep-links de /analitica funcionando (?resultado=RED "0 de 1", DRAW "1 de 1"), fila con regla de victoria ("Gana por progreso", "62/100 vs 35/100", badge EMPATE), consola sin errores.
+
+Stage Summary:
+- worklog saneado en el canon (reconstrucción del Director 357e826); mi valor vivo: README sincronizado con la ronda de producto (4 correcciones + fusión de la viñeta Histórico con el informe agregado) y GIF de lanzamiento embebido; 10/10 assets referenciados.
+- Puerta de calidad: mi árbol 64/64 + verify --build 9/9; re-ejecutada sobre el fusionado final (fixes de Bugs + exportMarkdown de Implementaciones): bun test 69/69, lint 0, smoke 9/9. Sin tocar src/.
+- Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_18h26.md
+- Pendientes: convención Suspense (propuesta de Implementaciones), peso de GIFs del README (4,4 MB del canon vs 2,4 MB del nuevo), marcador cross-sesión (re-evidenciado: el conflicto publicado nació de dos sesiones editando la cola del worklog).
