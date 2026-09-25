@@ -1105,3 +1105,17 @@ Stage Summary:
 - Puerta COMPLETA en VERDE sobre 19fc615: 153/153 (331 expect, 11 ficheros), tsc 0, lint 0, canon SMOKE_START_CAMPAIGN=1 --build 16/16 con campaña real (RED 85/59, archivo 6/6 en escala), security-verify 12/12, marcadores 0.
 - Un solo cambio de repo (schema.prisma) para convivir con tres rondas paralelas: cero ficheros comunes con pulimiento-12 y bugs-12.
 - Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_20h48.md
+Task ID: pulimiento-12 (cierre)
+Agent: z_pulimiento (Agente de Pulimiento)
+Task: Ronda 12 INTENSIVA — bump de dependencias de seguridad (next 16.3.6 cierra las 2 RCE críticas + sharp 0.35.4), tokens de gris ink-* (~300 clases → tokens compartidos) y deuda documental completa de bugs-11 + implementaciones-12 + pulimiento-11 en el README.
+
+Work Log:
+- §2.5: anuncio 347f78e (base e8c34ee) push a la primera, maniobra indivisible; colisión 20 resuelta por antigüedad a mi favor (pulimiento-13 se auto-derivó: «bump deps y README quedan en pulimiento-12»).
+- chore(deps) bd21e6d: next/eslint-config-next 16.1.1→16.3.6, sharp ^0.34.3→^0.35.4 (subida de rango), react 19.2.3 por peer; lockfile regenerado; bun audit --production 46→11 vulnerabilidades (críticas 0, highs 23→8; las 11 transitivas de next/prisma — upstream, en vigilancia).
+- refactor(ui) 74d9563: --color-ink-900/500/400 en globals.css (patrón --arena-*, utilidades Tailwind v4) + migración mecánica de [#667085]/[#101828]/[#98a2b3] en 22 ficheros de UI (~300 clases: 131 text-ink-500, 90 text-ink-400, 62 text-ink-900…); los 4 literales SVG/ternarios de network-map quedan como constantes documentadas; cero cambio visual (sin opacidades ni style props con esos hex — verificado).
+- docs(readme) 036bf8f: suite 153 con knowledge-export/scenario-stats citadas (fila test + bullet Seguridad), canon 16 con el check de escala [0,100] en Fase 5, rate limit admin (bucket admin: 30/min antes de verificar token) y cabeceras de seguridad como bullets nuevos, deep-links ?escenario=/?resultado= + balance por escenario + exportación CSV/JSON en Características, árbol con knowledge-export.ts/scenario-stats.ts, tres utilidades de scripts/ documentadas (generate-visuals — residual de pulimiento-11, security-verify, repair-progress-scale), nota de escala de la chispa (ventana 14 días).
+- Un re-anclaje §2.4 antes del cierre (42fda1e: bugs-13 informe + anuncio pulimiento-13, docs-only); marcadores 0 verificados como ÚLTIMO paso del rebase (§7.5/D20b).
+
+Stage Summary:
+- Puerta COMPLETA en VERDE sobre el árbol final: tsc 0, lint 0, 153/153 (331 expect, 11 ficheros), canon SMOKE_START_CAMPAIGN=1 --build 16/16 con next 16.3.6 (campaña COMPLETED 8/8, RED, 20 eventos, 4 lecciones válidas, memoria 14→18, cruce 4=4, escala ficha 85/61 · archivo 3/3), security-verify 12/12, audit 46→11.
+- Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_20h52.md (renombrado por colisión de nombre con el informe de pulimiento-13; pendientes: seguimiento de transitivas, cobertura de pulimiento-13, extensión de tokens a superficies/bordes, sync tras implementaciones-11).
