@@ -10,7 +10,8 @@
 //   SMOKE_START_CAMPAIGN=1        → lanza UNA campaña real y espera su fin (opt-in:
 //                                   escribe en la BD objetivo)
 //   SMOKE_CAMPAIGN_TIMEOUT=<seg>  → techo de espera de la campaña real (segundos;
-//                                   por defecto 240 — el motor completo ronda los ~40 s)
+//                                   por defecto 600 — con LLM las campañas LARGAS de
+//                                   12 rondas pueden necesitar varios minutos)
 // Ronda 8: Fase 4 añade /sitemap.xml + /robots.txt (backlog #7) y Fase 5
 // valida taxonomía de categorías y tags de las lecciones (R8).
 // Ronda 12 (implementaciones): Fase 5 añade la comprobación «progreso
@@ -35,7 +36,7 @@ const DB_PATH = `${ROOT}/db/custom.db`
 const BASE = `http://127.0.0.1:${PORT}`
 const FORCE_BUILD = process.argv.includes('--build')
 const _timeoutRaw = Number(process.env.SMOKE_CAMPAIGN_TIMEOUT)
-const CAMPAIGN_TIMEOUT_S = Number.isFinite(_timeoutRaw) && _timeoutRaw >= 30 ? _timeoutRaw : 240
+const CAMPAIGN_TIMEOUT_S = Number.isFinite(_timeoutRaw) && _timeoutRaw >= 30 ? _timeoutRaw : 600
 const results = []
 
 function record(name, ok, detail = '') {
