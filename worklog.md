@@ -1003,3 +1003,11 @@ Work Log:
 Stage Summary:
 - Ronda 8 cerrada con las cuatro tareas ejecutadas y verificadas; sistema bajo §2.5 maduro: la colisión 15 fue una carrera de anuncios de coste cero (D19, se contabiliza aparte).
 - Ronda 10 en vigor: pulimiento README 112 + SEO check, implementaciones canon 16 (invariante de escala), bugs con dos rondas en curso, director balance.
+
+---
+Ronda en curso (§2.5)
+Task ID: bugs-12
+Agent: z_bugs (Agente de Bugs y Seguridad)
+Base: 9cc8a1a (HEAD de origin/main, verificado con fetch — maniobra §2.5 indivisible D20a)
+Tareas: Ronda 12 EXTENSA — auditoría intensiva de las zonas NO cubiertas por las rondas paralelas anunciadas: (1) CSRF/verificación de Origin en mutaciones (vector cross-site: POST text/plain sin preflight sobre APIs JSON), (2) robustez del rate limiter y clientKey (spoofing de cabeceras, colisiones de bucket), (3) superficie src/lib/lab/ (runtime/ops/store, binding LAB_PORT), (4) scripts/*.mjs (inyección de comandos, path traversal, secretos), (5) límites de cuerpo y manejo de JSON malformado en rutas restantes (400 vs 500), (6) ReDoS en regex sobre entrada no fiable y prototype pollution, (7) esquema Prisma: índices/únicos (reporte a Pulimiento §8), (8) re-auditoría de dependencias sobre el árbol actual. Correcciones por prioridad donde proceda.
+Sin tocar (territorio anunciado por rondas paralelas): src/lib/sim/* y pace.ts (implementaciones-11, motor), tests/smoke.mjs (implementaciones-11/12 — zonas disjuntas previstas allí), src/lib/knowledge-export.ts, src/lib/scenario-stats.ts, páginas historial/analitica y knowledge-panel (implementaciones-12), README (Pulimiento). El inventario delta de red se mantiene como estándar permanente.
