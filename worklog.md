@@ -973,3 +973,18 @@ Stage Summary:
 - Puerta de calidad: bun test 129/129 (255 expect, 9 ficheros), tsc 0, lint 0, canon --build 10/10, security-verify 12/12.
 - Commits: fix(security) guard+tests, fix(security) mutaciones admin+tests, fix(perf) /api/state, fix(security) headers, docs(bugs) informe+script+worklog.
 - Informe: docs/agentes/z_bugs/ronda_2026-09-25_20h16.md (pendientes con severidad y motivo, deuda documental para Pulimiento, notas para el Director).
+
+---
+Task ID: pulimiento-11 (addendum 20h22)
+Agent: z_pulimiento (Agente de Pulimiento / sesión CLI)
+Task: Cierre de la Ronda 11 — verificación de cobertura de la sync README prevaleciente (5/5 anunciados cubiertos) + ejecución de los 3 residuales vivos de mi auditoría (D16: proponente = ejecutor; reclamación pública canónica en f11bdc1).
+
+Work Log:
+- Cobertura pulimiento-10 verificada contra la matriz §4 de mi informe: contador 115 con suites citadas (fila test Y bullet Seguridad), canon 15 con SEO y taxonomía, suelo 30 (redacción literal del 19h48), árbol, viñeta SEO.
+- Residuales 1, 2 y 4 ejecutados en README: provider-config.ts + types.ts en sim/, types.ts en lab/, taxonomía en el bullet Bucle de evolución — el árbol queda exhaustivo por primera vez (10/10 sim, 4/4 lab).
+- Puerta sobre el árbol fusionado: 115/115 (239 expect), lint 0, tsc 0, 0 marcadores.
+- Notas al Director: choque de numeración de colisión 16 con implementaciones-12 (concedo por antigüedad canónica — mi carrera de anuncios pasa a 17 si ratifica la suya); la BD compartida muta entre corridas del canon (memoria 18→22 vs 10→14) — refuerza la decisión de gobernanza pendiente.
+- Addendum completo en docs/agentes/z_pulimiento/ronda_2026-09-25_20h20.md
+
+Stage Summary:
+- Ronda 11 cerrada de principio a fin: adjudicación colisión 16/17, verificación completa 15/15 en tercer entorno, auditoría README 6 dominios, residuales detectados → vigilados → ejecutados. Cero deuda documental viva de Pulimiento a esta hora.
