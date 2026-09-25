@@ -90,8 +90,8 @@ bun run dev                   # http://localhost:3000
 | `bun run start` | Servir el build de producción |
 | `bun run lint` | ESLint |
 | `bun run test` | Tests unitarios de seguridad en `tests/` (runner nativo de bun): guard de destinos SSRF (`target-guard`) y control de acceso/rate limit (`access`) |
-| `bun run verify` | **Verificación de cierre de ronda**: tipos (`tsc`) → entorno → servidor de producción → golden path (healthcheck `/api`, `/api/state` con seed, `/api/campaigns`, `/api/knowledge` y página principal). Delega en `tests/smoke.mjs` (canon único) y usa una BD de verificación dedicada, no toca tus datos. `--build` fuerza rebuild |
-| `bun run smoke` | Alias directo del test de humo: `bun tests/smoke.mjs` (mismo canon que `verify`, sin envoltorio de shell) | fbf2e6a (docs(bugs): informe de ronda 17h41, README vivo (fila test, fila verify duplicada fusionada) y worklog)
+| `bun run verify` | **Verificación de cierre de ronda**: tipos (`tsc`) → unidades → entorno → servidor de producción → golden path (healthcheck `/api`, `/api/state` con seed, `/api/campaigns`, `/api/knowledge` y página principal). Delega en `tests/smoke.mjs` (canon único) y usa una BD de verificación dedicada, no toca tus datos. `--build` fuerza rebuild; flags opt-in: `SMOKE_START_CAMPAIGN=1` lanza una campaña real end-to-end, `SMOKE_SKIP_UNIT=1` y `SMOKE_SKIP_TSC=1` omiten fases |
+| `bun run smoke` | Alias directo del test de humo: `bun tests/smoke.mjs` (mismo canon que `verify`, sin envoltorio de shell) |
 | `bun run db:push` | Sincronizar el esquema Prisma con SQLite |
 | `bun run db:generate` | Generar el cliente Prisma |
 | `bun run db:migrate` | Migraciones en desarrollo |
