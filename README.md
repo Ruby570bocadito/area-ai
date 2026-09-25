@@ -6,6 +6,10 @@ Sandbox de autoevolución **Red Team vs Blue Team**: agentes de IA ejecutan camp
 |---|---|
 | ![Panel de mando](docs/screenshots/panel-de-mando.png) | ![Operaciones en vivo](docs/screenshots/operaciones-mapa.png) |
 
+**Campaña en vivo** — RED exfiltra datos con comandos reales mientras BLUE parchea y detecta (eventos, comandos y marcador actualizándose en tiempo real):
+
+![Campaña en vivo](docs/screenshots/campana-en-vivo.gif)
+
 ## Características
 
 - **Motor de campañas**: 10 agentes (5 RED / 5 BLUE), 6 escenarios con infraestructura real (e-commerce, sanidad, SaaS, banca, energía/OT, defensa) y rondas por fases tipo MITRE (RECON → ARMADO → INTRUSIÓN → ESCALADA → LATERAL → OBJETIVO).
@@ -72,6 +76,7 @@ bun run dev                   # http://localhost:3000
 | `bun run build` | Build de producción (standalone) |
 | `bun run start` | Servir el build de producción |
 | `bun run lint` | ESLint |
+| `bun run verify` | Verificación de cierre de ronda: tipos (`tsc`) + build + arranque + golden path (`/api/state`). Usa una BD de verificación dedicada, no toca tus datos |
 | `bun run db:push` | Sincronizar el esquema Prisma con SQLite |
 | `bun run db:reset` | Resetear la base de datos |
 
@@ -93,6 +98,7 @@ También es posible configurarlo por variables de entorno — o directamente en 
 | `OPENAI_API_KEY` | No | API key del proveedor LLM (alternativa a la configuración desde `/modelos`) |
 | `OPENAI_BASE_URL` | No | Endpoint compatible con la API de OpenAI |
 | `OPENAI_MODEL` | No | Modelo a utilizar |
+| `NEXT_PUBLIC_SITE_URL` | No | URL pública del sitio para Open Graph/Twitter (solo en despliegue; por defecto `http://localhost:3000`) |
 
 ## Seguridad
 

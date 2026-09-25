@@ -250,3 +250,19 @@ Stage Summary:
 - Árbol mínimo y coherente: solo producto + configuración efectiva + docs del proceso. R9 cerrado pendiente de auditoría del Director.
 - Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_16h55.md (incluye nota de proceso sobre la colisión).
 - Pendientes: GIF de campaña, metadataBase, script verify, convención de capturas fijada.
+
+---
+Task ID: pulimiento-3
+Agent: z_pulimiento (Agente de Pulimiento)
+Task: Cierre de pendientes — metadataBase, script verify de ronda y GIF de campaña en vivo para el README.
+
+Work Log:
+- metadataBase añadido a layout.tsx (NEXT_PUBLIC_SITE_URL ?? localhost:3000): warning de build eliminado; variable documentada en .env.example y README.
+- scripts/verify.sh nuevo + `bun run verify`: tsc → build (omitible) → prisma push en BD dedicada → arranque standalone en puerto 3100 → golden path GET /api/state {ok:true}, con limpieza garantizada. Probado de verdad: detectó 2 defectos propios antes de publicar (rutas relativas ambiguas de SQLite entre db push y runtime standalone → ruta absoluta; servidor huérfano ocupando el puerto → check previo de puerto + trap con pkill -P).
+- GIF de campaña real grabado (38s de /arena durante Operación Centinela, campaña lanzada por API contra el build de producción) y optimizado con ffmpeg (7fps, 760px, 4,2MB): docs/screenshots/campana-en-vivo.gif, incrustado en el README bajo la tabla de capturas.
+- README actualizado (GIF + filas de verify y NEXT_PUBLIC_SITE_URL); dependencias sin cambios (21, todas en uso); sin archivos innecesarios nuevos; UI sin tocar (verificada durante la grabación).
+- Verificación final: bun run verify completo en verde, eslint 0, 8 rutas HTTP 200 durante la sesión de grabación.
+
+Stage Summary:
+- La puerta de calidad de ronda ya existe y está probada (`bun run verify`); propuesta al Director para hacerla obligatoria.
+- Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_17h11.md. Pendientes: ratificar convención de capturas, GIF complementario opcional, audit profundo si hay despliegue.

@@ -34,6 +34,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: "area·ai — Simulador adversarial autónomo · Red Team vs Blue Team",
   description:
     "Agentes de IA ofensivos y defensivos libran campañas continuas sobre infraestructura empresarial simulada. Cada combate genera conocimiento que se archiva, se reutiliza y hace evolucionar a ambos equipos.",
