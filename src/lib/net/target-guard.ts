@@ -27,6 +27,30 @@ const ALWAYS_BLOCKED_HOSTS = new Set([
   'metadata.azure.internal',
 ])
 
+/** IPs de metadata de nube bloqueadas siempre (IMDS AWS/GCP/Azure y task metadata de ECS) */
+const METADATA_IPV4 = new Set(['169.254.169.254', '169.254.170.2'])
+
+/**
+ * Extrae el IPv4 embebido de una dirección IPv4-mapped. Cubre TODAS las
+ * formas equivalentes: `::ffff:a.b.c.d` (dotted), `::ffff:a9fe:a9fe` (hex —
+ * es la forma que `URL.hostname` produce para `[::ffff:169.254.169.254]`)
+ * y la forma completa `0:0:0:0:0:ffff:…`. Devuelve null si no es mapped.
+ * (Hallazgo Ronda 11 de bugs: la regex previa solo aceptaba la forma dotted,
+ * así que la forma hex de la MISMA dirección clasificaba como pública.)
+ */
+function embeddedIPv4(ip: string): string | null {
+  const lower = ip.toLowerCase()
+  const dotted = lower.match(/^(?:::|(?:0+:){5})ffff:(\d{1,3}(?:\.\d{1,3}){3})$/)
+  if (dotted) return dotted[1]
+  const hex = lower.match(/^(?:::|(?:0+:){5})ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/)
+  if (hex) {
+    const hi = parseInt(hex[1], 16)
+    const lo = parseInt(hex[2], 16)
+    return `${(hi >> 8) & 255}.${hi & 255}.${(lo >> 8) & 255}.${lo & 255}`
+  }
+  return null
+}
+
 function isPrivateIPv4(ip: string): boolean {
   const parts = ip.split('.').map(Number)
   if (parts.length !== 4 || parts.some((n) => Number.isNaN(n) || n < 0 || n > 255)) return false
@@ -43,12 +67,25 @@ function isPrivateIPv4(ip: string): boolean {
 
 function isPrivateIPv6(ip: string): boolean {
   const lower = ip.toLowerCase()
-  const mapped = lower.match(/^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/) // IPv4-mapped
-  if (mapped) return isPrivateIPv4(mapped[1])
+  const embedded = embeddedIPv4(lower)
+  if (embedded) return isPrivateIPv4(embedded) // mapped: decide el IPv4 embebido (dotted o hex)
   if (lower === '::' || lower === '::1') return true // unspecified / loopback
   if (/^f[cd]/.test(lower)) return true // fc00::/7 unique local
   if (/^fe[89ab]/.test(lower)) return true // fe80::/10 link-local
+  if (/^64:ff9b:/.test(lower)) return true // NAT64 well-known prefix (traduce a IPv4 embebido)
   return false
+}
+
+/**
+ * Clasificación completa de una IP LITERAL: metadata prevalece sobre
+ * private (169.254.169.254 es link-local Y metadata — el bloqueo de
+ * metadata es SIEMPRE, venga en forma directa o embebida en mapped).
+ */
+function classifyIp(ip: string): TargetKind {
+  const embedded = embeddedIPv4(ip)
+  if (embedded && METADATA_IPV4.has(embedded)) return 'metadata'
+  if (METADATA_IPV4.has(ip.toLowerCase())) return 'metadata'
+  return isPrivateIp(ip) ? 'private' : 'public'
 }
 
 export function isPrivateIp(ip: string): boolean {
@@ -105,13 +142,25 @@ export async function classifyTarget(
   hostname: string,
   lookupFn: LookupFn = dnsLookup
 ): Promise<TargetKind> {
-  const host = hostname.toLowerCase().replace(/\.$/, '')
+  // Normalización de literales (hallazgo Ronda 11 de bugs):
+  //   · URL.hostname devuelve los literales IPv6 CON corchetes (`[::1]`),
+  //     que isIP() no parsea → el intento de DNS falla y degradaba a
+  //     'public', BYPASS del guard para `[::1]`, `[fc00::1]` y
+  //     `[::ffff:a9fe:a9fe]` (metadata vía IPv4-mapped, que URL normaliza
+  //     a hexadecimal).
+  //   · Se elimina también el sufijo de zone ID (`fe80::1%eth0`) porque
+  //     ninguna DNS name legítima lo contiene.
+  const host = hostname
+    .toLowerCase()
+    .trim()
+    .replace(/\.$/, '')
+    .replace(/^\[(.+)\]$/, '$1')
+    .split('%')[0]
 
   if (ALWAYS_BLOCKED_HOSTS.has(host)) return 'metadata'
-  if (host === '169.254.169.254') return 'metadata'
 
   const literalVersion = isIP(host)
-  if (literalVersion !== 0) return isPrivateIp(host) ? 'private' : 'public'
+  if (literalVersion !== 0) return classifyIp(host)
 
   if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.internal') || host.endsWith('.local')) {
     return 'private'
@@ -133,7 +182,16 @@ export async function classifyTarget(
         )
       }
     )
-    if (addrs.some((a) => isPrivateIp(a.address))) return 'private'
+    if (addrs.length > 0) {
+      let sawPrivate = false
+      for (const a of addrs) {
+        const kind = classifyIp(a.address)
+        if (kind === 'metadata') return 'metadata' // bloqueo SIEMPRE, también vía DNS
+        if (kind === 'private') sawPrivate = true
+      }
+      if (sawPrivate) return 'private'
+      return 'public'
+    }
     return 'public'
   } catch {
     return 'public'

@@ -115,3 +115,56 @@ describe('classifyTarget — DNS con plazo (lookup inyectado, hermético)', () =
     expect(ms).toBeLessThan(4000)
   })
 })
+
+// ─────────────────────────────────────────────────────────────
+// Regresión Ronda 11 de bugs — bypass de literales IPv6 con
+// corchetes. URL.hostname devuelve `[::1]` (y normaliza la parte
+// embebida a hex: `[::ffff:169.254.169.254]` → `[::ffff:a9fe:a9fe]`),
+// isIP() no los parsea y el guard degradaba a 'public' sin tocar DNS.
+// El lookup inyectado LANZA para probar que no se consulta: son
+// literales y deben clasificarse sin resolver nada.
+// ─────────────────────────────────────────────────────────────
+
+describe('classifyTarget — literales IPv6 con corchetes (regresión bypass Ronda 11)', () => {
+  const noDns = async (): Promise<never> => {
+    throw new Error('DNS no debe consultarse para un literal IP')
+  }
+
+  test('bracket loopback [::1] → private', async () =>
+    expect(await classifyTarget('[::1]', noDns)).toBe('private'))
+
+  test('bracket ULA [fc00::1] → private', async () =>
+    expect(await classifyTarget('[fc00::1]', noDns)).toBe('private'))
+
+  test('bracket link-local [fe80::1] → private', async () =>
+    expect(await classifyTarget('[fe80::1]', noDns)).toBe('private'))
+
+  test('bracket público [2001:db8::1] → public', async () =>
+    expect(await classifyTarget('[2001:db8::1]', noDns)).toBe('public'))
+
+  test('bracket mapped metadata con hex (forma real de URL.hostname) → metadata', async () =>
+    expect(await classifyTarget('[::ffff:a9fe:a9fe]', noDns)).toBe('metadata'))
+
+  test('bracket mapped metadata con dotted → metadata', async () =>
+    expect(await classifyTarget('[::ffff:169.254.169.254]', noDns)).toBe('metadata'))
+
+  test('forma completa 0:0:0:0:0:ffff:a9fe:a9fe → metadata', async () =>
+    expect(await classifyTarget('0:0:0:0:0:ffff:a9fe:a9fe', noDns)).toBe('metadata'))
+
+  test('bracket mapped privado [::ffff:10.0.0.9] → private', async () =>
+    expect(await classifyTarget('[::ffff:10.0.0.9]', noDns)).toBe('private'))
+
+  test('mapped hex loopback ::ffff:7f00:1 → private', async () =>
+    expect(isPrivateIp('::ffff:7f00:1')).toBe(true))
+
+  test('task metadata ECS 169.254.170.2 → metadata', async () =>
+    expect(await classifyTarget('169.254.170.2', noDns)).toBe('metadata'))
+
+  test('regresión IMDS 169.254.169.254 → metadata', async () =>
+    expect(await classifyTarget('169.254.169.254', noDns)).toBe('metadata'))
+
+  test('DNS que resuelve a metadata embebida → metadata (bloqueo SIEMPRE también vía DNS)', async () =>
+    expect(
+      await classifyTarget('evIL.example', async () => [{ address: '::ffff:a9fe:a9fe', family: 6 }])
+    ).toBe('metadata'))
+})
