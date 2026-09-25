@@ -61,11 +61,18 @@ export async function GET() {
       createdAt: e.createdAt,
     }))
 
-    // Chispa de conocimiento: lecciones creadas por día (últimos 14 días)
-    const allKnowledgeRows = await db.knowledge.findMany({ select: { createdAt: true } })
+    // Chispa de conocimiento: lecciones creadas por día (últimos 14 días).
+    // Ronda 11 de bugs: antes se consultaba la tabla COMPLETA (findMany sin
+    // where) y se filtraba en memoria — la ventana útil es 14 días, así que
+    // el where acota la consulta al mínimo que la gráfica puede representar
+    // y el coste deja de crecer con el histórico.
     const dayMs = 24 * 3600 * 1000
     const today = new Date()
     today.setHours(23, 59, 59, 999)
+    const allKnowledgeRows = await db.knowledge.findMany({
+      where: { createdAt: { gte: new Date(today.getTime() - 14 * dayMs) } },
+      select: { createdAt: true },
+    })
     const knowledgeSpark: number[] = []
     for (let d = 13; d >= 0; d--) {
       const end = today.getTime() - d * dayMs
