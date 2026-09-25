@@ -57,8 +57,10 @@ export function ControlCenter({
             <RadioTower className="h-5 w-5 text-[#22d3ee]" />
           </span>
           <div>
-            <h2 className="text-lg font-bold tracking-wide">CENTRO DE CONTROL</h2>
-            <p className="text-xs text-muted-foreground">
+            <h2 className="font-display text-base font-bold uppercase tracking-[0.12em] sm:text-lg">
+              Selección de escenario
+            </h2>
+            <p className="font-grotesk text-xs text-muted-foreground">
               Elige un escenario de infraestructura y lanza una campaña Red vs Blue
             </p>
           </div>

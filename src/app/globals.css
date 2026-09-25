@@ -281,3 +281,74 @@ body {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
   letter-spacing: -0.02em;
 }
+
+/* Tipografía display profesional (titulares) */
+.font-display {
+  font-family: var(--font-display), var(--font-geist-sans), sans-serif;
+  letter-spacing: 0.01em;
+}
+
+.font-grotesk {
+  font-family: var(--font-grotesk), var(--font-geist-sans), sans-serif;
+}
+
+/* ───────── Títulos de sección numerados ───────── */
+.section-index {
+  font-family: var(--font-display), sans-serif;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(34, 211, 238, 0.55);
+  line-height: 1;
+  user-select: none;
+}
+
+/* ───────── Anillo cónico animado para avatares de agente ───────── */
+@property --ring-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes aegis-ring-rotate {
+  to { --ring-angle: 360deg; }
+}
+.conic-ring {
+  background: conic-gradient(
+    from var(--ring-angle),
+    transparent 0deg,
+    var(--ring-color, #22d3ee) 70deg,
+    transparent 140deg
+  );
+  animation: aegis-ring-rotate 3.2s linear infinite;
+}
+.conic-ring-red { --ring-color: #ff3355; }
+.conic-ring-cyan { --ring-color: #22d3ee; }
+
+/* ───────── Enlace con subrayado animado (navbar) ───────── */
+.nav-link {
+  position: relative;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  height: 1.5px;
+  width: 100%;
+  background: linear-gradient(90deg, #22d3ee, #ff3355);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.nav-link:hover::after { transform: scaleX(1); }
+
+/* ───────── Reveal por GSAP (estado inicial oculto) ───────── */
+.gsap-reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  will-change: opacity, transform;
+}
+
+/* Reducción de accesibilidad: sin animaciones de movimiento */
+@media (prefers-reduced-motion: reduce) {
+  .gsap-reveal { opacity: 1; transform: none; }
+  .anim-glitch, .anim-shimmer, .conic-ring, .scan-beam { animation: none !important; }
+}

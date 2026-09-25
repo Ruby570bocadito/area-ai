@@ -63,19 +63,18 @@ async function callOpenAICompatible(
   user: string,
   timeoutMs: number
 ): Promise<string | null> {
-  const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey) return null
-  const baseUrl = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/$/, '')
-  const model = process.env.OPENAI_MODEL || 'gpt-4o-mini'
+  const { getProviderConfig } = await import('./provider-config')
+  const cfg = await getProviderConfig()
+  if (cfg.source === 'zai' || !cfg.apiKey) return null
   const res = await withTimeout(
-    fetch(`${baseUrl}/chat/completions`, {
+    fetch(`${cfg.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${cfg.apiKey}`,
       },
       body: JSON.stringify({
-        model,
+        model: cfg.model,
         temperature: 0.8,
         messages: [
           { role: 'system', content: system },
@@ -111,8 +110,10 @@ async function callZai(system: string, user: string, timeoutMs: number): Promise
 
 /** Llamada cruda que devuelve texto del modelo o null */
 export async function llmText(system: string, user: string, timeoutMs = 30000): Promise<string | null> {
-  // intento 1: proveedor externo si está configurado
-  if (process.env.OPENAI_API_KEY) {
+  // intento 1: proveedor externo si está configurado (BD o env)
+  const { getProviderConfig } = await import('./provider-config')
+  const cfg = await getProviderConfig()
+  if (cfg.source !== 'zai' && cfg.apiKey) {
     const out = await callOpenAICompatible(system, user, timeoutMs)
     if (out && out.trim().length > 0) return out
   }
@@ -137,7 +138,9 @@ export async function llmJson<T>(system: string, user: string, timeoutMs = 30000
   return null
 }
 
-export function llmProviderName(): string {
-  if (process.env.OPENAI_API_KEY) return process.env.OPENAI_MODEL || 'openai-compatible'
-  return 'z-ai-sdk'
+export async function llmProviderName(): Promise<string> {
+  const { getProviderConfig } = await import('./provider-config')
+  const cfg = await getProviderConfig()
+  if (cfg.source === 'zai') return 'z-ai-sdk'
+  return cfg.model || 'openai-compatible'
 }

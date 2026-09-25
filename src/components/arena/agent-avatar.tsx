@@ -2,41 +2,48 @@
 
 import { motion } from 'framer-motion'
 import {
-  Skull,
-  Radar,
-  Crosshair,
-  GitBranch,
-  Ghost,
-  Shield,
-  Activity,
-  Lock,
-  Eye,
-  Flashlight,
-  type LucideIcon,
-} from 'lucide-react'
+  FaSkull,
+  FaSatelliteDish,
+  FaCrosshairs,
+  FaCodeBranch,
+  FaUserNinja,
+  FaShieldHalved,
+  FaHeartPulse,
+  FaLock,
+  FaEye,
+  FaBinoculars,
+  FaUserSecret,
+  FaShieldHeart,
+  type IconType,
+} from 'react-icons/fa6'
 import { cn } from '@/lib/utils'
 import type { AgentDTO } from '@/lib/api-types'
 
-const ICONS: Record<string, LucideIcon> = {
-  skull: Skull,
-  radar: Radar,
-  crosshair: Crosshair,
-  gitbranch: GitBranch,
-  ghost: Ghost,
-  shield: Shield,
-  activity: Activity,
-  lock: Lock,
-  eye: Eye,
-  flashlight: Flashlight,
+// ─────────────────────────────────────────────────────────────
+// Repositorio de iconos por agente (react-icons / Font Awesome 6)
+// ─────────────────────────────────────────────────────────────
+const ICONS: Record<string, IconType> = {
+  skull: FaSkull,
+  radar: FaSatelliteDish,
+  crosshair: FaCrosshairs,
+  gitbranch: FaCodeBranch,
+  ghost: FaUserNinja,
+  shield: FaShieldHalved,
+  activity: FaHeartPulse,
+  lock: FaLock,
+  eye: FaEye,
+  flashlight: FaBinoculars,
+  secret: FaUserSecret,
+  shieldheart: FaShieldHeart,
 }
 
 export function AgentIcon({ icon, className }: { icon: string; className?: string }) {
-  const Icon = ICONS[icon] ?? Shield
+  const Icon = ICONS[icon] ?? FaShieldHalved
   return <Icon className={className} />
 }
 
 // ─────────────────────────────────────────────────────────────
-// Avatar hexagonal animado por agente
+// Avatar hexagonal con anillo cónico giratorio (estado activo)
 // ─────────────────────────────────────────────────────────────
 export function AgentAvatar({
   agent,
@@ -52,33 +59,44 @@ export function AgentAvatar({
 
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: dim, height: dim }}>
-      {/* anillo pulsante cuando el agente está actuando */}
+      {/* anillo cónico giratorio cuando actúa */}
       {active && (
         <span
           className={cn(
-            'absolute inset-0 rounded-[30%]',
-            isRed ? 'pulse-ring-red' : 'pulse-ring-cyan'
+            'conic-ring absolute -inset-[3px] rounded-full',
+            isRed ? 'conic-ring-red' : 'conic-ring-cyan'
           )}
         />
       )}
-      {/* hexágono */}
+      {/* halo de pulso (framer-motion) */}
+      {active && (
+        <motion.span
+          className={cn('absolute inset-0 rounded-full', isRed ? 'bg-[#ff3355]/20' : 'bg-[#22d3ee]/20')}
+          animate={{ scale: [1, 1.35], opacity: [0.7, 0] }}
+          transition={{ duration: 1.1, repeat: Infinity, ease: 'easeOut' }}
+        />
+      )}
+      {/* hexágono con icono */}
       <motion.div
         animate={
           active
-            ? { scale: [1, 1.08, 1], rotate: [0, isRed ? -2 : 2, 0] }
+            ? { scale: [1, 1.09, 1], rotate: [0, isRed ? -2 : 2, 0] }
             : { scale: 1, rotate: 0 }
         }
         transition={{ duration: 1.1, repeat: active ? Infinity : 0, ease: 'easeInOut' }}
         className={cn(
-          'flex h-full w-full items-center justify-center rounded-[30%] border-2 transition-colors',
+          'relative flex h-full w-full items-center justify-center border-2 transition-colors',
           isRed
             ? 'border-[#ff3355]/70 bg-[#1a0a12] text-[#ff3355]'
             : 'border-[#22d3ee]/70 bg-[#071720] text-[#22d3ee]',
           active && (isRed ? 'glow-red' : 'glow-cyan')
         )}
-        style={{ clipPath: 'polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0% 50%)' }}
+        style={{
+          clipPath: 'polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0% 50%)',
+          clipRule: 'nonzero',
+        }}
       >
-        <AgentIcon icon={agent.icon} className={size === 'sm' ? 'h-4 w-4' : size === 'lg' ? 'h-8 w-8' : 'h-6 w-6'} />
+        <AgentIcon icon={agent.icon} className={size === 'sm' ? 'h-4 w-4' : size === 'lg' ? 'h-7 w-7' : 'h-5.5 w-5.5'} />
       </motion.div>
       {/* nivel */}
       <span
@@ -142,17 +160,17 @@ export function AgentCard({
         <div className="min-w-0">
           <p
             className={cn(
-              'truncate text-sm font-bold font-mono-tight tracking-wide',
+              'truncate font-display text-sm font-bold tracking-wide',
               isRed ? 'text-[#ff6b85]' : 'text-[#67e8f9]'
             )}
           >
             {agent.codename}
           </p>
-          <p className="truncate text-[11px] text-muted-foreground">{agent.role}</p>
+          <p className="truncate font-grotesk text-[11px] text-muted-foreground">{agent.role}</p>
         </div>
       </div>
       {lastAction && (
-        <p className="mt-2 truncate rounded-md bg-black/30 px-2 py-1 text-[11px] italic text-foreground/80">
+        <p className="mt-2 truncate rounded-md bg-black/30 px-2 py-1 font-grotesk text-[11px] italic text-foreground/80">
           “{lastAction}”
         </p>
       )}

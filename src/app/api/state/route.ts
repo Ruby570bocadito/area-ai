@@ -65,7 +65,7 @@ export async function GET() {
 
     return NextResponse.json({
       ok: true,
-      provider: llmProviderName(),
+      provider: await llmProviderName(),
       agents,
       scenarios: scenarios.map((s) => ({ ...s, infrastructure: undefined })),
       campaigns,

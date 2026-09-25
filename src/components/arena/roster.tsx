@@ -32,7 +32,7 @@ function RosterCard({ agent, index }: { agent: AgentDTO; index: number }) {
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <h4 className={cn('font-mono-tight text-sm font-black tracking-wider', isRed ? 'text-[#ff6b85]' : 'text-[#67e8f9]')}>
+            <h4 className={cn('font-display text-sm font-black tracking-wider', isRed ? 'text-[#ff6b85]' : 'text-[#67e8f9]')}>
               {agent.codename}
             </h4>
             <span

@@ -11,6 +11,13 @@ datasource db {
 // AEGIS ARENA — Sandbox de autoevolución Red Team vs Blue Team
 // ─────────────────────────────────────────────────────────────
 
+// Configuración clave-valor (proveedor LLM, API keys, modelo seleccionado…)
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
 model Agent {
   id          String   @id @default(cuid())
   key         String   @unique
