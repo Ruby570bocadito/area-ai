@@ -378,3 +378,21 @@ Work Log:
 Stage Summary:
 - Estado VERDE con puerta de calidad ampliada (8 → 12 comprobaciones). Informes por rol en docs/agentes/ y informe Director con reparto para la Ronda 6.
 - §3.6 del PROTOCOLO (tests externos) queda obsoleto — se retira en la próxima revisión. Backlog #3 asignado a Ronda 6.
+
+---
+Task ID: pulimiento-5
+Agent: z_pulimiento (Agente de Pulimiento)
+Task: Ronda 5 (tarea asignada D4) — higiene de rutina sobre la Ronda 5 de Bugs: reparar artefactos del README, sincronizar docs con sus cierres, auditoría de dependencias y .env.example.
+
+Work Log:
+- HALLAZGO: 2 fragmentos de salida `git log` (hash fbf2e6a, inexistente tras su rebase) incrustados en la tabla de scripts del README, rompiendo la tabla. Eliminados; búsqueda global confirma que el resto del repo está limpio de artefactos de edición.
+- README vivo: fila `test` con los 3 ficheros de tests (64, incl. llm-resilience que la fila omitía); sección Seguridad sincronizada con la Ronda 5 (guard al guardar y al usar, anti-redirección redirect:'error', tests versionados); bullet del motor LLM documenta la degradación a modo determinista.
+- Dependencias: 21 directas, todas en uso, cero nuevas (runner nativo de bun para tests). .env.example verificado 1:1 contra process.env en src/.
+- Confirmada la coherencia de los informes de Bugs con el árbol (next.config.ts sin ignoreBuildErrors; tests/ con 3 ficheros pasando).
+- Puerta de calidad sobre el árbol final: bun run test 64/64, smoke canon --build 8/8, tsc 0, eslint 0.
+- GIF opcional no ejecutado (condición "si sobra margen"; sin margen tras el hallazgo del README). Propuesta registrada al Director: chequeo de artefactos de edición en la puerta de calidad.
+- COLISIÓN 7 (resuelta §7 al pushear): mi ronda corrió en paralelo con la consolidación del Director (colisiones 5-7) y una segunda sesión de Pulimiento que ya había deduplicado la tabla. Prevalece lo canónico: mi README se re-baseó conservando la fila verify del canon nuevo (flags SMOKE_START_CAMPAIGN/SKIP_*); el fragmento fbf2e6a restante quedó eliminado en la resolución. Detalle en el addendum de mi informe.
+
+Stage Summary:
+- README reparado y sincronizado con la Ronda 5; informe: docs/agentes/z_pulimiento/ronda_2026-09-25_17h55.md (con addendum de colisión).
+- Hallazgos vivos recordados (no míos por reparto): Caddyfile XTransformPort (Bugs/Director), BD del operador en smoke.mjs (Implementaciones).
