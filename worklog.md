@@ -414,7 +414,7 @@ Stage Summary:
 - knowledgeScore con fuente única en src/lib/sim/knowledge-score.ts (motor + agregado + UI). README coherente con el fix de rutas SQLite. Sin archivos nuevos innecesarios.
 - Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_18h25.md (con tabla de adjudicación de la colisión y lección de proceso).
 - Pendientes: marcador cross-sesión de trabajo en curso (proponer al Director), loading eager LCP (con Implementaciones), GIF Model Studio opcional, SMOKE_START_CAMPAIGN ya registrado por el Director.
-=======
+---
 Task ID: implementaciones-7 (ronda 15h48, colisión intra-rol con la sesión 15h07, adjudicada en adenda)
 Agent: z_implementaciones (Agente de Mejoras / Implementaciones)
 Task: Ronda de producto sobre el backlog propio (nº 1, 5 y 6 de la ronda 14h39): regla de victoria legible, deep-links desde /analitica y toast de fin de campaña.
@@ -432,5 +432,22 @@ Work Log:
 Stage Summary:
 - La regla de victoria (backlog #1 de 14h39) queda cerrada y centralizada en victory.ts; el toast (backlog #6) cerrado con acción directa a ficha; deep-links (backlog #5) aporte único de esta ronda.
 - Informe: docs/agentes/z_implementaciones/ronda_2026-09-25_15h48.md (con adenda de colisión).
+=======
+---
+Task ID: implementaciones-5b (Ronda 5, sesión 17h55 — colisión 8 adjudicada)
+Agent: z_implementaciones
+Task: Ejecutar las dos tareas asignadas por el Director (Ronda 4 §D4): (1) evolución del canon — fase 5 opt-in de campaña end-to-end en tests/smoke.mjs; (2) backlog #3 del 14h39 — informe agregado del archivo de campañas en /historial.
 
->>>>>>> 61b0393 (docs(implementaciones): adenda de colisión multiagente (reconciliación con la sesión 15h07) y entrada en worklog)
+Work Log:
+- Leídos los informes de los 4 agentes y PROTOCOLO.md antes de actuar; verificado el árbol real.
+- Implementé ambas tareas en paralelo a la sesión canónica 17h41. Colisión detectada en el fetch pre-push (protocolo §2): mi fase 5 del smoke era DUPLICADO de la ya adjudicada en origin/main y fue DESCARTADA (§7.1, prevalece lo canónico); mis validaciones extra (comandos reales, lecciones por campaña, presencia en archivo, adopción de 409, soporte ADMIN_TOKEN) se proponen como refino en el informe.
+- Sobrevive y se entrega: (a) NORMALIZACIÓN R10 — el .env con DATABASE_URL relativa (file:./dev.db, flujo README) rompe el smoke canónico en este entorno (CLI resuelve relativo a prisma/, el runtime standalone a su raíz; P2021); la fase 2 del canon ahora normaliza a absoluta sin reescribir el .env del usuario — gref aplicada sobre el canon remoto; (b) INFORME AGREGADO del archivo (backlog #3, que la sesión 17h41 había diferido y el Director reasignó a Ronda 6): botón «Informe» en /historial junto a CSV — .md con cabecera de filtros, resumen ejecutivo y una sección por campaña; (c) bullet de características del README.
+- Fusiones resueltas en esta sesión: dedup normalizeText de Pulimiento (prevalece) sobre mi history-panel; dos rondas de tabla de scripts del README (canon remoto prevalece); corrupción de tabla entrante (754c1de) corregida de paso y entregada a Pulimiento.
+- Puerta de calidad sobre árbol fusionado final: tsc OK, ESLint 0, bun run test verde, smoke --build con SMOKE_START_CAMPAIGN=1 en verde (campaña real end-to-end con motor LLM).
+
+Stage Summary:
+- Backlog #3 CERRADO en esta sesión (informe agregado vivo en /historial): se anticipa al reparto Ronda 6 del Director.
+- Canon de humo blindado contra el trap R10 con .env relativo (caso no cubierto por la mitigación de 17h08).
+- Limitación de entorno: navegador headless sin acceso a localhost (evidencia visual sustituida por build + verificación estructural).
+- Informe: docs/agentes/z_implementaciones/ronda_2026-09-25_17h55.md
+>>>>>>> ca3a1b3 (docs(implementaciones): informe de ronda 5, README vivo (informe agregado) y worklog)
