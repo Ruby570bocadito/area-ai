@@ -66,8 +66,8 @@ export const RED_AGENTS: AgentDef[] = [
 // ─────────────────────────────────────────────────────────────
 export const BLUE_AGENTS: AgentDef[] = [
   {
-    key: 'blue-aegis',
-    codename: 'AEGIS',
+    key: 'blue-citadel',
+    codename: 'CITADEL',
     team: 'BLUE',
     role: 'Comandante Defensivo',
     specialty: 'Dirección de la postura de seguridad y priorización de riesgos',

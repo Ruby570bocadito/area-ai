@@ -7,9 +7,7 @@ import {
   ShieldCheck,
   ShieldX,
   AlertTriangle,
-  Radar,
   Swords,
-  Skull,
   Eye,
   Lock,
   Flag,
@@ -20,21 +18,21 @@ import { cn } from '@/lib/utils'
 import type { EventDTO } from '@/lib/api-types'
 
 const RESULT_STYLE: Record<string, { label: string; cls: string; icon: LucideIcon }> = {
-  EXITO: { label: 'ÉXITO', cls: 'bg-[#ff3355]/15 text-[#ff8299] border-[#ff3355]/40', icon: Zap },
-  PARCIAL: { label: 'PARCIAL', cls: 'bg-amber-500/15 text-amber-300 border-amber-500/40', icon: AlertTriangle },
-  FALLO: { label: 'FALLO', cls: 'bg-slate-500/15 text-slate-300 border-slate-500/40', icon: ShieldX },
-  BLOQUEADO: { label: 'BLOQUEADO', cls: 'bg-[#22d3ee]/15 text-[#7ee7f9] border-[#22d3ee]/40', icon: ShieldCheck },
-  DETECTADO: { label: 'DETECTADO', cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40', icon: Eye },
-  CONTENIDO: { label: 'CONTENIDO', cls: 'bg-violet-500/15 text-violet-300 border-violet-500/40', icon: Lock },
-  IGNORADO: { label: 'IGNORADO', cls: 'bg-amber-500/15 text-amber-300 border-amber-500/40', icon: AlertTriangle },
+  EXITO: { label: 'ÉXITO', cls: 'bg-[#f4536e]/12 text-[#f98ca0] border-[#f4536e]/35', icon: Zap },
+  PARCIAL: { label: 'PARCIAL', cls: 'bg-[#e8b64c]/12 text-[#f0cd85] border-[#e8b64c]/35', icon: AlertTriangle },
+  FALLO: { label: 'FALLO', cls: 'bg-white/[0.06] text-white/60 border-white/15', icon: ShieldX },
+  BLOQUEADO: { label: 'BLOQUEADO', cls: 'bg-[#41c0ef]/12 text-[#8adcf7] border-[#41c0ef]/35', icon: ShieldCheck },
+  DETECTADO: { label: 'DETECTADO', cls: 'bg-[#4ad6a5]/12 text-[#7fe8c4] border-[#4ad6a5]/35', icon: Eye },
+  CONTENIDO: { label: 'CONTENIDO', cls: 'bg-[#a78bfa]/12 text-[#cbb8f8] border-[#a78bfa]/35', icon: Lock },
+  IGNORADO: { label: 'IGNORADO', cls: 'bg-[#e8b64c]/12 text-[#f0cd85] border-[#e8b64c]/35', icon: AlertTriangle },
 }
 
 const SEVERITY_COLOR: Record<string, string> = {
   INFO: 'text-muted-foreground',
-  LOW: 'text-slate-300',
-  MEDIUM: 'text-amber-300',
-  HIGH: 'text-orange-400',
-  CRITICAL: 'text-[#ff5f7a]',
+  LOW: 'text-white/55',
+  MEDIUM: 'text-[#f0cd85]',
+  HIGH: 'text-[#f5a05e]',
+  CRITICAL: 'text-[#f98ca0]',
 }
 
 export function EventFeed({
@@ -58,7 +56,7 @@ export function EventFeed({
     <div
       ref={scrollRef}
       className={cn(
-        'nice-scroll relative overflow-y-auto rounded-xl border border-[#1c2b4a] bg-black/40 p-2',
+        'nice-scroll panel relative overflow-y-auto rounded-xl p-2',
         className
       )}
       role="log"
@@ -79,22 +77,24 @@ export function EventFeed({
               exit={{ opacity: 0 }}
               transition={{ type: 'spring', stiffness: 320, damping: 28 }}
               className={cn(
-                'anim-rise mb-1.5 flex gap-2 rounded-lg border p-2',
-                isRed
-                  ? 'border-[#ff3355]/25 bg-[#ff3355]/[0.05]'
-                  : isBlue
-                    ? 'border-[#22d3ee]/25 bg-[#22d3ee]/[0.05]'
-                    : 'border-[#fbbf24]/25 bg-[#fbbf24]/[0.05]'
+                'anim-rise relative mb-1.5 flex gap-2.5 overflow-hidden rounded-lg border border-white/[0.05] bg-white/[0.02] p-2.5 pl-3',
               )}
             >
+              {/* acento lateral por equipo */}
+              <span
+                className={cn(
+                  'absolute inset-y-0 left-0 w-[2.5px]',
+                  isRed ? 'bg-[#f4536e]/70' : isBlue ? 'bg-[#41c0ef]/70' : 'bg-[#e8b64c]/70'
+                )}
+              />
               <span
                 className={cn(
                   'mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border font-mono-tight text-[9px] font-bold',
                   isRed
-                    ? 'border-[#ff3355]/50 bg-[#14060c] text-[#ff6b85]'
+                    ? 'border-[#f4536e]/40 bg-[#f4536e]/[0.08] text-[#f98ca0]'
                     : isBlue
-                      ? 'border-[#22d3ee]/50 bg-[#04141b] text-[#67e8f9]'
-                      : 'border-[#fbbf24]/50 bg-[#171203] text-amber-300'
+                      ? 'border-[#41c0ef]/40 bg-[#41c0ef]/[0.08] text-[#8adcf7]'
+                      : 'border-[#e8b64c]/40 bg-[#e8b64c]/[0.08] text-[#f0cd85]'
                 )}
               >
                 {isRed ? <Swords className="h-3 w-3" /> : isBlue ? <ShieldCheck className="h-3 w-3" /> : <Flag className="h-3 w-3" />}
@@ -104,7 +104,7 @@ export function EventFeed({
                   <span
                     className={cn(
                       'font-mono-tight text-[11px] font-bold tracking-wide',
-                      isRed ? 'text-[#ff8299]' : isBlue ? 'text-[#7ee7f9]' : 'text-amber-300'
+                      isRed ? 'text-[#f98ca0]' : isBlue ? 'text-[#8adcf7]' : 'text-[#f0cd85]'
                     )}
                   >
                     {ev.agentCodename ?? 'SISTEMA'}
@@ -120,7 +120,7 @@ export function EventFeed({
                     </span>
                   )}
                   {ev.targetNode && (
-                    <span className="rounded bg-white/5 px-1.5 py-px font-mono-tight text-[9px] text-muted-foreground">
+                    <span className="rounded bg-white/[0.05] px-1.5 py-px font-mono-tight text-[9px] text-muted-foreground">
                       → {ev.targetNode}
                     </span>
                   )}

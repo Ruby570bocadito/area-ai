@@ -17,29 +17,24 @@ function ProgressBar({
   icon,
 }: {
   value: number
-  color: 'red' | 'cyan'
+  color: 'red' | 'blue'
   label: string
   icon: React.ReactNode
 }) {
   return (
     <div>
-      <div className="mb-1 flex items-center justify-between text-[11px]">
-        <span className={cn('flex items-center gap-1.5 font-semibold', color === 'red' ? 'text-[#ff8299]' : 'text-[#7ee7f9]')}>
+      <div className="mb-1.5 flex items-center justify-between text-[11px]">
+        <span className={cn('flex items-center gap-1.5 font-medium', color === 'red' ? 'text-[#f98ca0]' : 'text-[#8adcf7]')}>
           {icon}
           {label}
         </span>
-        <span className={cn('font-mono-tight font-bold', color === 'red' ? 'text-[#ff8299]' : 'text-[#7ee7f9]')}>
+        <span className={cn('font-mono-tight font-bold', color === 'red' ? 'text-[#f98ca0]' : 'text-[#8adcf7]')}>
           {value}/100
         </span>
       </div>
-      <div className="h-2.5 overflow-hidden rounded-full border border-white/5 bg-black/50">
+      <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
         <motion.div
-          className={cn(
-            'h-full rounded-full',
-            color === 'red'
-              ? 'bg-gradient-to-r from-[#ff3355]/70 to-[#ff3355] shadow-[0_0_12px_rgba(255,51,85,0.6)]'
-              : 'bg-gradient-to-r from-[#22d3ee]/70 to-[#22d3ee] shadow-[0_0_12px_rgba(34,211,238,0.6)]'
-          )}
+          className={cn('h-full rounded-full', color === 'red' ? 'bg-[#f4536e]' : 'bg-[#41c0ef]')}
           initial={{ width: 0 }}
           animate={{ width: `${value}%` }}
           transition={{ type: 'spring', stiffness: 60, damping: 16 }}
@@ -79,41 +74,40 @@ export function ArenaLive({
   return (
     <div className="space-y-4">
       {/* Cabecera de campaña */}
-      <div className="glass-strong relative overflow-hidden rounded-2xl p-4 sm:p-5">
-        {running && <div className="scan-beam" />}
+      <div className="panel-raised relative overflow-hidden rounded-2xl p-4 sm:p-5">
         <div className="relative z-10 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2">
-              <Swords className={cn('h-4 w-4', running ? 'text-amber-400 anim-blink' : 'text-muted-foreground')} />
-              <h2 className="font-mono-tight text-base font-bold tracking-widest text-foreground sm:text-lg">
+            <div className="flex items-center gap-2.5">
+              <Swords className={cn('h-4 w-4', running ? 'text-[#e8b64c] anim-blink' : 'text-muted-foreground')} />
+              <h3 className="font-mono-tight text-base font-bold tracking-[0.12em] text-foreground sm:text-lg">
                 {campaign.scenario.codename}
-              </h2>
+              </h3>
               {running ? (
-                <span className="flex items-center gap-1.5 rounded-full border border-amber-500/50 bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-bold text-amber-300">
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400 anim-blink" /> EN VIVO
+                <span className="flex items-center gap-1.5 rounded-full border border-[#e8b64c]/45 bg-[#e8b64c]/[0.08] px-2.5 py-0.5 font-mono-tight text-[10px] font-bold text-[#f0cd85]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#e8b64c] anim-blink" /> EN VIVO
                 </span>
               ) : (
-                <span className="rounded-full border border-[#1c2b4a] bg-black/40 px-2.5 py-0.5 text-[10px] font-bold text-muted-foreground">
+                <span className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-0.5 font-mono-tight text-[10px] font-bold text-muted-foreground">
                   FINALIZADA
                 </span>
               )}
             </div>
-            <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
               <Building2 className="h-3 w-3" />
               {campaign.scenario.company} · {campaign.scenario.industry} · dificultad {campaign.scenario.difficulty}/5
             </p>
           </div>
-          {/* progreso de rondas por fase */}
+          {/* progreso de rondas */}
           <div className="flex items-center gap-1">
             {Array.from({ length: campaign.maxRounds }).map((_, i) => (
               <motion.span
                 key={i}
                 initial={false}
                 animate={{
-                  backgroundColor: i < campaign.round ? (i % 2 === 0 ? '#ff3355' : '#22d3ee') : 'rgba(255,255,255,0.08)',
+                  backgroundColor: i < campaign.round ? (i % 2 === 0 ? '#f4536e' : '#41c0ef') : 'rgba(255,255,255,0.08)',
                   scale: running && i === campaign.round - 1 ? 1.25 : 1,
                 }}
-                className="h-2.5 w-4 rounded-sm"
+                className="h-2 w-4 rounded-sm"
                 title={`Ronda ${i + 1}`}
               />
             ))}
@@ -130,10 +124,10 @@ export function ArenaLive({
               className={cn(
                 'rounded-md border px-2 py-0.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-wider transition-colors',
                 i === phaseIdx && running
-                  ? 'border-amber-500/60 bg-amber-500/10 text-amber-300 anim-blink'
+                  ? 'border-[#e8b64c]/50 bg-[#e8b64c]/[0.08] text-[#f0cd85]'
                   : i < phaseIdx || (i <= phaseIdx && !running)
-                    ? 'border-[#22d3ee]/30 bg-[#22d3ee]/5 text-[#7ee7f9]/80'
-                    : 'border-[#1c2b4a] bg-black/30 text-muted-foreground/60'
+                    ? 'border-white/15 bg-white/[0.04] text-foreground/70'
+                    : 'border-white/[0.06] bg-transparent text-muted-foreground/50'
               )}
             >
               {p}
@@ -146,39 +140,39 @@ export function ArenaLive({
       <div className="grid gap-4 lg:grid-cols-[230px_1fr_230px]">
         {/* Equipo RED */}
         <div className="space-y-2.5">
-          <h3 className="text-center font-mono-tight text-xs font-bold uppercase tracking-[0.25em] text-[#ff6b85] text-glow-red">
+          <h4 className="font-mono-tight text-center text-[11px] font-bold uppercase tracking-[0.28em] text-[#f98ca0]">
             Red Team
-          </h3>
+          </h4>
           {redAgents.map((a) => (
             <AgentCard key={a.key} agent={a} active={a.key === activeRedKey} lastAction={a.key === activeRedKey ? lastRed?.action : null} />
           ))}
         </div>
 
         {/* Marcador central */}
-        <div className="glass-strong relative flex flex-col justify-center gap-4 overflow-hidden rounded-2xl p-4 sm:p-5">
-          <div className="grid-bg absolute inset-0 opacity-60" />
-          <div className="relative z-10 flex items-center justify-center gap-4">
+        <div className="panel-raised relative flex flex-col justify-center gap-5 overflow-hidden rounded-2xl p-4 sm:p-5">
+          <div className="grid-bg absolute inset-0 opacity-50" />
+          <div className="relative z-10 flex items-center justify-center gap-6">
             <div className="text-right">
-              <p className="font-mono-tight text-3xl font-black text-[#ff5f7a] text-glow-red sm:text-4xl">
+              <p className="font-display text-4xl font-extrabold tracking-tight text-[#f4536e] sm:text-5xl">
                 {campaign.redScore}
               </p>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Impacto rojo</p>
+              <p className="mt-1 font-mono-tight text-[9.5px] uppercase tracking-[0.2em] text-muted-foreground">Impacto rojo</p>
             </div>
             <motion.div
-              animate={running ? { scale: [1, 1.15, 1] } : {}}
-              transition={{ duration: 1.4, repeat: Infinity }}
-              className="flex h-12 w-12 items-center justify-center rounded-xl border-2 border-[#a755ff]/60 bg-black/60 font-mono-tight text-lg font-black text-[#c4a5ff] shadow-[0_0_24px_rgba(167,85,255,0.4)]"
+              animate={running ? { scale: [1, 1.12, 1] } : {}}
+              transition={{ duration: 1.6, repeat: Infinity }}
+              className="font-display flex h-12 w-12 items-center justify-center rounded-xl border border-white/15 bg-white/[0.04] text-base font-extrabold text-foreground/85"
             >
               VS
             </motion.div>
             <div className="text-left">
-              <p className="font-mono-tight text-3xl font-black text-[#67e8f9] text-glow-cyan sm:text-4xl">
+              <p className="font-display text-4xl font-extrabold tracking-tight text-[#41c0ef] sm:text-5xl">
                 {campaign.blueScore}
               </p>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Defensa azul</p>
+              <p className="mt-1 font-mono-tight text-[9.5px] uppercase tracking-[0.2em] text-muted-foreground">Defensa azul</p>
             </div>
           </div>
-          <div className="relative z-10 space-y-3">
+          <div className="relative z-10 space-y-3.5">
             <ProgressBar
               value={campaign.redProgress}
               color="red"
@@ -187,26 +181,26 @@ export function ArenaLive({
             />
             <ProgressBar
               value={campaign.blueProgress}
-              color="cyan"
+              color="blue"
               label="Endurecimiento de la postura"
               icon={<ShieldCheck className="h-3 w-3" />}
             />
           </div>
           <div className="relative z-10 grid gap-2 text-[11px] sm:grid-cols-2">
-            <p className="rounded-lg border border-[#ff3355]/20 bg-[#ff3355]/5 p-2 leading-snug text-foreground/80">
-              <span className="font-bold text-[#ff8299]">Objetivo RED:</span> {campaign.scenario.redObjective}
+            <p className="rounded-lg border border-[#f4536e]/20 bg-[#f4536e]/[0.05] p-2.5 leading-snug text-foreground/80">
+              <span className="font-bold text-[#f98ca0]">Objetivo RED:</span> {campaign.scenario.redObjective}
             </p>
-            <p className="rounded-lg border border-[#22d3ee]/20 bg-[#22d3ee]/5 p-2 leading-snug text-foreground/80">
-              <span className="font-bold text-[#7ee7f9]">Objetivo BLUE:</span> {campaign.scenario.blueObjective}
+            <p className="rounded-lg border border-[#41c0ef]/20 bg-[#41c0ef]/[0.05] p-2.5 leading-snug text-foreground/80">
+              <span className="font-bold text-[#8adcf7]">Objetivo BLUE:</span> {campaign.scenario.blueObjective}
             </p>
           </div>
         </div>
 
         {/* Equipo BLUE */}
         <div className="space-y-2.5">
-          <h3 className="text-center font-mono-tight text-xs font-bold uppercase tracking-[0.25em] text-[#67e8f9] text-glow-cyan">
+          <h4 className="font-mono-tight text-center text-[11px] font-bold uppercase tracking-[0.28em] text-[#8adcf7]">
             Blue Team
-          </h3>
+          </h4>
           {blueAgents.map((a) => (
             <AgentCard key={a.key} agent={a} active={a.key === activeBlueKey} lastAction={a.key === activeBlueKey ? lastBlue?.action : null} />
           ))}
@@ -218,7 +212,7 @@ export function ArenaLive({
         {infraNodes.length > 0 ? (
           <NetworkMap nodes={infraNodes} events={events} running={running} />
         ) : (
-          <div className="glass rounded-xl p-6 text-sm text-muted-foreground">Sin mapa disponible.</div>
+          <div className="panel rounded-xl p-6 text-sm text-muted-foreground">Sin mapa disponible.</div>
         )}
         <EventFeed events={events} className="max-h-[420px] min-h-[280px]" />
       </div>
@@ -229,19 +223,19 @@ export function ArenaLive({
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           className={cn(
-            'glass-strong relative overflow-hidden rounded-2xl border p-5',
-            winner === 'RED' ? 'glow-red' : winner === 'BLUE' ? 'glow-cyan' : 'glow-amber'
+            'panel-raised relative overflow-hidden rounded-2xl p-5',
+            winner === 'RED' ? 'active-red' : winner === 'BLUE' ? 'active-blue' : 'active-amber'
           )}
         >
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3.5">
             <span
               className={cn(
                 'flex h-11 w-11 items-center justify-center rounded-xl border',
                 winner === 'RED'
-                  ? 'border-[#ff3355]/50 bg-[#ff3355]/10 text-[#ff5f7a]'
+                  ? 'border-[#f4536e]/45 bg-[#f4536e]/[0.08] text-[#f98ca0]'
                   : winner === 'BLUE'
-                    ? 'border-[#22d3ee]/50 bg-[#22d3ee]/10 text-[#67e8f9]'
-                    : 'border-amber-500/50 bg-amber-500/10 text-amber-300'
+                    ? 'border-[#41c0ef]/45 bg-[#41c0ef]/[0.08] text-[#8adcf7]'
+                    : 'border-[#e8b64c]/45 bg-[#e8b64c]/[0.08] text-[#f0cd85]'
               )}
             >
               {winner === 'DRAW' ? <Crown className="h-5 w-5" /> : <Trophy className="h-5 w-5" />}
@@ -249,8 +243,8 @@ export function ArenaLive({
             <div className="min-w-0 flex-1">
               <p
                 className={cn(
-                  'font-mono-tight text-sm font-black uppercase tracking-widest',
-                  winner === 'RED' ? 'text-[#ff5f7a] text-glow-red' : winner === 'BLUE' ? 'text-[#67e8f9] text-glow-cyan' : 'text-amber-300'
+                  'font-mono-tight text-sm font-black uppercase tracking-[0.15em]',
+                  winner === 'RED' ? 'text-[#f98ca0]' : winner === 'BLUE' ? 'text-[#8adcf7]' : 'text-[#f0cd85]'
                 )}
               >
                 {winner === 'RED'
@@ -259,7 +253,7 @@ export function ArenaLive({
                     ? 'Victoria del BLUE TEAM'
                     : 'Empate táctico'}
               </p>
-              <p className="mt-1 text-[12.5px] leading-relaxed text-muted-foreground">{campaign.narrative}</p>
+              <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{campaign.narrative}</p>
             </div>
           </div>
         </motion.div>

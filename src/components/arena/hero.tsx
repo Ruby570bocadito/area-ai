@@ -5,47 +5,33 @@ import gsap from 'gsap'
 import SplitType from 'split-type'
 import NumberFlow from '@number-flow/react'
 import { FaUserSecret, FaShieldHalved } from 'react-icons/fa6'
-import { Radar, Database, Trophy, Flame, ShieldCheck, BrainCircuit } from 'lucide-react'
+import { ArrowDown, CircleDot } from 'lucide-react'
 import { ParticleField } from './particle-field'
 import type { StateResponse } from '@/lib/api-types'
 
-function StatTile({
-  icon,
+function StatCell({
   label,
   value,
   tone = 'default',
   suffix,
-  delay,
 }: {
-  icon: React.ReactNode
   label: string
   value: number
-  tone?: 'default' | 'red' | 'cyan' | 'violet' | 'amber'
+  tone?: 'default' | 'red' | 'blue' | 'violet'
   suffix?: string
-  delay: number
 }) {
   const toneCls = {
     default: 'text-foreground',
-    red: 'text-[#ff6b85]',
-    cyan: 'text-[#67e8f9]',
-    violet: 'text-[#c4a5ff]',
-    amber: 'text-amber-300',
+    red: 'text-[#f98ca0]',
+    blue: 'text-[#8adcf7]',
+    violet: 'text-[#c4b0f5]',
   }[tone]
   return (
-    <div
-      className="glass group relative overflow-hidden rounded-xl px-4 py-3 transition-colors hover:border-[#22d3ee]/30"
-      style={{ opacity: 0 }}
-      ref={(el) => {
-        if (el) gsap.to(el, { opacity: 1, y: 0, duration: 0.55, delay, ease: 'power2.out' })
-      }}
-    >
-      <span className="pointer-events-none absolute -right-3 -top-3 text-muted-foreground/10 transition-colors group-hover:text-[#22d3ee]/20">
-        {icon}
-      </span>
-      <p className={`font-display text-2xl font-bold leading-none ${toneCls}`}>
+    <div className="flex flex-col items-center gap-1 px-3 py-4 sm:py-5">
+      <p className={`font-display text-xl font-bold leading-none sm:text-2xl ${toneCls}`}>
         <NumberFlow value={value} suffix={suffix} />
       </p>
-      <p className="mt-1.5 font-grotesk text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+      <p className="font-mono-tight text-center text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground sm:text-[10px]">
         {label}
       </p>
     </div>
@@ -56,34 +42,32 @@ export function Hero({ stats, provider }: { stats: StateResponse['stats']; provi
   const rootRef = useRef<HTMLElement | null>(null)
   const titleRef = useRef<HTMLHeadingElement | null>(null)
 
-  // Reveal profesional del titular: chars con GSAP; al terminar,
-  // se revierte el split para que el gradiente shimmer pinte el texto.
+  // Reveal del titular carácter a carácter (GSAP + SplitType).
+  // El punto medio «·» vuela con el gradiente rojo→cian de la marca;
+  // al terminar se revierte el split para restaurar el DOM original.
   useEffect(() => {
     if (!titleRef.current) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     const split = new SplitType(titleRef.current, { types: 'chars' })
-    // cada char recibe el gradiente recortado para verse durante el vuelo
     split.chars?.forEach((ch) => {
-      ch.style.backgroundImage = 'linear-gradient(90deg, #22d3ee, #8b9dff, #ff3355)'
-      ch.style.backgroundSize = '200% auto'
-      ch.style.webkitBackgroundClip = 'text'
-      ch.style.backgroundClip = 'text'
-      ch.style.color = 'transparent'
+      if (ch.textContent === '·') {
+        ch.style.backgroundImage = 'linear-gradient(90deg, #f4536e, #41c0ef)'
+        ch.style.webkitBackgroundClip = 'text'
+        ch.style.backgroundClip = 'text'
+        ch.style.color = 'transparent'
+      }
     })
     const ctx = gsap.context(() => {
       gsap.from(split.chars ?? [], {
         opacity: 0,
-        y: 42,
-        rotateX: -80,
-        stagger: 0.045,
-        duration: 0.9,
+        y: 36,
+        rotateX: -60,
+        stagger: 0.05,
+        duration: 0.85,
         ease: 'power4.out',
         delay: 0.15,
-        onComplete: () => {
-          // devolver el h1 a texto plano para restaurar background-clip: text
-          split.revert()
-        },
+        onComplete: () => split.revert(),
       })
     }, rootRef)
     return () => {
@@ -92,90 +76,155 @@ export function Hero({ stats, provider }: { stats: StateResponse['stats']; provi
     }
   }, [])
 
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   return (
     <header ref={rootRef} className="relative overflow-hidden">
       <ParticleField />
       <div className="grid-bg absolute inset-0" />
-      {/* halos duales red/blue */}
-      <div className="pointer-events-none absolute -left-32 top-10 h-96 w-96 rounded-full bg-[#ff3355]/10 blur-[110px]" />
-      <div className="pointer-events-none absolute -right-32 top-24 h-96 w-96 rounded-full bg-[#22d3ee]/10 blur-[110px]" />
+      {/* halos duales, muy tenues */}
+      <div className="pointer-events-none absolute -left-40 top-16 h-[420px] w-[420px] rounded-full bg-[#f4536e]/[0.07] blur-[120px]" />
+      <div className="pointer-events-none absolute -right-40 top-24 h-[420px] w-[420px] rounded-full bg-[#41c0ef]/[0.06] blur-[120px]" />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 pb-12 pt-16 sm:px-6 sm:pt-24">
-        {/* eyebrow */}
+      <div className="relative z-10 mx-auto max-w-7xl px-4 pb-14 pt-16 sm:px-6 sm:pt-24">
         <div className="flex flex-col items-center text-center">
-          <span className="glass mb-6 flex items-center gap-2.5 rounded-full px-5 py-2 font-mono-tight text-[10px] uppercase tracking-[0.35em] text-muted-foreground">
-            <Radar className="h-3.5 w-3.5 text-[#22d3ee]" />
-            Autonomous Cyber Warfare Sandbox
-            <span className="h-3 w-px bg-white/15" />
-            <span className="text-[#67e8f9]">{provider}</span>
-          </span>
+          {/* eyebrow */}
+          <div
+            className="mb-7 flex items-center gap-2.5"
+            style={{ opacity: 0 }}
+            ref={(el) => {
+              if (el) gsap.to(el, { opacity: 1, y: 0, duration: 0.6, delay: 0.05, ease: 'power2.out' })
+            }}
+          >
+            <span className="flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.03] px-4 py-1.5 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-muted-foreground backdrop-blur-sm">
+              <CircleDot className="h-3 w-3 text-[#41c0ef]" />
+              Simulador adversarial autónomo
+              <span className="h-3 w-px bg-white/15" />
+              <span className="text-foreground/80">{provider}</span>
+            </span>
+          </div>
 
+          {/* marca */}
           <h1
             ref={titleRef}
-            className="anim-shimmer font-display text-6xl font-bold leading-[0.95] tracking-tight sm:text-8xl"
+            className="font-display bg-gradient-to-b from-white via-white to-white/45 bg-clip-text text-7xl font-extrabold leading-[0.95] tracking-[-0.03em] text-transparent sm:text-[120px]"
           >
-            AEGIS ARENA
+            area<span className="bg-gradient-to-r from-[#f4536e] to-[#41c0ef] bg-clip-text text-transparent">·</span>ai
           </h1>
 
-          <p className="mt-5 max-w-3xl font-grotesk text-balance text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Agentes autónomos de{' '}
-            <span className="font-semibold text-[#ff6b85]">Red Team</span> y{' '}
-            <span className="font-semibold text-[#67e8f9]">Blue Team</span> libran campañas continuas sobre
-            infraestructuras empresariales simuladas. Cada combate genera conocimiento que se archiva,
-            se reutiliza y hace evolucionar a ambos equipos:{' '}
-            <span className="text-foreground/85">
-              una máquina de guerra cibernética que aprende de sí misma.
-            </span>
+          <p
+            className="mt-6 max-w-2xl text-balance text-[15px] leading-relaxed text-muted-foreground sm:text-base"
+            style={{ opacity: 0 }}
+            ref={(el) => {
+              if (el) gsap.to(el, { opacity: 1, y: 0, duration: 0.7, delay: 0.55, ease: 'power2.out' })
+            }}
+          >
+            Agentes de IA de{' '}
+            <span className="font-semibold text-[#f98ca0]">Red Team</span> y{' '}
+            <span className="font-semibold text-[#8adcf7]">Blue Team</span> libran campañas continuas
+            sobre infraestructura empresarial simulada. Cada combate genera conocimiento que se
+            archiva, se reutiliza y hace evolucionar a ambos equipos.
           </p>
 
+          {/* CTAs */}
+          <div
+            className="mt-8 flex flex-wrap items-center justify-center gap-3"
+            style={{ opacity: 0 }}
+            ref={(el) => {
+              if (el) gsap.to(el, { opacity: 1, y: 0, duration: 0.7, delay: 0.7, ease: 'power2.out' })
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => scrollTo('mando')}
+              className="flex h-11 items-center gap-2 rounded-lg bg-white px-6 text-sm font-semibold text-[#0a0b0f] transition-all hover:bg-white/90 hover:shadow-[0_8px_30px_-8px_rgba(255,255,255,0.35)]"
+            >
+              Lanzar campaña
+              <ArrowDown className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollTo('agentes')}
+              className="flex h-11 items-center rounded-lg border border-white/12 bg-white/[0.03] px-6 text-sm font-medium text-foreground/85 transition-colors hover:border-white/25 hover:bg-white/[0.06]"
+            >
+              Conocer a los agentes
+            </button>
+          </div>
+
           {/* Emblema VS */}
-          <div className="mt-8 flex items-center gap-4 sm:gap-6">
-            <div className="flex items-center gap-3">
+          <div
+            className="mt-12 flex items-center gap-5 sm:gap-8"
+            style={{ opacity: 0 }}
+            ref={(el) => {
+              if (el) gsap.to(el, { opacity: 1, y: 0, duration: 0.7, delay: 0.85, ease: 'power2.out' })
+            }}
+          >
+            <div className="flex items-center gap-3.5">
               <span className="conic-ring conic-ring-red flex h-12 w-12 items-center justify-center rounded-full p-[1.5px] sm:h-14 sm:w-14">
-                <span className="flex h-full w-full items-center justify-center rounded-full bg-[#14060c]">
-                  <FaUserSecret className="h-5 w-5 text-[#ff4d6d] sm:h-6 sm:w-6" />
+                <span className="flex h-full w-full items-center justify-center rounded-full bg-[#16090f]">
+                  <FaUserSecret className="h-5 w-5 text-[#f4536e] sm:h-6 sm:w-6" />
                 </span>
               </span>
               <div className="text-left">
-                <p className="font-display text-sm font-bold uppercase tracking-widest text-[#ff6b85] sm:text-base">
+                <p className="font-display text-sm font-bold uppercase tracking-widest text-[#f98ca0] sm:text-base">
                   Red Team
                 </p>
-                <p className="font-grotesk text-[10px] uppercase tracking-widest text-muted-foreground">
+                <p className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                   Ofensiva · Intrusión
                 </p>
               </div>
             </div>
 
-            <span className="anim-glitch font-display text-2xl font-bold text-foreground/90 sm:text-3xl">
-              VS
-            </span>
+            <span className="font-display text-xl font-bold text-foreground/70 sm:text-2xl">VS</span>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3.5">
               <div className="text-right">
-                <p className="font-display text-sm font-bold uppercase tracking-widest text-[#67e8f9] sm:text-base">
+                <p className="font-display text-sm font-bold uppercase tracking-widest text-[#8adcf7] sm:text-base">
                   Blue Team
                 </p>
-                <p className="font-grotesk text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Defensa · Endurecimiento
+                <p className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  Defensa · Contención
                 </p>
               </div>
-              <span className="conic-ring conic-ring-cyan flex h-12 w-12 items-center justify-center rounded-full p-[1.5px] sm:h-14 sm:w-14">
-                <span className="flex h-full w-full items-center justify-center rounded-full bg-[#04141b]">
-                  <FaShieldHalved className="h-5 w-5 text-[#22d3ee] sm:h-6 sm:w-6" />
+              <span className="conic-ring conic-ring-blue flex h-12 w-12 items-center justify-center rounded-full p-[1.5px] sm:h-14 sm:w-14">
+                <span className="flex h-full w-full items-center justify-center rounded-full bg-[#081521]">
+                  <FaShieldHalved className="h-5 w-5 text-[#41c0ef] sm:h-6 sm:w-6" />
                 </span>
               </span>
             </div>
           </div>
         </div>
 
-        {/* Estadísticas */}
-        <div className="mx-auto mt-10 grid max-w-4xl grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
-          <StatTile icon={<Flame className="h-8 w-8" />} label="Campañas" value={stats.totalCampaigns} tone="violet" delay={0.35} />
-          <StatTile icon={<Trophy className="h-8 w-8" />} label="Victorias RED" value={stats.redWins} tone="red" delay={0.42} />
-          <StatTile icon={<ShieldCheck className="h-8 w-8" />} label="Victorias BLUE" value={stats.blueWins} tone="cyan" delay={0.49} />
-          <StatTile icon={<Database className="h-8 w-8" />} label="Conocimiento" value={stats.knowledgeCount} delay={0.56} />
-          <StatTile icon={<BrainCircuit className="h-8 w-8" />} label="Evolución RED" value={stats.evolutionRed} suffix="%" tone="red" delay={0.63} />
-          <StatTile icon={<BrainCircuit className="h-8 w-8" />} label="Evolución BLUE" value={stats.evolutionBlue} suffix="%" tone="cyan" delay={0.7} />
+        {/* Franja de estadísticas */}
+        <div
+          className="mx-auto mt-12 max-w-4xl"
+          style={{ opacity: 0 }}
+          ref={(el) => {
+            if (el) gsap.to(el, { opacity: 1, y: 0, duration: 0.7, delay: 1, ease: 'power2.out' })
+          }}
+        >
+          <div className="panel grid grid-cols-2 overflow-hidden rounded-2xl sm:grid-cols-3 lg:grid-cols-6">
+            <div className="border-b border-r border-white/[0.06] lg:border-b-0">
+              <StatCell label="Campañas" value={stats.totalCampaigns} tone="violet" />
+            </div>
+            <div className="border-b border-white/[0.06] sm:border-r lg:border-b-0">
+              <StatCell label="Victorias RED" value={stats.redWins} tone="red" />
+            </div>
+            <div className="border-b border-r border-white/[0.06] sm:border-b-0">
+              <StatCell label="Victorias BLUE" value={stats.blueWins} tone="blue" />
+            </div>
+            <div className="border-b border-white/[0.06] sm:border-b-0">
+              <StatCell label="Conocimientos" value={stats.knowledgeCount} />
+            </div>
+            <div className="border-r border-white/[0.06] max-lg:border-b">
+              <StatCell label="Evolución RED" value={stats.evolutionRed} suffix="%" tone="red" />
+            </div>
+            <div className="max-lg:border-b max-lg:border-white/[0.06] lg:border-b-0">
+              <StatCell label="Evolución BLUE" value={stats.evolutionBlue} suffix="%" tone="blue" />
+            </div>
+          </div>
         </div>
       </div>
     </header>

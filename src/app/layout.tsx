@@ -1,52 +1,60 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Chakra_Petch, Space_Grotesk } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Geist_Mono, Sora, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// ── Tipografía premium ────────────────────────────────────────
+// Sora: display geométrico para titulares (aire de AI lab moderno)
+const sora = Sora({
+  variable: "--font-display",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
+// Inter: estándar de producto SaaS profesional
+const inter = Inter({
+  variable: "--font-body",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+// JetBrains Mono: datos, métricas y etiquetas técnicas
+const jetbrains = JetBrains_Mono({
+  variable: "--font-jetbrains",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+// Geist Mono se mantiene como respaldo del sistema
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
-// Tipografía display militar/tech para titulares profesionales
-const chakraPetch = Chakra_Petch({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-});
-
-// Tipografía moderna para cuerpo de texto
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-grotesk",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
 export const metadata: Metadata = {
-  title: "AEGIS ARENA — Autonomous Cyber Warfare Sandbox · Red vs Blue AI",
+  title: "area·ai — Simulador adversarial autónomo · Red Team vs Blue Team",
   description:
-    "Simulador de ciberseguridad con agentes de IA: equipos Red Team y Blue Team libran campañas en escenarios empresariales, aprenden de cada combate y evolucionan automáticamente.",
+    "Agentes de IA ofensivos y defensivos libran campañas continuas sobre infraestructura empresarial simulada. Cada combate genera conocimiento que se archiva, se reutiliza y hace evolucionar a ambos equipos.",
   keywords: [
     "red team",
     "blue team",
     "ciberseguridad",
-    "IA",
-    "simulador",
+    "inteligencia artificial",
+    "agentes autónomos",
+    "simulador adversarial",
     "sandbox",
-    "autoevolución",
   ],
-  authors: [{ name: "AEGIS ARENA" }],
+  authors: [{ name: "area·ai" }],
   openGraph: {
-    title: "AEGIS ARENA — Autonomous Cyber Warfare Sandbox",
+    title: "area·ai — Simulador adversarial autónomo",
     description:
       "Red Team vs Blue Team con agentes de IA en evolución continua.",
     type: "website",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#08090d",
 };
 
 export default function RootLayout({
@@ -57,7 +65,7 @@ export default function RootLayout({
   return (
     <html lang="es" className="dark" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${chakraPetch.variable} ${spaceGrotesk.variable} antialiased bg-background text-foreground min-h-screen`}
+        className={`${sora.variable} ${inter.variable} ${jetbrains.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen`}
       >
         {children}
         <Toaster />

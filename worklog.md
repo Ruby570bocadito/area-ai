@@ -39,3 +39,20 @@ Stage Summary:
 - Entrega: UI completamente profesional con repos de animación (GSAP ScrollTrigger, tsParticles, SplitType, NumberFlow) e iconografía react-icons; gestión de modelos LLM real y persistente (catálogo descargado de /v1/models, selección y guardado en BD) integrada con el motor de campañas.
 - Ficheros clave: prisma/schema.prisma (Setting), src/lib/sim/provider-config.ts, src/lib/sim/llm.ts, src/app/api/{settings,models}/route.ts, src/components/arena/{hero,particle-field,section,model-studio,agent-avatar}.tsx, src/app/page.tsx, layout.tsx, globals.css.
 - Uso: botón "Model Studio" en la navbar → elegir proveedor → pegar API key → "Descargar modelos" → seleccionar modelo → "Guardar y activar motor"; la siguiente campaña usa ese modelo.
+
+---
+Task ID: 3
+Agent: Super Z (main agent)
+Task: Rediseño total y rebranding a "area·ai" — estética premium tipo AI-lab (Linear/Vercel), manteniendo el motor funcional intacto.
+
+Work Log:
+- Rebranding: AEGIS ARENA → area·ai (layout metadata, navbar wordmark con punto degradado rojo→cian, footer, loading). Agente BLUE "AEGIS" renombrado a CITADEL en roster.ts y en DB (key blue-citadel). Typo vietnamita "nhiều" corregido en seed y DB.
+- Nueva tipografía: Sora (display) + Inter (cuerpo) + JetBrains Mono (datos), vía next/font.
+- globals.css reescrito: paleta neutral #08090d, rojo #f4536e, cian #41c0ef, utilidades .panel/.panel-raised/.active-red|.active-blue|.active-amber, eliminados glitch/scanlines/neón excesivo. Bug corregido: @apply con clase no-utility (rompía compilación → 500s globales).
+- Todos los componentes reescritos con diseño premium: hero (SplitType chars + interpunct con gradiente, CTAs blancos, stats strip dividida), section (kicker mono + índice outline), control-center (selección con check blanco, CTA blanco), arena-live (marcador Sora, barras finas), event-feed (acento lateral por equipo), network-map, knowledge-panel, roster, history-panel, agent-avatar, model-studio. particle-field reducido (34 partículas, enlaces tenues).
+- page.tsx: navbar con anchor links + Model Studio + pill de estado; auto-scroll a #arena al lanzar campaña; CTA secundario "Conocer a los agentes".
+- Verificado con Agent Browser: hero/desktop/móvil sin h-scroll, campaña real ejecutada end-to-end (8/8 rondas, EMPATE 69-88), conocimiento 26→30 (evolución verificada), XP subido, banner de resolución, map+feed, Model Studio dialog, consola sin errores, lint limpio.
+
+Stage Summary:
+- Entrega: interfaz completamente rehecha con identidad "area·ai", estética profesional premium, motor de campañas/evolución intacto y verificado en caliente.
+- Ficheros clave: src/app/{layout,page,globals.css}, src/components/arena/* (todos), src/lib/sim/{roster,seed}.ts.

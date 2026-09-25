@@ -8,18 +8,18 @@ import type { CampaignListItemDTO } from '@/lib/api-types'
 function WinnerBadge({ winner }: { winner: string | null }) {
   if (winner === 'RED')
     return (
-      <span className="flex items-center gap-1 rounded-full border border-[#ff3355]/40 bg-[#ff3355]/10 px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#ff8299]">
+      <span className="flex items-center gap-1 rounded-full border border-[#f4536e]/35 bg-[#f4536e]/[0.08] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#f98ca0]">
         <Swords className="h-2.5 w-2.5" /> GANA RED
       </span>
     )
   if (winner === 'BLUE')
     return (
-      <span className="flex items-center gap-1 rounded-full border border-[#22d3ee]/40 bg-[#22d3ee]/10 px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#7ee7f9]">
+      <span className="flex items-center gap-1 rounded-full border border-[#41c0ef]/35 bg-[#41c0ef]/[0.08] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#8adcf7]">
         <ShieldCheck className="h-2.5 w-2.5" /> GANA BLUE
       </span>
     )
   return (
-    <span className="flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 font-mono-tight text-[9px] font-bold text-amber-300">
+    <span className="flex items-center gap-1 rounded-full border border-[#e8b64c]/35 bg-[#e8b64c]/[0.08] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#f0cd85]">
       <Minus className="h-2.5 w-2.5" /> EMPATE
     </span>
   )
@@ -28,9 +28,9 @@ function WinnerBadge({ winner }: { winner: string | null }) {
 export function HistoryPanel({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
   if (campaigns.length === 0) {
     return (
-      <div className="glass flex flex-col items-center gap-2 rounded-xl p-8 text-center text-muted-foreground">
+      <div className="panel flex flex-col items-center gap-2 rounded-xl p-8 text-center text-muted-foreground">
         <History className="h-5 w-5" />
-        <p className="text-sm">Aún no hay campañas finalizadas. Lanza la primera desde el centro de control.</p>
+        <p className="text-sm">Aún no hay campañas finalizadas. Lanza la primera desde el centro de mando.</p>
       </div>
     )
   }
@@ -43,7 +43,7 @@ export function HistoryPanel({ campaigns }: { campaigns: CampaignListItemDTO[] }
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, margin: '-30px' }}
           transition={{ delay: Math.min(i * 0.04, 0.3), duration: 0.4 }}
-          className="glass rounded-xl p-3.5 transition-colors hover:border-[#a755ff]/40"
+          className="panel panel-hover rounded-xl p-3.5"
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="min-w-0">
@@ -51,7 +51,7 @@ export function HistoryPanel({ campaigns }: { campaigns: CampaignListItemDTO[] }
                 {c.scenario.codename}
                 <span className="ml-2 font-normal text-muted-foreground">· {c.scenario.company}</span>
               </p>
-              <p className="text-[10.5px] text-muted-foreground">
+              <p className="mt-0.5 font-mono-tight text-[10.5px] text-muted-foreground">
                 {new Date(c.startedAt).toLocaleString('es-ES', {
                   day: '2-digit',
                   month: 'short',
@@ -64,37 +64,37 @@ export function HistoryPanel({ campaigns }: { campaigns: CampaignListItemDTO[] }
             {c.status === 'COMPLETED' ? (
               <WinnerBadge winner={c.winner} />
             ) : c.status === 'RUNNING' ? (
-              <span className="flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 font-mono-tight text-[9px] font-bold text-amber-300">
+              <span className="flex items-center gap-1 rounded-full border border-[#e8b64c]/35 bg-[#e8b64c]/[0.08] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#f0cd85]">
                 <Hourglass className="h-2.5 w-2.5 anim-blink" /> EN CURSO
               </span>
             ) : (
-              <span className="rounded-full border border-[#1c2b4a] bg-black/40 px-2 py-0.5 font-mono-tight text-[9px] font-bold text-muted-foreground">
+              <span className="rounded-full border border-white/10 bg-white/[0.03] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-muted-foreground">
                 ABORTADA
               </span>
             )}
           </div>
-          <div className="mt-2.5 grid grid-cols-2 gap-2">
+          <div className="mt-3 grid grid-cols-2 gap-2">
             <div className="flex items-center gap-2">
-              <span className="w-10 font-mono-tight text-[10px] text-[#ff8299]">RED {c.redProgress}%</span>
-              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/40">
+              <span className="w-12 font-mono-tight text-[10px] text-[#f98ca0]">RED {c.redProgress}%</span>
+              <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/[0.07]">
                 <motion.div
                   initial={{ width: 0 }}
                   whileInView={{ width: `${c.redProgress}%` }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.7 }}
-                  className="h-full rounded-full bg-[#ff3355]"
+                  className="h-full rounded-full bg-[#f4536e]"
                 />
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-10 font-mono-tight text-[10px] text-[#7ee7f9]">BLU {c.blueProgress}%</span>
-              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/40">
+              <span className="w-12 font-mono-tight text-[10px] text-[#8adcf7]">BLU {c.blueProgress}%</span>
+              <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/[0.07]">
                 <motion.div
                   initial={{ width: 0 }}
                   whileInView={{ width: `${c.blueProgress}%` }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.7 }}
-                  className="h-full rounded-full bg-[#22d3ee]"
+                  className="h-full rounded-full bg-[#41c0ef]"
                 />
               </div>
             </div>

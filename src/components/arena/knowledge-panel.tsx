@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Brain, Flame, Sparkles, TrendingUp } from 'lucide-react'
+import { Brain, Flame, TrendingUp, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { KnowledgeDTO } from '@/lib/api-types'
 
@@ -27,13 +27,10 @@ function KnowledgeCard({ k, index, team }: { k: KnowledgeDTO; index: number; tea
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-40px' }}
       transition={{ delay: Math.min(index * 0.05, 0.4), duration: 0.4 }}
-      className={cn(
-        'glass relative overflow-hidden rounded-xl p-3.5 transition-shadow hover:shadow-lg',
-        isRed ? 'hover:border-[#ff3355]/40' : 'hover:border-[#22d3ee]/40'
-      )}
+      className="panel panel-hover relative overflow-hidden rounded-xl p-4"
     >
       {isFresh && (
-        <span className="absolute right-2.5 top-2.5 flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-300 anim-blink">
+        <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-[#e8b64c]/12 px-2 py-0.5 font-mono-tight text-[9px] font-bold uppercase tracking-wider text-[#f0cd85]">
           <Sparkles className="h-2.5 w-2.5" /> Nuevo
         </span>
       )}
@@ -41,14 +38,14 @@ function KnowledgeCard({ k, index, team }: { k: KnowledgeDTO; index: number; tea
         <span
           className={cn(
             'rounded px-1.5 py-0.5 font-mono-tight text-[9px] font-bold uppercase tracking-wider',
-            isRed ? 'bg-[#ff3355]/15 text-[#ff8299]' : 'bg-[#22d3ee]/15 text-[#7ee7f9]'
+            isRed ? 'bg-[#f4536e]/12 text-[#f98ca0]' : 'bg-[#41c0ef]/12 text-[#8adcf7]'
           )}
         >
           {CATEGORY_LABEL[k.category] ?? k.category}
         </span>
-        {eff !== null && eff >= 50 && <TrendingUp className="h-3 w-3 text-emerald-400" />}
+        {eff !== null && eff >= 50 && <TrendingUp className="h-3 w-3 text-[#4ad6a5]" />}
       </div>
-      <h4 className="mt-1.5 text-[13px] font-bold leading-snug text-foreground">{k.title}</h4>
+      <h4 className="mt-2 text-[13px] font-semibold leading-snug text-foreground">{k.title}</h4>
       <p className="mt-1 line-clamp-3 text-[11.5px] leading-relaxed text-muted-foreground">{k.content}</p>
       <div className="mt-2 flex flex-wrap gap-1">
         {k.tags
@@ -56,16 +53,16 @@ function KnowledgeCard({ k, index, team }: { k: KnowledgeDTO; index: number; tea
           .filter(Boolean)
           .slice(0, 4)
           .map((t) => (
-            <span key={t} className="rounded bg-white/5 px-1.5 py-px font-mono-tight text-[9px] text-muted-foreground">
+            <span key={t} className="rounded bg-white/[0.05] px-1.5 py-px font-mono-tight text-[9px] text-muted-foreground">
               #{t.trim()}
             </span>
           ))}
       </div>
-      <div className="mt-2.5 flex items-center gap-2">
-        <Brain className={cn('h-3.5 w-3.5', isRed ? 'text-[#ff3355]' : 'text-[#22d3ee]')} />
-        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/40">
+      <div className="mt-3 flex items-center gap-2">
+        <Brain className={cn('h-3.5 w-3.5', isRed ? 'text-[#f4536e]' : 'text-[#41c0ef]')} />
+        <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/[0.07]">
           <motion.div
-            className={cn('h-full rounded-full', isRed ? 'bg-gradient-to-r from-[#ff3355]/60 to-[#ff3355]' : 'bg-gradient-to-r from-[#22d3ee]/50 to-[#22d3ee]')}
+            className={cn('h-full rounded-full', isRed ? 'bg-[#f4536e]' : 'bg-[#41c0ef]')}
             initial={{ width: 0 }}
             whileInView={{ width: `${Math.round(k.confidence * 100)}%` }}
             viewport={{ once: true }}
@@ -75,7 +72,7 @@ function KnowledgeCard({ k, index, team }: { k: KnowledgeDTO; index: number; tea
         <span className="font-mono-tight text-[10px] text-muted-foreground">
           {Math.round(k.confidence * 100)}% · {k.timesUsed}usos
         </span>
-        {isFresh && <Flame className="h-3 w-3 text-amber-400" />}
+        {isFresh && <Flame className="h-3 w-3 text-[#e8b64c]" />}
       </div>
     </motion.article>
   )
@@ -90,11 +87,17 @@ export function KnowledgePanel({
 }) {
   return (
     <Tabs defaultValue="red" className="w-full">
-      <TabsList className="grid w-full max-w-md grid-cols-2 bg-black/40">
-        <TabsTrigger value="red" className="data-[state=active]:bg-[#ff3355]/20 data-[state=active]:text-[#ff8299]">
+      <TabsList className="grid w-full max-w-md grid-cols-2 border border-white/[0.07] bg-white/[0.03]">
+        <TabsTrigger
+          value="red"
+          className="font-mono-tight text-[11px] data-[state=active]:bg-[#f4536e]/15 data-[state=active]:text-[#f98ca0]"
+        >
           Inteligencia RED ({red.length})
         </TabsTrigger>
-        <TabsTrigger value="blue" className="data-[state=active]:bg-[#22d3ee]/20 data-[state=active]:text-[#7ee7f9]">
+        <TabsTrigger
+          value="blue"
+          className="font-mono-tight text-[11px] data-[state=active]:bg-[#41c0ef]/15 data-[state=active]:text-[#8adcf7]"
+        >
           Inteligencia BLUE ({blue.length})
         </TabsTrigger>
       </TabsList>

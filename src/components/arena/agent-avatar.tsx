@@ -59,24 +59,21 @@ export function AgentAvatar({
 
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: dim, height: dim }}>
-      {/* anillo cónico giratorio cuando actúa */}
       {active && (
         <span
           className={cn(
             'conic-ring absolute -inset-[3px] rounded-full',
-            isRed ? 'conic-ring-red' : 'conic-ring-cyan'
+            isRed ? 'conic-ring-red' : 'conic-ring-blue'
           )}
         />
       )}
-      {/* halo de pulso (framer-motion) */}
       {active && (
         <motion.span
-          className={cn('absolute inset-0 rounded-full', isRed ? 'bg-[#ff3355]/20' : 'bg-[#22d3ee]/20')}
+          className={cn('absolute inset-0 rounded-full', isRed ? 'bg-[#f4536e]/20' : 'bg-[#41c0ef]/20')}
           animate={{ scale: [1, 1.35], opacity: [0.7, 0] }}
           transition={{ duration: 1.1, repeat: Infinity, ease: 'easeOut' }}
         />
       )}
-      {/* hexágono con icono */}
       <motion.div
         animate={
           active
@@ -85,26 +82,25 @@ export function AgentAvatar({
         }
         transition={{ duration: 1.1, repeat: active ? Infinity : 0, ease: 'easeInOut' }}
         className={cn(
-          'relative flex h-full w-full items-center justify-center border-2 transition-colors',
+          'relative flex h-full w-full items-center justify-center border transition-colors',
           isRed
-            ? 'border-[#ff3355]/70 bg-[#1a0a12] text-[#ff3355]'
-            : 'border-[#22d3ee]/70 bg-[#071720] text-[#22d3ee]',
-          active && (isRed ? 'glow-red' : 'glow-cyan')
+            ? 'border-[#f4536e]/60 bg-[#170b11] text-[#f4536e]'
+            : 'border-[#41c0ef]/60 bg-[#0a1420] text-[#41c0ef]',
+          active && (isRed ? 'active-red' : 'active-blue')
         )}
         style={{
           clipPath: 'polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0% 50%)',
           clipRule: 'nonzero',
         }}
       >
-        <AgentIcon icon={agent.icon} className={size === 'sm' ? 'h-4 w-4' : size === 'lg' ? 'h-7 w-7' : 'h-5.5 w-5.5'} />
+        <AgentIcon icon={agent.icon} className={size === 'sm' ? 'h-4 w-4' : size === 'lg' ? 'h-7 w-7' : 'h-5 w-5'} />
       </motion.div>
-      {/* nivel */}
       <span
         className={cn(
-          'absolute -bottom-1.5 -right-1.5 rounded-full border px-1.5 py-px text-[9px] font-bold font-mono-tight',
+          'absolute -bottom-1.5 -right-1.5 rounded-full border px-1.5 py-px font-mono-tight text-[9px] font-bold',
           isRed
-            ? 'border-[#ff3355]/60 bg-[#14060c] text-[#ff6b85]'
-            : 'border-[#22d3ee]/60 bg-[#04141b] text-[#67e8f9]'
+            ? 'border-[#f4536e]/50 bg-[#170b11] text-[#f98ca0]'
+            : 'border-[#41c0ef]/50 bg-[#0a1420] text-[#8adcf7]'
         )}
       >
         Nv{agent.level}
@@ -114,7 +110,7 @@ export function AgentAvatar({
 }
 
 // ─────────────────────────────────────────────────────────────
-// Tarjeta completa de agente (roster / arena)
+// Tarjeta completa de agente (arena en vivo)
 // ─────────────────────────────────────────────────────────────
 export function AgentCard({
   agent,
@@ -135,23 +131,23 @@ export function AgentCard({
       animate={{
         boxShadow: active
           ? isRed
-            ? '0 0 26px rgba(255,51,85,0.35)'
-            : '0 0 26px rgba(34,211,238,0.35)'
+            ? '0 8px 30px -12px rgba(244,83,110,0.45)'
+            : '0 8px 30px -12px rgba(65,192,239,0.45)'
           : '0 0 0 rgba(0,0,0,0)',
       }}
       className={cn(
-        'glass relative overflow-hidden rounded-xl p-3 transition-colors',
-        active && (isRed ? 'border-[#ff3355]/60' : 'border-[#22d3ee]/60')
+        'panel relative overflow-hidden rounded-xl p-3 transition-colors',
+        active && (isRed ? 'active-red' : 'active-blue')
       )}
     >
       {active && (
         <span
           className={cn(
-            'absolute right-2 top-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider',
-            isRed ? 'bg-[#ff3355]/15 text-[#ff8299]' : 'bg-[#22d3ee]/15 text-[#7ee7f9]'
+            'absolute right-2 top-2 flex items-center gap-1 rounded-full px-2 py-0.5 font-mono-tight text-[9px] font-bold uppercase tracking-wider',
+            isRed ? 'bg-[#f4536e]/15 text-[#f98ca0]' : 'bg-[#41c0ef]/15 text-[#8adcf7]'
           )}
         >
-          <span className={cn('h-1.5 w-1.5 rounded-full anim-blink', isRed ? 'bg-[#ff3355]' : 'bg-[#22d3ee]')} />
+          <span className={cn('h-1.5 w-1.5 rounded-full anim-blink', isRed ? 'bg-[#f4536e]' : 'bg-[#41c0ef]')} />
           Actuando
         </span>
       )}
@@ -160,24 +156,24 @@ export function AgentCard({
         <div className="min-w-0">
           <p
             className={cn(
-              'truncate font-display text-sm font-bold tracking-wide',
-              isRed ? 'text-[#ff6b85]' : 'text-[#67e8f9]'
+              'font-display truncate text-sm font-bold tracking-wide',
+              isRed ? 'text-[#f98ca0]' : 'text-[#8adcf7]'
             )}
           >
             {agent.codename}
           </p>
-          <p className="truncate font-grotesk text-[11px] text-muted-foreground">{agent.role}</p>
+          <p className="truncate text-[11px] text-muted-foreground">{agent.role}</p>
         </div>
       </div>
       {lastAction && (
-        <p className="mt-2 truncate rounded-md bg-black/30 px-2 py-1 font-grotesk text-[11px] italic text-foreground/80">
+        <p className="mt-2 truncate rounded-md bg-white/[0.04] px-2 py-1 text-[11px] italic text-foreground/80">
           “{lastAction}”
         </p>
       )}
       <div className="mt-2 flex items-center gap-2">
-        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/40">
+        <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/[0.07]">
           <motion.div
-            className={cn('h-full rounded-full', isRed ? 'bg-[#ff3355]' : 'bg-[#22d3ee]')}
+            className={cn('h-full rounded-full', isRed ? 'bg-[#f4536e]' : 'bg-[#41c0ef]')}
             initial={{ width: 0 }}
             animate={{ width: `${xpPct}%` }}
             transition={{ duration: 0.8, ease: 'easeOut' }}

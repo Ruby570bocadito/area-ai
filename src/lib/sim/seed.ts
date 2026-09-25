@@ -29,7 +29,7 @@ const INITIAL_KNOWLEDGE = [
     category: 'LECCION',
     title: 'El ruido en escalada revela la campaña',
     content:
-      'Abusar de credenciales con nhiều intentos fallidos genera bloqueos y alertas. Preferir robo de tokens/hashes en memoria y usar credenciales limpias una sola vez.',
+      'Abusar de credenciales con muchos intentos fallidos genera bloqueos y alertas. Preferir robo de tokens/hashes en memoria y usar credenciales limpias una sola vez.',
     tags: 'escalada,credenciales,opsec',
     confidence: 0.5,
   },

@@ -6,16 +6,16 @@ import { loadSlim } from '@tsparticles/slim'
 import type { ISourceOptions, Engine } from '@tsparticles/engine'
 
 // ─────────────────────────────────────────────────────────────
-// Fondo de partículas profesional basado en tsParticles v3
+// Campo de partículas contenido y elegante — tsParticles v3
 // (https://github.com/tsparticles/tsparticles)
-// Red de nodos con paleta Red/Cyan y enlaces que conectan.
+// Pocas partículas, enlaces tenues: textura, no espectáculo.
 // ─────────────────────────────────────────────────────────────
 
 async function initEngine(engine: Engine) {
   await loadSlim(engine)
 }
 
-export function ParticleField({ id = 'aegis-particles' }: { id?: string }) {
+export function ParticleField({ id = 'area-particles' }: { id?: string }) {
   const options = useMemo<ISourceOptions>(
     () => ({
       fullScreen: { enable: false },
@@ -23,26 +23,26 @@ export function ParticleField({ id = 'aegis-particles' }: { id?: string }) {
       fpsLimit: 60,
       detectRetina: true,
       particles: {
-        number: { value: 55, density: { enable: true, width: 1200, height: 800 } },
+        number: { value: 34, density: { enable: true, width: 1400, height: 900 } },
         color: {
-          value: ['#ff3355', '#22d3ee', '#8b9dff'],
+          value: ['#f4536e', '#41c0ef', '#8b93a5'],
         },
         shape: { type: 'circle' },
         opacity: {
-          value: { min: 0.25, max: 0.65 },
-          animation: { enable: true, speed: 0.6, sync: false },
+          value: { min: 0.12, max: 0.38 },
+          animation: { enable: true, speed: 0.4, sync: false },
         },
-        size: { value: { min: 1, max: 2.6 } },
+        size: { value: { min: 1, max: 2.2 } },
         links: {
           enable: true,
-          distance: 130,
-          color: '#3b6ea8',
-          opacity: 0.16,
+          distance: 150,
+          color: '#6b7689',
+          opacity: 0.09,
           width: 1,
         },
         move: {
           enable: true,
-          speed: 0.55,
+          speed: 0.4,
           direction: 'none',
           random: true,
           straight: false,
@@ -55,7 +55,7 @@ export function ParticleField({ id = 'aegis-particles' }: { id?: string }) {
           resize: { enable: true },
         },
         modes: {
-          grab: { distance: 150, links: { opacity: 0.3 } },
+          grab: { distance: 160, links: { opacity: 0.18 } },
         },
       },
     }),

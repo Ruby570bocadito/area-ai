@@ -13,6 +13,9 @@ import type { EventDTO, InfraNodeDTO } from '@/lib/api-types'
 const COL_X: Record<number, number> = { 0: 82, 1: 295, 2: 510, 3: 700 }
 const SEG_COL: Record<string, number> = { DMZ: 1, CORE: 2, AD: 3, OT: 3, CLOUD: 3 }
 
+const RED = '#f4536e'
+const BLUE = '#41c0ef'
+
 interface NodePos extends InfraNodeDTO {
   x: number
   y: number
@@ -80,18 +83,17 @@ export function NetworkMap({
   }
 
   return (
-    <div className="scanlines relative overflow-hidden rounded-xl border border-[#1c2b4a] bg-[#050912]/80">
-      <div className="grid-bg absolute inset-0" />
-      {running && <div className="scan-beam" />}
+    <div className="panel relative overflow-hidden rounded-xl">
+      <div className="grid-bg absolute inset-0 opacity-70" />
       <svg viewBox="0 0 800 330" className="relative z-10 h-auto w-full" role="img" aria-label="Mapa de red de la campaña">
         <defs>
           <radialGradient id="redGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#ff3355" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="#ff3355" stopOpacity="0" />
+            <stop offset="0%" stopColor={RED} stopOpacity="0.4" />
+            <stop offset="100%" stopColor={RED} stopOpacity="0" />
           </radialGradient>
-          <radialGradient id="cyanGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="#22d3ee" stopOpacity="0" />
+          <radialGradient id="blueGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor={BLUE} stopOpacity="0.4" />
+            <stop offset="100%" stopColor={BLUE} stopOpacity="0" />
           </radialGradient>
         </defs>
 
@@ -111,7 +113,7 @@ export function NetworkMap({
                   prevX === COL_X[0] && col === 1 ? RED_BASE.y : p.y
                 } Q ${(p.x + n.x) / 2} ${Math.min(p.y, n.y) - 24} ${n.x} ${n.y}`}
                 fill="none"
-                stroke="rgba(80,110,170,0.22)"
+                stroke="rgba(255,255,255,0.09)"
                 strokeWidth="1.2"
               />
             ))
@@ -123,10 +125,10 @@ export function NetworkMap({
             <path
               d={beamPath(byId.get(lastRed.targetNode))}
               fill="none"
-              stroke="#ff3355"
+              stroke={RED}
               strokeWidth="2"
               className="attack-beam"
-              style={{ filter: 'drop-shadow(0 0 6px rgba(255,51,85,0.8))' }}
+              style={{ filter: `drop-shadow(0 0 5px ${RED}99)` }}
             />
           </motion.g>
         )}
@@ -137,10 +139,10 @@ export function NetworkMap({
             <path
               d={beamPath(byId.get(lastBlue.targetNode), BLUE_BASE)}
               fill="none"
-              stroke="#22d3ee"
+              stroke={BLUE}
               strokeWidth="2"
               className="attack-beam"
-              style={{ filter: 'drop-shadow(0 0 6px rgba(34,211,238,0.8))' }}
+              style={{ filter: `drop-shadow(0 0 5px ${BLUE}99)` }}
             />
           </motion.g>
         )}
@@ -148,23 +150,23 @@ export function NetworkMap({
         {/* base RED */}
         <g>
           <circle cx={RED_BASE.x} cy={RED_BASE.y} r="42" fill="url(#redGlow)" />
-          <circle cx={RED_BASE.x} cy={RED_BASE.y} r="17" fill="#14060c" stroke="#ff3355" strokeWidth="2" className={running ? 'svg-pulse-red' : ''} />
-          <text x={RED_BASE.x} y={RED_BASE.y + 4} textAnchor="middle" fontSize="11" fill="#ff6b85" fontWeight="bold">
+          <circle cx={RED_BASE.x} cy={RED_BASE.y} r="17" fill="#170b11" stroke={RED} strokeWidth="2" className={running ? 'svg-pulse' : ''} />
+          <text x={RED_BASE.x} y={RED_BASE.y + 4} textAnchor="middle" fontSize="11" fill="#f98ca0" fontWeight="bold">
             R
           </text>
-          <text x={RED_BASE.x} y={RED_BASE.y + 52} textAnchor="middle" fontSize="9" fill="#ff8299" fontFamily="monospace">
+          <text x={RED_BASE.x} y={RED_BASE.y + 52} textAnchor="middle" fontSize="9" fill="#f98ca0" fontFamily="monospace">
             RED ORIGIN
           </text>
         </g>
 
         {/* base BLUE */}
         <g>
-          <circle cx={BLUE_BASE.x} cy={BLUE_BASE.y} r="42" fill="url(#cyanGlow)" />
-          <circle cx={BLUE_BASE.x} cy={BLUE_BASE.y} r="17" fill="#04141b" stroke="#22d3ee" strokeWidth="2" />
-          <text x={BLUE_BASE.x} y={BLUE_BASE.y + 4} textAnchor="middle" fontSize="11" fill="#67e8f9" fontWeight="bold">
+          <circle cx={BLUE_BASE.x} cy={BLUE_BASE.y} r="42" fill="url(#blueGlow)" />
+          <circle cx={BLUE_BASE.x} cy={BLUE_BASE.y} r="17" fill="#0a1420" stroke={BLUE} strokeWidth="2" />
+          <text x={BLUE_BASE.x} y={BLUE_BASE.y + 4} textAnchor="middle" fontSize="11" fill="#8adcf7" fontWeight="bold">
             B
           </text>
-          <text x={BLUE_BASE.x} y={BLUE_BASE.y + 34} textAnchor="middle" fontSize="9" fill="#7ee7f9" fontFamily="monospace">
+          <text x={BLUE_BASE.x} y={BLUE_BASE.y + 34} textAnchor="middle" fontSize="9" fill="#8adcf7" fontFamily="monospace">
             SOC
           </text>
         </g>
@@ -184,34 +186,34 @@ export function NetworkMap({
                   cy={n.y}
                   r={r + 6}
                   fill="none"
-                  stroke={isTargetRed ? '#ff3355' : '#22d3ee'}
+                  stroke={isTargetRed ? RED : BLUE}
                   strokeWidth="1.5"
-                  className="svg-pulse-red"
+                  className="svg-pulse"
                 />
               )}
               <circle
                 cx={n.x}
                 cy={n.y}
                 r={r}
-                fill={isComp ? '#1a0a12' : isHard ? '#04141b' : '#0a101f'}
-                stroke={isComp ? '#ff3355' : isHard ? '#22d3ee' : '#3b5486'}
+                fill={isComp ? '#170b11' : isHard ? '#0a1420' : '#0d1017'}
+                stroke={isComp ? RED : isHard ? BLUE : 'rgba(255,255,255,0.18)'}
                 strokeWidth={isComp || isHard ? 2 : 1.2}
                 style={{
                   filter:
                     isComp
-                      ? 'drop-shadow(0 0 8px rgba(255,51,85,0.65))'
+                      ? `drop-shadow(0 0 7px ${RED}88)`
                       : isHard
-                        ? 'drop-shadow(0 0 8px rgba(34,211,238,0.6))'
+                        ? `drop-shadow(0 0 7px ${BLUE}80)`
                         : undefined,
                 }}
               />
-              <text x={n.x} y={n.y + 3.5} textAnchor="middle" fontSize="8.5" fill={isComp ? '#ff8299' : isHard ? '#7ee7f9' : '#9fb0cc'} fontFamily="monospace" fontWeight="bold">
+              <text x={n.x} y={n.y + 3.5} textAnchor="middle" fontSize="8.5" fill={isComp ? '#f98ca0' : isHard ? '#8adcf7' : '#9aa3b5'} fontFamily="monospace" fontWeight="bold">
                 {n.type.slice(0, 6)}
               </text>
-              <text x={n.x} y={n.y + r + 13} textAnchor="middle" fontSize="9" fill="#c3d0e4" fontFamily="monospace">
+              <text x={n.x} y={n.y + r + 13} textAnchor="middle" fontSize="9" fill="#c9cedb" fontFamily="monospace">
                 {n.name.length > 22 ? n.name.slice(0, 21) + '…' : n.name}
               </text>
-              <text x={n.x} y={n.y - r - 6} textAnchor="middle" fontSize="8" fill="#7e8ba6" fontFamily="monospace">
+              <text x={n.x} y={n.y - r - 6} textAnchor="middle" fontSize="8" fill="#78829a" fontFamily="monospace">
                 {n.ip}
               </text>
             </g>
@@ -220,20 +222,20 @@ export function NetworkMap({
       </svg>
 
       {/* leyenda */}
-      <div className="relative z-10 flex flex-wrap items-center gap-3 border-t border-[#1c2b4a] px-3 py-2 text-[10px] text-muted-foreground">
+      <div className="relative z-10 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-white/[0.06] px-3.5 py-2.5 font-mono-tight text-[10px] text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <Skull className="h-3 w-3 text-[#ff3355]" /> Ataque en curso
+          <Skull className="h-3 w-3 text-[#f4536e]" /> Ataque en curso
         </span>
         <span className="flex items-center gap-1.5">
-          <Shield className="h-3 w-3 text-[#22d3ee]" /> Defensa activa
+          <Shield className="h-3 w-3 text-[#41c0ef]" /> Defensa activa
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full border border-[#ff3355] bg-[#1a0a12]" /> Comprometido
+          <span className="h-2.5 w-2.5 rounded-full border border-[#f4536e] bg-[#170b11]" /> Comprometido
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full border border-[#22d3ee] bg-[#04141b]" /> Endurecido
+          <span className="h-2.5 w-2.5 rounded-full border border-[#41c0ef] bg-[#0a1420]" /> Endurecido
         </span>
-        <span className="ml-auto font-mono-tight">
+        <span className="ml-auto">
           {nodes.length} activos · {positions.filter((n) => compromised.has(n.id)).length} comprometidos
         </span>
       </div>

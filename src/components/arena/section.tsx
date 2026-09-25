@@ -11,13 +11,12 @@ if (typeof window !== 'undefined') {
 
 // ─────────────────────────────────────────────────────────────
 // Reveal on scroll — GSAP ScrollTrigger (repositorio oficial)
-// Envuelve cualquier bloque y lo anima al entrar en viewport.
 // ─────────────────────────────────────────────────────────────
 export function Reveal({
   children,
   className,
   delay = 0,
-  y = 26,
+  y = 24,
   duration = 0.7,
 }: {
   children: React.ReactNode
@@ -60,17 +59,17 @@ export function Reveal({
 }
 
 // ─────────────────────────────────────────────────────────────
-// Título de sección profesional numerado
-// «01 // CENTRO DE MANDO» con línea y descripción opcional
+// Cabecera de sección premium: kicker mono + titular Sora
 // ─────────────────────────────────────────────────────────────
 export function SectionTitle({
   index,
+  kicker,
   title,
   subtitle,
-  icon,
   className,
 }: {
   index: string // ej: "01"
+  kicker?: string
   title: string
   subtitle?: string
   icon?: React.ReactNode
@@ -78,29 +77,36 @@ export function SectionTitle({
 }) {
   return (
     <Reveal className={className}>
-      <div className="flex items-end gap-4">
-        <span aria-hidden className="section-index text-4xl font-bold sm:text-5xl">
-          {index}
-        </span>
-        <div className="min-w-0 flex-1">
+      <div className="flex items-start justify-between gap-6">
+        <div className="min-w-0 max-w-3xl">
           <div className="flex items-center gap-2.5">
-            {icon && (
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-[#1c2b4a] bg-black/40 text-[#22d3ee]">
-                {icon}
+            <span className="font-mono-tight text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">
+              {index}
+            </span>
+            <span className="h-px w-8 bg-white/20" />
+            {kicker && (
+              <span className="font-mono-tight text-[10px] font-semibold uppercase tracking-[0.3em] text-foreground/70">
+                {kicker}
               </span>
             )}
-            <h2 className="font-display truncate text-xl font-bold uppercase tracking-[0.08em] text-foreground sm:text-2xl">
-              {title}
-            </h2>
-            <span className="ml-1 hidden h-px flex-1 bg-gradient-to-r from-[#22d3ee]/45 via-[#ff3355]/25 to-transparent sm:block" />
           </div>
+          <h2 className="font-display mt-2.5 text-2xl font-semibold tracking-tight text-foreground sm:text-[28px]">
+            {title}
+          </h2>
           {subtitle && (
-            <p className="mt-1 max-w-3xl font-grotesk text-xs leading-relaxed text-muted-foreground sm:text-[13px]">
+            <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground sm:text-sm">
               {subtitle}
             </p>
           )}
         </div>
+        <span
+          aria-hidden
+          className="section-index hidden shrink-0 text-6xl font-bold sm:block"
+        >
+          {index}
+        </span>
       </div>
+      <div className="divider-grad mt-6 opacity-60" />
     </Reveal>
   )
 }
