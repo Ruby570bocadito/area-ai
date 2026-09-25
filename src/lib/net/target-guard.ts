@@ -75,11 +75,36 @@ export function isLocalRequest(headers: Headers): boolean {
 export type TargetKind = 'metadata' | 'private' | 'public'
 
 /**
- * Clasifica el destino por hostname (literal o resuelto por DNS).
- * Si el DNS no resuelve se devuelve 'public' y el fallo de conexión
- * se maneja en la ruta con su mensaje habitual.
+ * Firma mínima de la resolución DNS usada por el guard.
+ * Se inyecta en classifyTarget para tests herméticos (sin red real)
+ * y queda documentada como punto único de resolución del guard.
  */
-export async function classifyTarget(hostname: string): Promise<TargetKind> {
+export type LookupFn = (
+  host: string,
+  opts: { all: true }
+) => Promise<Array<{ address: string; family: number }>>
+
+const dnsLookup: LookupFn = lookup as unknown as LookupFn
+
+// Plazo de resolución DNS (auditoría de timeouts de la Ronda 7):
+// un resolver degradado (DNS en blackhole, red rota) no debe colgar a
+// los llamadores del guard — las rutas API y el motor LLM esperan esta
+// clasificación ANTES de lanzar su propio fetch con timeout, así que un
+// lookup sin plazo dejaría la petición entera colgada sin pasar por
+// ningún otro plazo. Contrato idéntico al catch: DNS que no resuelve a
+// tiempo → 'public' (igual que hoy con NXDOMAIN) y el fallo de conexión
+// real lo maneja el fetch de turno con su propio plazo.
+const DNS_TIMEOUT_MS = 2500
+
+/**
+ * Clasifica el destino por hostname (literal o resuelto por DNS).
+ * Si el DNS no resuelve (o no resuelve a tiempo) se devuelve 'public'
+ * y el fallo de conexión se maneja en la ruta con su mensaje habitual.
+ */
+export async function classifyTarget(
+  hostname: string,
+  lookupFn: LookupFn = dnsLookup
+): Promise<TargetKind> {
   const host = hostname.toLowerCase().replace(/\.$/, '')
 
   if (ALWAYS_BLOCKED_HOSTS.has(host)) return 'metadata'
@@ -93,7 +118,21 @@ export async function classifyTarget(hostname: string): Promise<TargetKind> {
   }
 
   try {
-    const addrs = await lookup(host, { all: true })
+    const addrs = await new Promise<Array<{ address: string; family: number }>>(
+      (resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('DNS timeout')), DNS_TIMEOUT_MS)
+        lookupFn(host, { all: true }).then(
+          (value) => {
+            clearTimeout(timer)
+            resolve(value)
+          },
+          (reason) => {
+            clearTimeout(timer)
+            reject(reason)
+          }
+        )
+      }
+    )
     if (addrs.some((a) => isPrivateIp(a.address))) return 'private'
     return 'public'
   } catch {
