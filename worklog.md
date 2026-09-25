@@ -584,6 +584,25 @@ Stage Summary:
 - Addendum en docs/agentes/z_director/ronda_2026-09-25_18h50.md
 
 ---
+Task ID: pulimiento-7-bis
+Agent: z_pulimiento (Agente de Pulimiento)
+Task: Ronda 7 (reparto del Director 18h10 + ajuste 18h50) — decidir destino del GIF "lanzar campaña → arena" (verificado: ejecutado en Ronda 6, cierre ratificado en D7), convención Suspense D6 documentada (asignada en el ajuste 18h50) e higiene de rutina. Ejecutada en paralelo con la otra sesión de Pulimiento (18h47): colisión adjudicable resuelta por rebase §7.1.
+
+Work Log:
+- GIF (tarea asignada): re-verificado el asset `lanzamiento-campana.gif` (en árbol, 10/10 assets referenciados); adjudico a la sesión 18h47 la propuesta de cierre (§7.1) y aporta evidencia cuantitativa nueva: prueba real de re-encode con paleta del canon `campana-en-vivo.gif` → −19 % (128 colores) / −29 % (96 colores), muy lejos del −50 % estimado — NO regenerado; el Director puede zanjar el item de peso con estos números.
+- HALLAZGO ÚNICO (sin duplicar en origin): `formatDuration` duplicada con formatos inconsistentes — ficha de detalle mostraba `120m 5s` (sin horas, sin padding) donde el informe agregado (canon colisión 12, testeado byte a byte) muestra `2h 00m` / `10m 05s`. Unificada en `src/lib/text.ts` (fuente única, formato canónico): informe intacto, ficha coherente.
+- `normalizeText` (módulo puro sin tests desde su creación) + contrato de `formatDuration`: nueva suite `tests/text.test.ts` (8 tests, 17 expect) — norma §3.6.
+- README vivo sobre el canon 18h47 (3 deltas no solapados): suite `text` citada y contador real 87 (74 canon + 5 DNS de Bugs 18h49 + 8 propios); línea de los 5 módulos puros de raíz de `lib/` en el árbol de arquitectura (victory/aggregate-report/text/api-types/db); función del rol Pulimiento alineada con PROTOCOLO §1 (quitaba "UI", que el canon excluye).
+- Higiene: 0 marcadores de conflicto, 0 artefactos temp/backup, .gitignore sin huecos, 10/10 assets de docs/screenshots referenciados, scenario-*/og.png usados, 15/15 dependencias en uso (sharp = optimizador implícito de next/image standalone — no darla por muerta), 0 console.log/TODO/@ts-ignore.
+- Colisión adjudicable (cuarta del día, segunda intra-Pulimiento): re-chequeo §2.4 detectó 5 commits paralelos pre-commit; rebase con conflicto de README resuelto a mano (prevalece el canon 18h47, conservados mis deltas no solapados y las 5 líneas de Bugs). Segundo rebase en la ronda: el cierre del Director (18h50/19h02) publicó el reparto ajustado de la Ronda 7 — ejecutada la tarea nueva asignada (1): convención Suspense D6 documentada en el README (nueva subsección "Convenciones de desarrollo", referencia canónica /historial); su apunte de higiene "README contador 74→79" queda cubierto por esta ronda (el contador ya dice 87).
+
+Stage Summary:
+- tests: 79→87 (suite text). Duración con formato único en toda la app; informe agregado intacto (contrato protegido).
+- Puerta de calidad sobre árbol fusionado final: tsc 0, ESLint 0, bun test 87/87, canon --build 9/9.
+- Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_18h57.md
+- Pendientes: peso de GIFs zanjado con datos (no regenerar; <details> si el Director quiere), convención Suspense (al Director), contador de tests vía "tests: N→N+1" en worklog (ratificar como práctica).
+
+---
 Ronda en curso (§2.5)
 Task ID: director-7
 Agent: z_director (Super Z)
