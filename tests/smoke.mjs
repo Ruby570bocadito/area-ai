@@ -19,7 +19,7 @@
 
 import { spawn, spawnSync } from 'node:child_process'
 import { cpSync, existsSync, copyFileSync, readFileSync, writeFileSync, mkdirSync, statSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { resolve, isAbsolute } from 'node:path'
 
 const ROOT = resolve(import.meta.dir, '..')
 const PORT = Number(process.env.SMOKE_PORT || 3101)
@@ -93,9 +93,22 @@ if (!existsSync(resolve(ROOT, '.env')) && !process.env.DATABASE_URL) {
 // las variables de proceso globales tienen prioridad sobre .env en la CLI,
 // así que fijamos explícitamente la misma DATABASE_URL en ambos lados.
 const envFileVars = parseEnvFile()
-const effectiveUrl = envFileVars.DATABASE_URL ?? process.env.DATABASE_URL
+let effectiveUrl = envFileVars.DATABASE_URL ?? process.env.DATABASE_URL
+
+// Normalización de rutas relativas (trap R10, caso .env PRESENTE con ruta
+// relativa — p. ej. el flujo de desarrollo documentado: file:./dev.db):
+// la CLI de Prisma resuelve file: relativo al directorio del esquema (prisma/)
+// mientras que el runtime standalone lo hace respecto a su propia raíz, así que
+// push y servidor apuntan a BD distintas (P2021). Se normaliza a absoluta
+// (semántica del CLI) para ambos lados, sin reescribir el .env del usuario.
+if (effectiveUrl?.startsWith('file:')) {
+  const rawPath = effectiveUrl.slice('file:'.length)
+  if (!isAbsolute(rawPath)) effectiveUrl = `file:${resolve(ROOT, 'prisma', rawPath)}`
+}
+
 const childEnv = { ...process.env, ...envFileVars }
 if (effectiveUrl?.startsWith('file:')) {
+  childEnv.DATABASE_URL = effectiveUrl
   // SQLite NO crea directorios padre: garantizarlos antes del push
   mkdirSync(resolve(effectiveUrl.slice('file:'.length), '..'), { recursive: true })
 }
