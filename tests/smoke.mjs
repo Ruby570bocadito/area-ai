@@ -183,6 +183,13 @@ if (up) {
 if (process.env.SMOKE_START_CAMPAIGN === '1' && up) {
   console.log('── Fase 5: campaña real end-to-end (SMOKE_START_CAMPAIGN)')
 
+  // captura previa de la memoria: para validar que /api/knowledge crece
+  // con las lecciones de ESTA campaña (refino Ronda 6)
+  const kBefore = await fetch(`${BASE}/api/knowledge`)
+    .then((r) => (r.ok ? r.json().catch(() => null) : null))
+    .catch(() => null)
+  const knowledgeBefore = Array.isArray(kBefore?.knowledge) ? kBefore.knowledge.length : null
+
   const launch = await fetch(`${BASE}/api/campaigns`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -219,6 +226,25 @@ if (process.env.SMOKE_START_CAMPAIGN === '1' && up) {
       Array.isArray(detail?.events) && detail.events.length > 0 &&
         ['RED', 'BLUE', 'DRAW'].includes(detail.campaign?.winner),
       detail ? `eventos ${detail.events?.length ?? 0} · ganador ${detail.campaign?.winner}` : 'sin detalle'
+    )
+
+    // refino Ronda 6: la memoria global debe archivar lecciones de esta
+    // campaña (/api/knowledge expone campaignId en cada lección)
+    const kAfter = await fetch(`${BASE}/api/knowledge`)
+      .then((r) => (r.ok ? r.json().catch(() => null) : null))
+      .catch(() => null)
+    const lessons = Array.isArray(kAfter?.knowledge)
+      ? kAfter.knowledge.filter((k) => k.campaignId === id)
+      : []
+    const capped = Array.isArray(kAfter?.knowledge) && kAfter.knowledge.length >= 1000
+    const grew =
+      knowledgeBefore !== null && Array.isArray(kAfter?.knowledge) && kAfter.knowledge.length > knowledgeBefore
+    record(
+      'lecciones archivadas en la memoria (campaignId)',
+      lessons.length > 0 && (grew || capped || knowledgeBefore === null),
+      Array.isArray(kAfter?.knowledge)
+        ? `${lessons.length} lecciones de la campaña ${id} · memoria ${knowledgeBefore ?? '?'}→${kAfter.knowledge.length}`
+        : 'no se pudo leer /api/knowledge'
     )
   }
 } else if (process.env.SMOKE_START_CAMPAIGN === '1') {

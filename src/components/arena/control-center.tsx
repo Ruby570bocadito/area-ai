@@ -175,7 +175,8 @@ export function ControlCenter({
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 />
               )}
-              {/* ilustración de la infraestructura */}
+              {/* ilustración de la infraestructura — priority solo en la primera:
+                  es la LCP de la portada (aviso de next dev); precargar las 6 sería contraproducente */}
               <div className="scenario-media h-24 sm:h-28">
                 <Image
                   src={SCENARIO_IMG[s.key] ?? '/og.png'}
@@ -183,6 +184,7 @@ export function ControlCenter({
                   fill
                   sizes="(min-width:1280px) 33vw, (min-width:640px) 50vw, 100vw"
                   className="object-cover"
+                  priority={i === 0}
                 />
                 <div className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-between gap-2 p-2.5">
                   <span className="font-mono-tight truncate text-[11px] font-bold tracking-[0.14em] text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
