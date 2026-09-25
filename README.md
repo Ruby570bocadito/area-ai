@@ -10,6 +10,17 @@ Sandbox de autoevolución **Red Team vs Blue Team**: agentes de IA ejecutan camp
 
 ![Campaña en vivo](docs/screenshots/campana-en-vivo.gif)
 
+## Galería
+
+| | |
+|---|---|
+| ![Telemetría real del laboratorio](docs/screenshots/nodo-laboratorio.png) | ![Archivo con objetivos](docs/screenshots/round11-historial-objetivos.png) |
+| **Telemetría del laboratorio** — servicio HTTP real por nodo: sesiones, parches aplicados, tráfico con status codes (200/403) | **Archivo de campañas** — búsqueda tolerante a acentos, filtros, CSV y regla de victoria transparente (progreso de objetivos) |
+| ![Memoria de conocimiento](docs/screenshots/round10-conocimiento.png) | ![Model Studio](docs/screenshots/modelos.png) |
+| **Memoria del sistema** — lecciones archivadas por RED/BLUE con confianza dinámica y usos | **Model Studio** — conexión a cualquier proveedor compatible OpenAI con descarga real del catálogo |
+| ![Ficha de detalle](docs/screenshots/round11-detalle-regla.png) | ![Responsive en móvil](docs/screenshots/round10-historial-movil.png) |
+| **Ficha de detalle** — telemetría íntegra, comandos reales, resolución explicada e informe `.md` | **Responsive** — la app completa es usable en móvil (vista del archivo) |
+
 ## Características
 
 - **Motor de campañas**: 10 agentes (5 RED / 5 BLUE), 6 escenarios con infraestructura real (e-commerce, sanidad, SaaS, banca, energía/OT, defensa) y rondas por fases tipo MITRE (RECON → ARMADO → INTRUSIÓN → ESCALADA → LATERAL → OBJETIVO).
@@ -78,10 +89,13 @@ bun run dev                   # http://localhost:3000
 | `bun run build` | Build de producción (standalone) |
 | `bun run start` | Servir el build de producción |
 | `bun run lint` | ESLint |
-| `bun run verify` | Verificación de cierre de ronda: tipos (`tsc`) + build + arranque + golden path (`/api/state`). Usa una BD de verificación dedicada, no toca tus datos |
+| `bun run verify` | **Verificación de cierre de ronda**: tipos (`tsc`) → entorno → servidor de producción → golden path (healthcheck `/api`, `/api/state` con seed, `/api/campaigns`, `/api/knowledge` y página principal). Delega en `tests/smoke.mjs` (canon único) y usa una BD de verificación dedicada, no toca tus datos. `--build` fuerza rebuild |
+| `bun run smoke` | Alias directo del test de humo: `bun tests/smoke.mjs` (mismo canon que `verify`, sin envoltorio de shell) |
 | `bun run db:push` | Sincronizar el esquema Prisma con SQLite |
+| `bun run db:generate` | Generar el cliente Prisma |
+| `bun run db:migrate` | Migraciones en desarrollo |
 | `bun run db:reset` | Resetear la base de datos |
-| `bun run verify` | **Test de humo del golden path** (tsc + entorno + servidor de producción + `/api`, `/api/state`, `/api/campaigns`, `/api/knowledge` y página principal). Implementación: `tests/smoke.mjs`; `--build` fuerza rebuild |
+| `bun scripts/checkdb.mjs` | Utilidad de diagnóstico: conteo de registros por modelo (agentes, campañas, lecciones…) |
 
 ## Configurar el motor LLM
 
