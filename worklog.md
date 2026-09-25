@@ -1341,3 +1341,19 @@ Work Log:
 Stage Summary:
 - Ronda 14 cerrada en cuatro fases: hardening bugs-12 en README, informe, canon 17 de impl-13, contadores 215 de bugs-16. Reparto Ronda 11 COMPLETO + deuda documental de dos rondas ajenas absorbida en la misma ronda.
 - Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_21h20.md (+ addenda 21h45 y 21h55).
+Task ID: pulimiento-15 (cierre)
+Agent: z_pulimiento (Agente de Pulimiento) — sesión del anuncio derivado 882c0d2 (colisión 22)
+Ronda 15 de pulimiento completada (21h27) — informe: docs/agentes/z_pulimiento/ronda_2026-09-25_21h27.md
+
+Work Log:
+- Colisión 22 (propuesta, quinta carrera de anuncios): el anuncio original e2f9571 (pulimiento-14, base 6c136da) fue rechazado en push — f2cff10 ya era canónico con el ID y el ítem README-pace solapado. Derivación §7.1: esta ronda tomó el mayor pendiente propio disjunto (completar las escalas neutras de tokens, extensión de la ronda ink propuesta por pulimiento-12) y se renumeró a pulimiento-15 (anuncio canónico 882c0d2 sobre e2e728a).
+- Tokens: --surface-50/100/200/300 (#f9fafb/#f2f4f7/#e4e7ec/#d0d5dd — escala 50/100/200/300 de Untitled UI) e --ink-700/600 (#344054/#475467) en globals.css con utilidades Tailwind v4 (patrón --arena-*/--ink-*); 181 clases [#hex] migradas mecánicamente en 16 ficheros + .side-link/.panel-hover a var(); cero cambio visual (mismos hex; bg-surface-50/60 vía color-mix, camino ya establecido por ink-900/15 y /40). Exclusiones anunciadas respetadas: 2 atributos SVG, 6 definiciones semánticas shadcn, 46 clases de los 3 ficheros de impl-13 (liberados en 4bac8b7 — material de la ronda siguiente).
+- Hallazgo de infraestructura: el primer canon --build pasó 16/16 con CSS obsoleto — la caché persistente de Turbopack (.next/cache, 131 MB) sirvió el globals.css anterior pese a ediciones recientes; detectado cotejando el CSS construido contra las variables nuevas, reparado con rm -rf .next/cache. Propuesta al Director: limpieza de caché en el build del canon tras cambios masivos de src/ + grep de contenido del CSS en la puerta de rondas de UI.
+- implementaciones-13 aterrizó en vuelo (4bac8b7): re-anclaje limpio sin conflictos; puerta re-ejecutada íntegra sobre el árbol fusionado.
+- Puerta COMPLETA sobre el árbol fusionado 44506f1: tsc 0, lint 0, 193/193 (444 expect, 14 ficheros), canon 17/17 con rebuild y campaña real de 12/12 (34 eventos, DRAW, 6 lecciones, cruce 6=6, escala ficha 74/86 · archivo 6/6, invariante siempre-on 5/5), security-verify VERDE, audit 11 sin deriva, utilidades verificadas en el CSS servido, marcadores 0 (último paso de ambos rebases).
+- README/docs sin tocar (pulimiento-14 en vuelo): cotejo de vigía en el informe — contadores 181 desfasados (árbol 193), canon 17 y suite event-export pendientes de su sync.
+
+Stage Summary:
+- Las dos escalas neutras del sistema completas: la paleta neutra entera (5 tonos de texto + 4 de superficie) tiene un único punto de cambio por tono; extensión a la familia semántica de estado anotada condicionada a decisión de diseño.
+- Incidente de caché de Turbopack documentado con caso de estudio — candidato a norma del canon (la verificación de UI con build cacheado puede ratificar una migración rota).
+- Tres DRAW consecutivos de 12 rondas en las campañas de verificación (quinta campaña DRAW conocida del nuevo motor) — vigilancia de balance anotada para el Director/implementaciones.
