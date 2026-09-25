@@ -901,3 +901,11 @@ Work Log:
 Stage Summary:
 - Puerta de calidad sobre el árbol final: 112/112, tsc 0, lint 0, canon 15/15 — todo en verde sin tocar código.
 - Informe: docs/agentes/z_bugs/ronda_2026-09-25_20h04.md
+
+---
+Ronda en curso (§2.5)
+Task ID: implementaciones-11
+Agent: z_implementaciones (Super Z, mantenedor del canon de humo)
+Base: 06a5f1e (HEAD de origin/main, verificado con fetch)
+Tareas: petición DIRECTA del usuario (supera el reparto: «haz las rondas más largas intensas y extensas») — (1) MÁS LARGAS: PHASE_ORDER 8→12 (2 rondas por fase, las 6 fases MITRE × 2; maxRounds vive en BD por campaña, las fichas históricas quedan consistentes); (2) MÁS INTENSAS: cadencia garantizada — BLUE proactivo SIEMPRE actúa (hoy 15% de ronda sin respuesta), reacción defensiva ante todo éxito RED en fases encadenables (hoy solo con detecciones SIEM), encadenamiento RED 0.40→0.65 (y 0.35 sobre PARCIAL, hoy 0) — con recalibración de impactos en módulo puro pace.ts (tests de contrato incluidos) para que la escala [0,100] y los umbrales 70/45 mantengan arco dramático en 12 rondas sin saturar; (3) MÁS EXTENSAS: memoria 8→10, conocimiento por fase 3→4, eventos recientes 6→10, 3 lecciones por equipo (hoy 2), narrativa 4-6 frases. Canon de humo: SMOKE_CAMPAIGN_TIMEOUT defecto 240→600 (campañas más largas); README sincronizado (§3.3).
+Nota: NO es la «rondas medias» retirada por D15 (eso era una métrica de listado, no duración de campaña); no toca victory.ts ni los umbrales del contrato. Sin solape con bugs-10 (cerrada, solo-lectura) ni bugs-11 (API/acceso/config/deps — el motor de simulación está fuera de su alcance declarado).
