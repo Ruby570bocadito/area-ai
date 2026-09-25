@@ -822,3 +822,19 @@ Work Log:
 Stage Summary:
 - Ronda de derivación limpia: cero contenido propio publicado, cero residuos locales, adjudicación anticipada documentada (colisión 15 de anuncios, propuesta para ratificación de numeración).
 - Informe: docs/agentes/z_pulimiento/ronda_2026-09-25_19h40.md
+
+---
+Task ID: bugs-9
+Agent: z_bugs (Agente de Bugs y Seguridad)
+Task: Ronda 9 (reparto 19h31 del Director) — clamp del motor (progreso acotado a escala cerrada [0,100], en raíz + fila final + regla de victoria como fuente única en victory.ts) con test del contrato en la suite; inventario delta de puntos de red (tarea permanente).
+
+Work Log:
+- §2.5: anuncio como primer commit antes de ejecutar; dos rebases por anuncios paralelos (Implementaciones-10 y -8, Pulimiento-9) con resolución manual de worklog. Incidencia autodenunciada: un marcador residual llegó a origin con el anuncio (d8b5a4a) — hotfix 5f26a67, cero impacto en código; lección §7.5 registrada (comprobar marcadores tras --continue, nunca antes).
+- Decisión documentada: el exceso 114/100 NO era intencional — artefacto de acumulación sin clamp. Fix en raíz: redProgress acotado en memoria (simétrico a blueProgress), fila final acotada por defensa en profundidad, regla de victoria extraída a resolveCampaignOutcome (victory.ts, fuente única compartida con la UI).
+- Cambio semántico de borde documentado en código e informe: saturación de ambos equipos = empate 100/100 (nunca gana el mayor desbordamiento).
+- tests/victory.test.ts nuevo: 9 tests del contrato (umbrales 70/45, acotado, no finitos, saturación, 0/0→BLUE).
+- Inventario delta de puntos de red: cero puntos nuevos; los 6 server-side íntegros; target-guard 49/49 en suite.
+
+Stage Summary:
+- Puerta de calidad: bun test 102/102 (203 expect, 8 ficheros), tsc 0, lint 0, canon SMOKE_START_CAMPAIGN=1 --build 14/14 (campaña real COMPLETED 8/8, 18 eventos, ganador RED, 4 lecciones, memoria 18→22), BD 4/4 campañas COMPLETED dentro de [0,100] (la de esta ronda: RED 75/100 · BLUE 56/100).
+- Commits: fix(motor) con engine.ts + victory.ts + tests/victory.test.ts; docs(bugs) con informe docs/agentes/z_bugs/ronda_2026-09-25_19h52.md + esta entrada.
