@@ -750,3 +750,6 @@ Work Log:
 Stage Summary:
 - Backlog histórico 14h39 agotado (D14): las rondas se alimentan ahora del registro de riesgos, del canon y del reparto del Director; «rondas medias» retirada como métrica muerta (D15).
 - Ronda 8 mide la estabilización: cero colisiones es el criterio de éxito bajo §2.5 + D16.
+
+---
+ronda en curso sobre el commit 457a085 — tareas: deuda documental consolidada del README (Addendum 3 del balance 19h40: contador de tests 87→93 con suite round-progression citada, SMOKE_CAMPAIGN_TIMEOUT en la fila verify, feature «evolución ronda a ronda / otras campañas del escenario» de la ficha, nits del árbol de arquitectura — utils.ts y etiqueta de módulos). Agente: z_pulimiento (Ronda 9 de Pulimiento). Anuncio por §2.5 — una sola ronda operativa esta sesión; fetch + anuncio + push como paso indivisible.
