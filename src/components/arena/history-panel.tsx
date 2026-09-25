@@ -21,8 +21,9 @@ import type { CampaignListItemDTO } from '@/lib/api-types'
 
 // ─────────────────────────────────────────────────────────────
 // Archivo completo de enfrentamientos: búsqueda, filtro por
-// resultado y escenario, exportación CSV y acceso a la ficha
-// completa de cada campaña (/historial/[id]).
+// resultado y escenario, exportación CSV, informe agregado en
+// Markdown y acceso a la ficha completa de cada campaña
+// (/historial/[id]).
 // ─────────────────────────────────────────────────────────────
 
 type ResultFilter = 'ALL' | 'RED' | 'BLUE' | 'DRAW' | 'RUNNING'
@@ -234,6 +235,107 @@ function exportMarkdown(campaigns: CampaignListItemDTO[], filtersDesc: string) {
   )
 }
 
+/**
+ * Informe agregado del archivo (backlog #3, Ronda 6): Markdown con
+ * resumen estadístico, desglose por escenario y detalle de cada
+ * campaña incluida. Complemento legible al CSV (que es el formato
+ * de intercambio); el informe es el formato de lectura/análisis.
+ */
+function exportReport(campaigns: CampaignListItemDTO[], filterDescription: string) {
+  const completed = campaigns.filter((c) => c.status === 'COMPLETED')
+  const redWins = completed.filter((c) => c.winner === 'RED').length
+  const blueWins = completed.filter((c) => c.winner === 'BLUE').length
+  const draws = completed.length - redWins - blueWins
+  const running = campaigns.filter((c) => c.status === 'RUNNING').length
+  const aborted = campaigns.length - completed.length - running
+  const pct = (n: number) => (completed.length ? ` ${Math.round((n / completed.length) * 100)}%` : '')
+  const avg = (xs: number[]) => (xs.length ? (xs.reduce((a, b) => a + b, 0) / xs.length).toFixed(1) : '—')
+
+  // Desglose por escenario (los codenames ya llegan únicos y ordenados)
+  const scenarios = new Map<string, CampaignListItemDTO[]>()
+  for (const c of campaigns) {
+    const list = scenarios.get(c.scenario.codename) ?? []
+    list.push(c)
+    scenarios.set(c.scenario.codename, list)
+  }
+
+  const fmt = (d: string | null) => (d ? new Date(d).toLocaleString('es-ES') : '—')
+  const stateLabel: Record<string, string> = { COMPLETED: 'Finalizada', RUNNING: 'En curso', ABORTED: 'Abortada' }
+  const winnerLabel = (c: CampaignListItemDTO) =>
+    c.status === 'COMPLETED' ? (c.winner === 'RED' ? 'RED' : c.winner === 'BLUE' ? 'BLUE' : 'Empate') : '—'
+
+  const lines: string[] = [
+    '# Informe agregado del archivo de campañas',
+    '',
+    'Proyecto **area·ai** — sandbox Red Team vs Blue Team con agentes IA.',
+    '',
+    `- **Generado:** ${new Date().toLocaleString('es-ES')}`,
+    `- **Campañas incluidas:** ${campaigns.length}${filterDescription}`,
+    '- **Regla de victoria:** progreso de objetivos (≥70 y por delante del rival); la puntuación refleja impacto y detecciones.',
+    '',
+    '## Resumen agregado',
+    '',
+    '| Métrica | Valor |',
+    '|---|---|',
+    `| Campañas incluidas | ${campaigns.length} |`,
+    `| Finalizadas | ${completed.length} |`,
+    `| Victorias RED | ${redWins}${pct(redWins)} |`,
+    `| Victorias BLUE | ${blueWins}${pct(blueWins)} |`,
+    `| Empates | ${draws}${pct(draws)} |`,
+    `| En curso | ${running} |`,
+    `| Abortadas | ${aborted} |`,
+    `| Puntuación media RED | ${avg(completed.map((c) => c.redScore))} |`,
+    `| Puntuación media BLUE | ${avg(completed.map((c) => c.blueScore))} |`,
+    `| Progreso medio de objetivos RED | ${avg(completed.map((c) => c.redProgress))}% |`,
+    `| Progreso medio de objetivos BLUE | ${avg(completed.map((c) => c.blueProgress))}% |`,
+    '',
+    '## Por escenario',
+    '',
+    '| Escenario | Empresa | Campañas | RED | BLUE | Empates | Obj. RED medio | Obj. BLUE medio |',
+    '|---|---|---|---|---|---|---|---|',
+  ]
+
+  for (const [codename, list] of [...scenarios.entries()].sort()) {
+    const done = list.filter((c) => c.status === 'COMPLETED')
+    const r = done.filter((c) => c.winner === 'RED').length
+    const b = done.filter((c) => c.winner === 'BLUE').length
+    const company = list[0]?.scenario.company ?? '—'
+    lines.push(
+      `| ${codename} | ${company} | ${list.length} | ${r} | ${b} | ${done.length - r - b} | ${avg(done.map((c) => c.redProgress))}% | ${avg(done.map((c) => c.blueProgress))}% |`
+    )
+  }
+
+  lines.push(
+    '',
+    '## Detalle de campañas',
+    '',
+    '| # | Escenario | Inicio | Estado | Ganador | Puntos (RED–BLUE) | Objetivos (RED/BLU) | Ficha |',
+    '|---|---|---|---|---|---|---|---|'
+  )
+  campaigns.forEach((c, i) => {
+    lines.push(
+      `| ${i + 1} | ${c.scenario.codename} | ${fmt(c.startedAt)} | ${stateLabel[c.status] ?? c.status} | ${winnerLabel(c)} | ${c.redScore}–${c.blueScore} | ${c.redProgress}% / ${c.blueProgress}% | \`/historial/${c.id}\` |`
+    )
+  })
+
+  lines.push(
+    '',
+    '---',
+    '',
+    '_Informe generado por la interfaz de area·ai a partir del archivo local. El ganador se decide por progreso de objetivos, no por la puntuación (ver cabecera)._'
+  )
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  const now = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  a.href = url
+  a.download = `area-ai-informe-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.md`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export function HistoryPanel({
   campaigns,
   initialResult = 'ALL',
@@ -285,6 +387,17 @@ export function HistoryPanel({
   }
 
   const hasFilters = query.trim() !== '' || result !== 'ALL' || scenario !== 'ALL'
+
+  // Descripción legible de los filtros activos, para la cabecera del informe exportado
+  const filterDescription = !hasFilters
+    ? ' (sin filtros: archivo completo)'
+    : ` (filtros: ${[
+        query.trim() && `búsqueda «${query.trim()}»`,
+        result !== 'ALL' && RESULT_FILTERS.find((f) => f.key === result)?.label.toLowerCase(),
+        scenario !== 'ALL' && `escenario ${scenario}`,
+      ]
+        .filter(Boolean)
+        .join(', ')})`
 
   return (
     <div className="space-y-3.5">
@@ -347,6 +460,15 @@ export function HistoryPanel({
             title="Descargar la lista filtrada en CSV"
           >
             <Download className="h-3 w-3" /> CSV
+          </button>
+          <button
+            type="button"
+            onClick={() => exportReport(filtered, filterDescription)}
+            disabled={filtered.length === 0}
+            className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-[#667085] shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-[#101828] disabled:cursor-not-allowed disabled:opacity-50"
+            title="Descargar el informe agregado en Markdown de la lista filtrada (resumen, por escenario y detalle)"
+          >
+            <FileText className="h-3 w-3" /> Informe
           </button>
         </div>
       </div>
