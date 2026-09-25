@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { startCampaign } from '@/lib/sim/engine'
 import { db } from '@/lib/db'
+import { isMutationAuthorized, rateLimit, clientKey } from '@/lib/net/access'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,6 +45,20 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    if (!isMutationAuthorized(req.headers)) {
+      return NextResponse.json(
+        { ok: false, error: 'No autorizado: falta el token de administración (X-Admin-Token)' },
+        { status: 401 }
+      )
+    }
+    const key = clientKey(req.headers)
+    if (!rateLimit(`campaigns:${key}`)) {
+      return NextResponse.json(
+        { ok: false, error: 'Demasiadas campañas lanzadas; espera un momento antes de reintentar' },
+        { status: 429 }
+      )
+    }
+
     let scenarioId: string | undefined
     try {
       const body = (await req.json()) as { scenarioId?: string }

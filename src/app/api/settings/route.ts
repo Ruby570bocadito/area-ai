@@ -4,6 +4,7 @@ import {
   saveProviderConfig,
   maskKey,
 } from '@/lib/sim/provider-config'
+import { isMutationAuthorized } from '@/lib/net/access'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,6 +27,12 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    if (!isMutationAuthorized(req.headers)) {
+      return NextResponse.json(
+        { ok: false, error: 'No autorizado: falta el token de administración (X-Admin-Token)' },
+        { status: 401 }
+      )
+    }
     const body = (await req.json()) as {
       baseUrl?: string
       apiKey?: string

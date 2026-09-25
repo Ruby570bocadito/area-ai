@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProviderConfig } from '@/lib/sim/provider-config'
 import { classifyTarget, isLocalRequest } from '@/lib/net/target-guard'
+import { isMutationAuthorized } from '@/lib/net/access'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,6 +20,12 @@ interface RawModel {
  */
 export async function POST(req: NextRequest) {
   try {
+    if (!isMutationAuthorized(req.headers)) {
+      return NextResponse.json(
+        { ok: false, error: 'No autorizado: falta el token de administración (X-Admin-Token)' },
+        { status: 401 }
+      )
+    }
     const body = (await req.json().catch(() => ({}))) as {
       baseUrl?: string
       apiKey?: string

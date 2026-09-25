@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getAutopilot, setAutopilot } from '@/lib/sim/autopilot'
+import { isMutationAuthorized } from '@/lib/net/access'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,6 +15,12 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    if (!isMutationAuthorized(req.headers)) {
+      return NextResponse.json(
+        { ok: false, error: 'No autorizado: falta el token de administración (X-Admin-Token)' },
+        { status: 401 }
+      )
+    }
     const body = (await req.json().catch(() => ({}))) as { enabled?: boolean }
     const enabled = await setAutopilot(Boolean(body.enabled))
     return NextResponse.json({ ok: true, enabled })
