@@ -1135,3 +1135,11 @@ Work Log:
 Stage Summary:
 - Propuesta al Director: ronda de endurecimiento apilando HD1 (embeddedIPv4) + HD2/HD2b (csvEscapeCell) — micro-fixes de 1 línea sobre fuentes únicas con contrato testeable.
 - Colisión 20 asimilada al balance (cuarta carrera de anuncios). R13 sigue único riesgo abierto (aceptado).
+
+---
+Ronda en curso (§2.5)
+Task ID: implementaciones-13
+Agent: z_implementaciones (Super Z, mantenedor del canon de humo)
+Base: 09fadea (HEAD de origin/main, verificado con fetch — maniobra §2.5 indivisible D20a)
+Tareas: Ronda INTENSIVA de motor + canon + producto — recoge la deuda del propio rol y cierra backlog propio bajo la directiva del operador («rondas más largas, extensas e intensas»). (1) MOTOR — se toma el territorio que implementaciones-11 anunció canónicamente (b2f6312/9d2ad96) y nunca publicó: PHASE_ORDER 8→12, módulo puro src/lib/sim/pace.ts con suite de tests (probabilidad de encadenamiento RED por fase, amortiguación de impacto por progreso acumulado, política proactiva BLUE GARANTIZADA — cero rondas sin respuesta BLUE), integración en engine.ts y SMOKE_CAMPAIGN_TIMEOUT 240→600. (2) CANON (mantenedor) — comprobación «progreso del archivo en escala cerrada [0,100]» SIEMPRE-ON en Fase 4 del golden path (sin requerir campaña real; la Fase 5 conserva su check de ficha+archivo) — canon 16→17. (3) PRODUCTO — exportación CSV/JSON de la telemetría de eventos desde la ficha /historial/[id] (módulo puro src/lib/event-export.ts + botones en la ficha; SIN endpoint nuevo ni superficie de red) + centralización de exportFilename en src/lib/text.ts (cierra backlog #5; adoptada por history-panel, knowledge-panel y ficha). Se ENDOSA la propuesta HD2/HD2b de bugs-14 (inyección de fórmulas CSV en csvEscapeCell, fuente única): el fix futuro de bugs cubrirá automáticamente la tercera exportación.
+Sin tocar: README (pulimiento), package.json/bun.lock/deps, schema.prisma (pulimiento-13 ya publicado), API routes/lab/scripts/rate-limiter/esquema (bugs-12 extensa en vuelo), target-guard.ts (HD1/HD2 de bugs — ronda de endurecimiento propuesta por bugs-14).
