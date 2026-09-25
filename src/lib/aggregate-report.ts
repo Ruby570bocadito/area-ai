@@ -1,3 +1,4 @@
+import { formatDuration } from '@/lib/text'
 import type { CampaignListItemDTO } from '@/lib/api-types'
 
 // ─────────────────────────────────────────────────────────────
@@ -7,19 +8,9 @@ import type { CampaignListItemDTO } from '@/lib/api-types'
 // para que el mismo texto alimente la descarga Y la copia al
 // portapapeles, y para que el formato sea testeable de forma
 // unitaria (tests/aggregate-report.test.ts). La regla de victoria
-// recordada en el pie vive en src/lib/victory.ts (fuente única).
+// recordada en el pie vive en src/lib/victory.ts (fuente única) y
+// el formato de duración en src/lib/text.ts (fuente única).
 // ─────────────────────────────────────────────────────────────
-
-function formatDuration(ms: number): string {
-  if (!Number.isFinite(ms) || ms <= 0) return '—'
-  const totalSec = Math.round(ms / 1000)
-  const h = Math.floor(totalSec / 3600)
-  const m = Math.floor((totalSec % 3600) / 60)
-  const s = totalSec % 60
-  if (h > 0) return `${h}h ${String(m).padStart(2, '0')}m`
-  if (m > 0) return `${m}m ${String(s).padStart(2, '0')}s`
-  return `${s}s`
-}
 
 export function buildAggregateReport(
   campaigns: CampaignListItemDTO[],

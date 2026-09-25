@@ -13,6 +13,7 @@ import {
   Swords,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { formatDuration } from '@/lib/text'
 import { useArena } from '@/components/arena/shell/arena-provider'
 import { ArenaGate, PageContainer } from '@/components/arena/shell/page-frame'
 import { PageHeader } from '@/components/arena/shell/page-frame'
@@ -102,6 +103,14 @@ function DetailPage() {
 
   const { campaign } = detail
   const isRunning = campaign.status === 'RUNNING'
+  // Misma fuente de formato de duración que el informe agregado
+  // (src/lib/text.ts): una campaña de 2 h se muestra "2h 00m" aquí
+  // y en el informe, no "120m 0s".
+  const durationLabel = campaign.endedAt
+    ? formatDuration(new Date(campaign.endedAt).getTime() - new Date(campaign.startedAt).getTime())
+    : isRunning
+      ? 'En curso'
+      : '—'
 
   return (
     <PageContainer>
@@ -138,9 +147,7 @@ function DetailPage() {
           { label: 'Modo del motor', value: campaign.engineMode === 'LLM' ? 'LLM' : 'Determinista' },
           { label: 'Eventos registrados', value: String(detail.events.length) },
           { label: 'Lecciones archivadas', value: String(detail.knowledge.length) },
-          { label: 'Duración', value: campaign.endedAt
-            ? formatDuration(campaign.startedAt, campaign.endedAt)
-            : isRunning ? 'En curso' : '—' },
+          { label: 'Duración', value: durationLabel },
         ].map((m) => (
           <div key={m.label} className="panel rounded-xl px-3.5 py-3">
             <p className="font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.16em] text-[#98a2b3]">
@@ -206,15 +213,6 @@ function DetailPage() {
       </section>
     </PageContainer>
   )
-}
-
-function formatDuration(startedAt: string, endedAt: string): string {
-  const ms = new Date(endedAt).getTime() - new Date(startedAt).getTime()
-  if (!Number.isFinite(ms) || ms < 0) return '—'
-  const totalSec = Math.round(ms / 1000)
-  if (totalSec < 60) return `${totalSec}s`
-  const min = Math.floor(totalSec / 60)
-  return `${min}m ${totalSec % 60}s`
 }
 
 export default function CampaignDetail() {
