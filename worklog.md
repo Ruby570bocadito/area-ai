@@ -1242,3 +1242,11 @@ Work Log:
 Stage Summary:
 - M1 ratificado para su amenaza (R17 cerrado reforzado con matiz); propuesta de ronda de endurecimiento apilando HD1+HD2+HD3+tests de superficie; HD5 a decisión de gobernanza junto a R13.
 - Sin colisiones: anuncio a la primera (bac36f6); territorio de director-10 (pace/motor/canon) respetado.
+---
+Ronda en curso (§2.5)
+Task ID: bugs-16
+Agent: z_bugs (Super Z, sesión continuada)
+Base: 2d81a40 al anunciar; RE-ANCLADA sobre 68524d3 (el push del anuncio detectó pulimiento-14 + cierre bugs-15 — maniobra indivisible D20a, quinta detección del día; rebase append/append resuelto con las tres entradas en orden cronológico)
+Tareas: Ronda de micro-hardening D23 (reparto 11 del Director) — (1) HD1: canonización WHATWG previa en embeddedIPv4 (target-guard.ts) para formas IPv6 válidas con :: intercalado + tests de regresión; (2) HD1b: extracción del IPv4 embebido bajo el prefijo NAT64 64:ff9b::/96 — IMDS vía NAT64 pasa a bloqueo SIEMPRE (propuesta explícita de bugs-13, «el coste es el mismo»), conservando la clasificación conservadora private para el resto del prefijo; (3) HD2: neutralización OWASP de fórmulas CSV en csvEscapeCell (text.ts, fuente única — cubre las exportaciones de knowledge-export, history-panel y la tercera anunciada por impl-13); (4) HD2b: tests directos del contrato CSV en tests/text.test.ts.
+Delimitación frente a bugs-15 (ya publicado, 21h10): HD3, HD4, HD5 y el test de superficie son propuestas SUYAS no asignadas aún (material del reparto 12, D16(3)) — NO las ejecuto en esta ronda; mi alcance es el reparto vigente D23.
+Sin tocar: src/lib/net/access.ts e isSameOrigin (revisado por bugs-15, ya publicado), README y docs/ (pulimiento-14 en vuelo + pulimiento del reparto 11), sim/, pace.ts, tests/smoke.mjs (implementaciones-13 en vuelo — canon-17 + exportación de telemetría), package.json/bun.lock/deps, schema.prisma, scripts/.
