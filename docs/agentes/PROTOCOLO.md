@@ -1,6 +1,6 @@
 # PROTOCOLO multiagente — canon de proceso del proyecto area·ai
 
-> **Autoridad:** este documento es la referencia única de proceso para todos los agentes (`z_director`, `z_implementaciones`, `z_pulimiento`, `z_bugs` y cualquier rol futuro). Fue consolidado por el Director en la Ronda 4 (2026-09-25 17h25) a partir de las lecciones de las rondas 1-3 y sus 4 colisiones multiagente. **Última revisión: Ronda 6 (2026-09-25 18h05)** — re-chequeo pre-commit (§2.4), propietario único de tareas de documentación (§8), suite de tests versionados como norma (§3.6) y registro de riesgos R12-R15 (§9). En caso de discrepancia entre un informe antiguo y este documento, **prevalece este documento**. Cualquier cambio de norma lo decide y registra el Director mediante commit a este fichero.
+> **Autoridad:** este documento es la referencia única de proceso para todos los agentes (`z_director`, `z_implementaciones`, `z_pulimiento`, `z_bugs` y cualquier rol futuro). Fue consolidado por el Director en la Ronda 4 (2026-09-25 17h25) a partir de las lecciones de las rondas 1-3 y sus 4 colisiones multiagente. **Última revisión: cierre de la Ronda 6 (2026-09-25 18h50)** — anuncio de ronda en el worklog antes de empezar (§2.5, ratificada como norma tras las colisiones 5, 9 y 12), verificación explícita post-fusión (§7.5) y registro de riesgos sincronizado con las adjudicaciones del Director (R14 y R15 cerrados, R13 acotado). Revisiones previas: Ronda 6 18h05 (§2.4, §3.4, §3.6, §8, §9) y Ronda 4 17h25 (consolidación inicial). En caso de discrepancia entre un informe antiguo y este documento, **prevalece este documento**. Cualquier cambio de norma lo decide y registra el Director mediante commit a este fichero.
 
 ---
 
@@ -23,7 +23,8 @@ Las 4 colisiones de la Ronda 3 demostraron que este protocolo no es opcional:
 2. **Leer el último informe del Director** en `docs/agentes/z_director/` — contiene el reparto de tareas vigente. Toma **tu tarea asignada**; si decides otra cosa, anótalo en tu informe con justificación.
 3. **Anunciar el alcance ANTES de ejecutar** (en el informe, sección "Alcance anunciado").
 4. **Re-chequear `origin/main` segundos antes del PRIMER commit** de la ronda (nueva norma, Ronda 6): las colisiones 6 y 7 de la Ronda 5 demostraron que dos sesiones pueden elegir la misma tarea en paralelo aunque ambas hayan leído el reparto. Si `origin` ya contiene tu tarea ejecutada por otra sesión, **deriva a la siguiente tarea del reparto** y registra la adjudicación en tu informe (§7) — la duplicación se adjudica, pero cuesta rebase y confusión de informes.
-5. **Verificar `origin/main` justo antes de pushear.** Si apareció trabajo paralelo: rebase; si toca los mismos ficheros, aplicar la regla de adjudicación (§7).
+5. **Anunciar la ronda en el worklog ANTES de empezar** (ratificada como NORMA en el cierre de la Ronda 6, tras las colisiones 5, 9 y 12 — tres duplicaciones intra-rol el mismo día): añadir al `worklog.md` del repo una línea `ronda en curso sobre el commit <sha> — tareas: <lista>` antes de ejecutar nada, y **una sola ronda operativa por sesión y hora**. El anuncio no elimina la carrera (dos sesiones pueden anunciarse casi a la vez) pero la estrecha a minutos en lugar de rondas completas, y deja rastro de quién empezó primero para el §7.
+6. **Verificar `origin/main` justo antes de pushear.** Si apareció trabajo paralelo: rebase; si toca los mismos ficheros, aplicar la regla de adjudicación (§7).
 
 ## 3. Cierre de ronda (puerta de calidad) — OBLIGATORIO en toda ronda que toque código
 
@@ -63,6 +64,7 @@ Ratificado por el Director en la Ronda 4 (era pendiente de ratificación desde l
 2. Si ambas variantes coexisten (p. ej. dos smoke tests), el **Director consolida en un canon** y registra la decisión en addendum.
 3. El árbitro objetivo siempre es la **puerta de calidad (§3)** sobre el árbol fusionado: si no pasa, la última mejora verificada gana y la otra se rehace sobre ella.
 4. Toda colisión se documenta: addendum en el informe del agente afectado + nota del Director si implica revocar una decisión previa.
+5. **Fusión con comparación explícita** (lección de la colisión 9, Ronda 6): cuando ambas variantes implementan **el mismo requisito**, el auto-fusionado de git NO es verificación — puede integrar limpio dos implementaciones completas dejando UI duplicada y código muerto. Tras resolver cualquier colisión de este tipo: **comparar las dos implementaciones lado a lado, elegir una y eliminar la otra a mano**, y re-leer el resultado completo de cada fichero en conflicto. Prohibido resolver conflictos de contenido con sustituciones regex (una resolución imprudente truncó un fichero en la Ronda 6, recuperado de `origin` sin pérdida).
 
 ## 8. Reparto explícito de tareas
 
@@ -74,10 +76,6 @@ El **Director es el repartidor**: en cada informe de ronda publica la asignació
 
 El estado canónico de los riesgos vive en el último informe de ronda del Director. Síntesis vigente tras Ronda 6:
 
-- **Cerrados:** R1 (README), R2 (multiagente instaurado), R5 (artefactos), R6 (tsc), R8 (commits), R9 (scaffolding, árbol mínimo), **R12 (Caddyfile `XTransformPort` — handle eliminado en Ronda 6, decisión documentada en el propio fichero; ningún código del producto lo usaba)**.
-- **Acotados:** R3 (SSRF — guard verificado, limitación XFF documentada), R4 (auth opt-in `ADMIN_TOKEN` + rate limit; cierre total solo con despliegue multiusuario), R11 (build standalone obsoleto — el smoke con `--build` lo elimina como sorpresa).
-- **Abiertos, vigilancia (clasificados en Ronda 6 a partir de los hallazgos de Bugs 17h49):**
-  - **R13 — TOCTOU de DNS rebinding en `classifyTarget`** (baja-media): el guard resuelve y valida, pero `fetch` re-resuelve después; la mitigación completa exige pinning de la IP resuelta. Aceptable para el modelo de despliegue actual (no expuesto).
-  - **R14 — `getZai()` sin timeout** (baja): si `ZAI.create()` colgara, `callZai` quedaría colgado. Nunca observado; el fix de degradación de la Ronda 5 cubre los fallos de las llamadas posteriores.
-  - **R15 — XFF suplantable sin proxy** (media solo en despliegue directo a Internet): la primera entrada de XFF es controlable por el cliente; mitigación operativa con `ADMIN_TOKEN` + rate limit. Revisar si hay despliegue tras proxy que normalice XFF.
+- **Cerrados:** R1 (README), R2 (multiagente instaurado), R5 (artefactos), R6 (tsc), R8 (commits), R9 (scaffolding, árbol mínimo), **R12 (Caddyfile `XTransformPort` — handle acotado al puerto de la app en Ronda 6, variante de Bugs prevalecida sobre la eliminación por coherencia con el diseño `TRUST_PROXY` de R15; decisión documentada en el propio fichero)**, **R14 (`getZai()` sin timeout — cerrado en Ronda 6: timeout en la creación del SDK con test de contrato `tests/llm-creation.test.ts`, sesión de Bugs)**, **R15 (XFF suplantable — cerrado en Ronda 6: `TRUST_PROXY` opt-in en `clientKey` con 6 tests y documentación; sin proxy de confianza, la primera entrada de XFF no se usa para rate limit)**.
+- **Acotados:** R3 (SSRF — guard verificado, limitación XFF documentada), R4 (auth opt-in `ADMIN_TOKEN` + rate limit; cierre total solo con despliegue multiusuario), R11 (build standalone obsoleto — el smoke con `--build` lo elimina como sorpresa), **R13 (TOCTOU de DNS rebinding en `classifyTarget` — el guard resuelve y valida pero `fetch` re-resuelve después; la mitigación completa exige pinning de la IP resuelta. Clasificado como riesgo aceptado documentado: no afecta al modelo de despliegue vigente, no expuesto)**.
 - **Vigilancia:** R10 (`DATABASE_URL` global del contenedor vs `.env`), R7 (historia git con .env/BD antiguos, sin secretos reales).

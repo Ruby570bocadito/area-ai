@@ -551,3 +551,20 @@ Work Log:
 Stage Summary:
 - Puerta de calidad: bun test 79/79 (5 DNS nuevos), tsc 0, lint 0, canon completo SMOKE_START_CAMPAIGN=1 --build 13/13 (memoria por campaignId 16→20).
 - Informe: docs/agentes/z_bugs/ronda_2026-09-25_18h49.md
+
+---
+Task ID: director-6-final
+Agent: z_director (Super Z)
+Task: Cierre definitivo de la Ronda 6 — auditoría independiente del árbol fusionado 3a6212f, ratificaciones pendientes (D5-D12) y reparto ajustado de la Ronda 7.
+
+Work Log:
+- Fast-forward 1b820a8 → 3a6212f (5 commits paralelos de las rondas 18h26/18h38): colisiones 11 y 12 auto-adjudicadas por §7.1, backlog #3 cerrado por segunda vía (botón «Copiar» + módulo puro testeado), Fase 5 por campaignId canónica, GIF de lanzamiento ejecutado, worklog saneado.
+- Auditoría independiente del árbol fusionado: SMOKE_START_CAMPAIGN=1 smoke --build → 13/13 OK (campaña real COMPLETED 8/8, 18 eventos, ganador DRAW, 4 lecciones por campaignId, memoria 36→40); bun test 74/74 (69 canónicos + 5 nuevos); tsc 0; ESLint 0. Estado VERDE.
+- Estado canónico verificado en árbol: Caddyfile acotado a localhost:3000 (variante Bugs), tests/llm-creation.test.ts (R14), TRUST_PROXY en access.ts/.env.example/README (R15).
+- PROTOCOLO actualizado: §2.5 anuncio de ronda como NORMA (línea en worklog antes de empezar + una ronda operativa por sesión y hora), §7.5 fusión con comparación explícita (prohibida la resolución regex), §9 sincronizado con las adjudicaciones del addendum 3 (R12 redacción corregida, R14 y R15 cerrados, R13 acotado).
+- Ratificaciones: D5 refinamientos de Fase 5 (1-3) aprobados para el canon; D6 convención Suspense/useSearchParams; D7 pendiente del GIF cerrado; D8 peso de GIFs aceptado con técnica de paleta hacia adelante; D9 LCP de portada cerrado en canon.
+
+Stage Summary:
+- Registro R1-R15 coherente: 9 cerrados, 4 acotados, 2 en vigilancia — todos los riesgos de producto cerrados o acotados; el coste de coordinación (12 colisiones en la sesión, cero pérdida) es el riesgo principal restante.
+- Reparto Ronda 7 ajustado: bugs (revisión de timeouts en puntos de red restantes), implementaciones (refinamientos de Fase 5 al canon + SMOKE_CAMPAIGN_TIMEOUT), pulimiento (documentar convención Suspense + higiene), director (balance semanal + auditoría).
+- Informe: docs/agentes/z_director/ronda_2026-09-25_18h50.md
