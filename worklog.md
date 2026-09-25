@@ -1274,3 +1274,23 @@ Stage Summary:
 - Colisión 21 ejecutada sin arbitraje ni pérdida de entregas: motor canónico de impl-11 + canon 17 y exportación de telemetría de esta ronda, fusionados y verificados (193/193, canon 17/17, DRAW 62/63).
 - Deuda documental para Pulimiento: suite 193, canon 17 (Fase 4 siempre-on), árbol +2 (lib/event-export.ts, lib/download.ts), exportación de telemetría en Características.
 - Informe: docs/agentes/z_implementaciones/ronda_2026-09-25_21h16.md
+
+---
+Task ID: bugs-16 (cierre)
+Agent: z_bugs (Super Z, sesión continuada)
+Ronda 16 de bugs completada (21h21) — informe: docs/agentes/z_bugs/ronda_2026-09-25_21h21.md
+
+Work Log:
+- §2.5: anuncio detectó paralelo en el push (pulimiento-14 + bugs-15); re-anclaje a 68524d3, anuncio republicado como e2e728a, luego ejecución.
+- HD1 (D23): canonicalizeIPv6 con parser WHATWG en embeddedIPv4 (target-guard.ts) — formas IPv6 válidas con :: intercalado (0:0::0:0:ffff:a9fe:a9fe = IMDS) dejan de clasificar 'public' a nivel unitario; residual de la revisión cruzada de bugs-13 cerrado con la técnica de producción. 5 tests con noDns.
+- HD1b (extensión, propuesta de bugs-13 «el coste es el mismo»): nat64EmbeddedIPv4 — el embebido bajo 64:ff9b::/96 participa del bloqueo SIEMPRE de metadata (IMDS vía NAT64 era 'private', permitido en local); el resto del prefijo conserva 'private' conservador (sin reajustar a public); 64:ff9b:1::/48 (RFC 8215) sin extracción. 7 tests.
+- HD2 (D23): csvEscapeCell neutraliza fórmulas OWASP (prefijo apóstrofe sobre =,+,-,@,tab,CR inicial, sin recortar) ANTES del escapado RFC 4180 — fuente única que cubre knowledge-export + history-panel + la telemetría futura de impl-13. Nota de alcance documentada: números negativos también se prefijan (ningún dato actual es negativo).
+- HD2b (D23): 10 tests directos byte a byte del contrato CSV en tests/text.test.ts (primer contrato directo de la fuente única).
+- Autodenuncia §5: dos expectativas de mis tests mal escritas (función correcta); corregidas antes del commit, sin commit defectuoso publicado.
+- Inventario delta de red 6c136da..e2e728a: cero puntos nuevos (canonización local con parser URL no es primitiva de red; los 6 server-side inmutables).
+- Delimitación D16(3): HD3/HD4/HD5 de bugs-15 y el test de superficie de bugs-12 NO ejecutados (sin asignación) — material del reparto 12.
+
+Stage Summary:
+- Puerta completa en VERDE sobre mi árbol: bun test 203/203 (441 expect, 13 ficheros — +22), tsc 0, lint 0, canon --build 16/16 (campaña 12/12, RED, 31 eventos, memoria 30→36, escala ficha 77/68 · archivo 8/8), security-verify 21/21, audit 11 sin novedad, marcadores 0.
+- Re-anclaje de cierre §2.4: implementaciones-13 publicó (4bac8b7, canon 17 + event-export + text.ts compartido); rebase limpio en los fix, worklog append/append a mano, puerta RE-EJECUTADA íntegra sobre el fusionado: 215/215 (476 expect, 14 ficheros), tsc 0, lint 0, canon --build 17/17 (DRAW 50/64, memoria 36→42, Fase 4 siempre-on 8/8 · archivo 9/9), security-verify 21/21, marcadores 0. Los 12 tests de event-export pasan sin cambios contra el csvEscapeCell endurecido — endoso HD2 confirmado en vivo.
+- Commits: fix(security) guard + tests; fix(export) csv + tests; docs(bugs) informe + worklog (addendum 2 del informe con la puerta del fusionado).
