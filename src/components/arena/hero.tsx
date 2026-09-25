@@ -41,6 +41,55 @@ function StatCell({
 export function Hero({ stats, provider }: { stats: StateResponse['stats']; provider: string }) {
   const rootRef = useRef<HTMLElement | null>(null)
   const titleRef = useRef<HTMLHeadingElement | null>(null)
+  const haloRedRef = useRef<HTMLDivElement | null>(null)
+  const haloBlueRef = useRef<HTMLDivElement | null>(null)
+  const particlesRef = useRef<HTMLDivElement | null>(null)
+  const emblemRef = useRef<HTMLDivElement | null>(null)
+
+  // Parallax de profundidad con el ratón (lerp suave, rAF).
+  useEffect(() => {
+    const root = rootRef.current
+    if (!root) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return
+
+    let tx = 0, ty = 0, x = 0, y = 0, raf = 0
+    const onMove = (e: MouseEvent) => {
+      const r = root.getBoundingClientRect()
+      tx = ((e.clientX - r.left) / r.width - 0.5) * 2
+      ty = ((e.clientY - r.top) / r.height - 0.5) * 2
+      if (!raf) raf = requestAnimationFrame(tick)
+    }
+    const onLeave = () => {
+      tx = 0
+      ty = 0
+      if (!raf) raf = requestAnimationFrame(tick)
+    }
+    const tick = () => {
+      x += (tx - x) * 0.06
+      y += (ty - y) * 0.06
+      if (haloRedRef.current)
+        haloRedRef.current.style.transform = `translate3d(${x * 26}px, ${y * 18}px, 0)`
+      if (haloBlueRef.current)
+        haloBlueRef.current.style.transform = `translate3d(${x * -26}px, ${y * -18}px, 0)`
+      if (particlesRef.current)
+        particlesRef.current.style.transform = `translate3d(${x * 10}px, ${y * 8}px, 0)`
+      if (emblemRef.current)
+        emblemRef.current.style.transform = `translate3d(${x * -9}px, ${y * -6}px, 0)`
+      if (Math.abs(tx - x) > 0.002 || Math.abs(ty - y) > 0.002) {
+        raf = requestAnimationFrame(tick)
+      } else {
+        raf = 0
+      }
+    }
+    root.addEventListener('mousemove', onMove, { passive: true })
+    root.addEventListener('mouseleave', onLeave, { passive: true })
+    return () => {
+      root.removeEventListener('mousemove', onMove)
+      root.removeEventListener('mouseleave', onLeave)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [])
 
   // Reveal del titular carácter a carácter (GSAP + SplitType).
   // El punto medio «·» vuela con el gradiente rojo→cian de la marca;
@@ -82,11 +131,19 @@ export function Hero({ stats, provider }: { stats: StateResponse['stats']; provi
 
   return (
     <header ref={rootRef} className="relative overflow-hidden">
-      <ParticleField />
+      <div ref={particlesRef} className="absolute inset-0 will-change-transform">
+        <ParticleField />
+      </div>
       <div className="grid-bg absolute inset-0" />
-      {/* halos duales, muy tenues */}
-      <div className="pointer-events-none absolute -left-40 top-16 h-[420px] w-[420px] rounded-full bg-[#f4536e]/[0.07] blur-[120px]" />
-      <div className="pointer-events-none absolute -right-40 top-24 h-[420px] w-[420px] rounded-full bg-[#41c0ef]/[0.06] blur-[120px]" />
+      {/* halos duales, muy tenues — con parallax */}
+      <div
+        ref={haloRedRef}
+        className="pointer-events-none absolute -left-40 top-16 h-[420px] w-[420px] rounded-full bg-[#f4536e]/[0.07] blur-[120px] will-change-transform"
+      />
+      <div
+        ref={haloBlueRef}
+        className="pointer-events-none absolute -right-40 top-24 h-[420px] w-[420px] rounded-full bg-[#41c0ef]/[0.06] blur-[120px] will-change-transform"
+      />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 pb-14 pt-16 sm:px-6 sm:pt-24">
         <div className="flex flex-col items-center text-center">
@@ -107,12 +164,15 @@ export function Hero({ stats, provider }: { stats: StateResponse['stats']; provi
           </div>
 
           {/* marca */}
-          <h1
-            ref={titleRef}
-            className="font-display bg-gradient-to-b from-white via-white to-white/45 bg-clip-text text-7xl font-extrabold leading-[0.95] tracking-[-0.03em] text-transparent sm:text-[120px]"
-          >
-            area<span className="bg-gradient-to-r from-[#f4536e] to-[#41c0ef] bg-clip-text text-transparent">·</span>ai
-          </h1>
+          <div className="relative">
+            <span className="title-sheen" aria-hidden />
+            <h1
+              ref={titleRef}
+              className="font-display bg-gradient-to-b from-white via-white to-white/45 bg-clip-text text-7xl font-extrabold leading-[0.95] tracking-[-0.03em] text-transparent sm:text-[120px]"
+            >
+              area<span className="bg-gradient-to-r from-[#f4536e] to-[#41c0ef] bg-clip-text text-transparent">·</span>ai
+            </h1>
+          </div>
 
           <p
             className="mt-6 max-w-2xl text-balance text-[15px] leading-relaxed text-muted-foreground sm:text-base"
@@ -153,11 +213,12 @@ export function Hero({ stats, provider }: { stats: StateResponse['stats']; provi
             </button>
           </div>
 
-          {/* Emblema VS */}
+          {/* Emblema VS — con parallax inverso */}
           <div
-            className="mt-12 flex items-center gap-5 sm:gap-8"
+            className="mt-12 flex items-center gap-5 will-change-transform sm:gap-8"
             style={{ opacity: 0 }}
             ref={(el) => {
+              emblemRef.current = el
               if (el) gsap.to(el, { opacity: 1, y: 0, duration: 0.7, delay: 0.85, ease: 'power2.out' })
             }}
           >

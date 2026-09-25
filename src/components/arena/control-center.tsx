@@ -19,6 +19,12 @@ function DifficultyDots({ level }: { level: number }) {
   )
 }
 
+const SPOTLIGHT_MOVE = (e: React.MouseEvent<HTMLElement>) => {
+  const r = e.currentTarget.getBoundingClientRect()
+  e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`)
+  e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`)
+}
+
 export function ControlCenter({
   scenarios,
   running,
@@ -90,14 +96,23 @@ export function ControlCenter({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
               onClick={() => setSelected(isSel ? null : s.id)}
+              onMouseMove={SPOTLIGHT_MOVE}
               disabled={running}
               className={cn(
-                'group relative overflow-hidden rounded-xl border p-4 text-left transition-all disabled:opacity-50',
+                'spot-card group relative overflow-hidden rounded-xl border p-4 text-left transition-all disabled:opacity-50',
                 isSel
                   ? 'border-white/35 bg-white/[0.05]'
                   : 'border-white/[0.07] bg-white/[0.015] hover:border-white/20 hover:bg-white/[0.035]'
               )}
             >
+              {/* halo de selección */}
+              {isSel && (
+                <motion.span
+                  layoutId="sel-halo"
+                  className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-white/25"
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                />
+              )}
               <div className="flex items-center justify-between gap-2">
                 <span className="font-mono-tight text-[11px] font-bold tracking-[0.14em] text-foreground/90">
                   {s.codename}
@@ -134,7 +149,7 @@ export function ControlCenter({
           onClick={handleStart}
           disabled={disabled || starting}
           className={cn(
-            'relative flex items-center gap-2.5 rounded-lg px-8 py-3.5 text-sm font-semibold transition-all',
+            'shine-sweep relative flex items-center gap-2.5 rounded-lg px-8 py-3.5 text-sm font-semibold transition-all',
             'bg-white text-[#0a0b0f] shadow-[0_8px_30px_-10px_rgba(255,255,255,0.4)] hover:bg-white/92',
             (disabled || starting) && 'cursor-not-allowed opacity-50'
           )}

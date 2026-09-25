@@ -16,6 +16,28 @@ const SEG_COL: Record<string, number> = { DMZ: 1, CORE: 2, AD: 3, OT: 3, CLOUD: 
 const RED = '#f4536e'
 const BLUE = '#41c0ef'
 
+// Cuña de radar (sector de 70°) dibujada alrededor del origen local.
+function radarWedge(r: number, color: string) {
+  const a = ((90 - 35) * Math.PI) / 180
+  const x = r * Math.cos(a)
+  const y = -r * Math.sin(a)
+  return (
+    <g>
+      <path d={`M 0 0 L ${x} ${y} A ${r} ${r} 0 0 1 ${x} ${-y} Z`} fill={color} opacity="0.07" />
+      <line x1="0" y1="0" x2={r * Math.cos(a)} y2={-r * Math.sin(a)} stroke={color} strokeWidth="1" opacity="0.35" />
+    </g>
+  )
+}
+
+// Paquete de datos que recorre un haz (SMIL animateMotion — fiable en SVG).
+function BeamPacket({ path, color, dur, delay }: { path: string; color: string; dur: number; delay: number }) {
+  return (
+    <circle r="2.4" fill={color} opacity="0.9">
+      <animateMotion dur={`${dur}s`} begin={`${delay}s`} repeatCount="indefinite" path={path} />
+    </circle>
+  )
+}
+
 interface NodePos extends InfraNodeDTO {
   x: number
   y: number
@@ -85,6 +107,7 @@ export function NetworkMap({
   return (
     <div className="panel relative overflow-hidden rounded-xl">
       <div className="grid-bg absolute inset-0 opacity-70" />
+      {running && <div className="map-scan" aria-hidden />}
       <svg viewBox="0 0 800 330" className="relative z-10 h-auto w-full" role="img" aria-label="Mapa de red de la campaña">
         <defs>
           <radialGradient id="redGlow" cx="50%" cy="50%" r="50%">
@@ -119,9 +142,9 @@ export function NetworkMap({
             ))
         })}
 
-        {/* haz de ataque RED */}
+        {/* haz de ataque RED + paquetes */}
         {lastRed?.targetNode && byId.get(lastRed.targetNode) && (
-          <motion.g key={`red-${lastRed.id}`}>
+          <g key={`red-${lastRed.id}`}>
             <path
               d={beamPath(byId.get(lastRed.targetNode))}
               fill="none"
@@ -130,12 +153,37 @@ export function NetworkMap({
               className="attack-beam"
               style={{ filter: `drop-shadow(0 0 5px ${RED}99)` }}
             />
-          </motion.g>
+            {running && (
+              <>
+                <BeamPacket path={beamPath(byId.get(lastRed.targetNode))} color={RED} dur={1.4} delay={0} />
+                <BeamPacket path={beamPath(byId.get(lastRed.targetNode))} color="#f98ca0" dur={1.4} delay={0.7} />
+              </>
+            )}
+            {/* flash de impacto sobre el nodo objetivo */}
+            {(() => {
+              const t = byId.get(lastRed.targetNode!)
+              if (!t) return null
+              return (
+                <motion.circle
+                  cx={t.x}
+                  cy={t.y}
+                  r={13 + t.criticality + 4}
+                  fill="none"
+                  stroke={RED}
+                  strokeWidth="2"
+                  initial={{ opacity: 0.95, scale: 0.5 }}
+                  animate={{ opacity: 0, scale: 2.4 }}
+                  transition={{ duration: 1, ease: 'easeOut' }}
+                  style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+                />
+              )
+            })()}
+          </g>
         )}
 
-        {/* haz defensivo BLUE */}
+        {/* haz defensivo BLUE + paquetes */}
         {lastBlue?.targetNode && byId.get(lastBlue.targetNode) && (
-          <motion.g key={`blue-${lastBlue.id}`}>
+          <g key={`blue-${lastBlue.id}`}>
             <path
               d={beamPath(byId.get(lastBlue.targetNode), BLUE_BASE)}
               fill="none"
@@ -144,12 +192,44 @@ export function NetworkMap({
               className="attack-beam"
               style={{ filter: `drop-shadow(0 0 5px ${BLUE}99)` }}
             />
-          </motion.g>
+            {running && (
+              <>
+                <BeamPacket path={beamPath(byId.get(lastBlue.targetNode), BLUE_BASE)} color={BLUE} dur={1.4} delay={0.2} />
+                <BeamPacket path={beamPath(byId.get(lastBlue.targetNode), BLUE_BASE)} color="#8adcf7" dur={1.4} delay={0.9} />
+              </>
+            )}
+            {(() => {
+              const t = byId.get(lastBlue.targetNode!)
+              if (!t) return null
+              return (
+                <motion.circle
+                  cx={t.x}
+                  cy={t.y}
+                  r={13 + t.criticality + 4}
+                  fill="none"
+                  stroke={BLUE}
+                  strokeWidth="2"
+                  initial={{ opacity: 0.95, scale: 0.5 }}
+                  animate={{ opacity: 0, scale: 2.4 }}
+                  transition={{ duration: 1, ease: 'easeOut' }}
+                  style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+                />
+              )
+            })()}
+          </g>
         )}
 
-        {/* base RED */}
+        {/* base RED con radar */}
         <g>
           <circle cx={RED_BASE.x} cy={RED_BASE.y} r="42" fill="url(#redGlow)" />
+          {running && (
+            <g transform={`translate(${RED_BASE.x} ${RED_BASE.y})`}>
+              <g>
+                {radarWedge(40, RED)}
+                <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="3.6s" repeatCount="indefinite" />
+              </g>
+            </g>
+          )}
           <circle cx={RED_BASE.x} cy={RED_BASE.y} r="17" fill="#170b11" stroke={RED} strokeWidth="2" className={running ? 'svg-pulse' : ''} />
           <text x={RED_BASE.x} y={RED_BASE.y + 4} textAnchor="middle" fontSize="11" fill="#f98ca0" fontWeight="bold">
             R
@@ -159,9 +239,17 @@ export function NetworkMap({
           </text>
         </g>
 
-        {/* base BLUE */}
+        {/* base BLUE con radar */}
         <g>
           <circle cx={BLUE_BASE.x} cy={BLUE_BASE.y} r="42" fill="url(#blueGlow)" />
+          {running && (
+            <g transform={`translate(${BLUE_BASE.x} ${BLUE_BASE.y})`}>
+              <g>
+                {radarWedge(40, BLUE)}
+                <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="3.6s" repeatCount="indefinite" />
+              </g>
+            </g>
+          )}
           <circle cx={BLUE_BASE.x} cy={BLUE_BASE.y} r="17" fill="#0a1420" stroke={BLUE} strokeWidth="2" />
           <text x={BLUE_BASE.x} y={BLUE_BASE.y + 4} textAnchor="middle" fontSize="11" fill="#8adcf7" fontWeight="bold">
             B

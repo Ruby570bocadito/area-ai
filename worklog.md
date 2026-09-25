@@ -56,3 +56,24 @@ Work Log:
 Stage Summary:
 - Entrega: interfaz completamente rehecha con identidad "area·ai", estética profesional premium, motor de campañas/evolución intacto y verificado en caliente.
 - Ficheros clave: src/app/{layout,page,globals.css}, src/components/arena/* (todos), src/lib/sim/{roster,seed}.ts.
+
+---
+Task ID: 4
+Agent: Super Z (main agent)
+Task: Ronda de pulido premium — micro-animaciones y efectos de alto impacto en toda la UI de area·ai, sin tocar el motor.
+
+Work Log:
+- globals.css: nuevas utilidades — .scroll-progress (barra de progreso de lectura), .cursor-glow (halo que sigue el cursor con lerp), .noise-overlay (grano fílmico 2.8%), .shine-sweep (destello en botones), .scan-sweep (scanline en tarjeta de agente activo), .marquee-track/.marquee-mask (ticker de eventos), .radar-sweep, .title-sheen (barrido periódico sobre el titular), .winner-shine (destello del banner de victoria), .spot-card (spotlight que sigue el ratón), .score-flash, .map-scan (barrido vertical del mapa). Todos desactivados con prefers-reduced-motion.
+- chrome.tsx (nuevo): componentes ScrollProgress (rAF + scaleX) y CursorGlow (lerp 0.12, oculto en táctil). Integrados en page.tsx junto al overlay de ruido.
+- hero.tsx: parallax de profundidad con el ratón (halos rojo/cian en direcciones opuestas, partículas y emblema VS con factores distintos, lerp 0.06) + sheen periódico sobre el titular «area·ai». Ref fusionado con el callback de GSAP para evitar conflicto de doble ref.
+- network-map.tsx: paquetes de datos viajando por los haces de ataque/defensa (SMIL animateMotion, 2 por haz), cuñas de radar giratorias en RED ORIGIN y SOC (animateTransform), flash de impacto expansionándose en el nodo objetivo al llegar cada evento (motion.circle keyed por evento), scanline vertical del mapa cuando hay campaña en vivo.
+- arena-live.tsx: marcadores con NumberFlow (count-up) + pulso de glow tras cada puntuación (motion.span keyed por valor), ticker marquee con los últimos 8 eventos durante campaña en vivo, banner de resolución con winner-shine, trofeo con spring de entrada + flotación animada.
+- agent-avatar.tsx: AgentCard activo con scan-sweep; texto de acción con entrada keyed (fade+rise) al cambiar.
+- control-center.tsx: spotlight en tarjetas de escenario (spot-card + onMouseMove --mx/--my), halo de selección con layoutId "sel-halo", CTA blanco con shine-sweep.
+- roster.tsx: spot-card en fichas + avatar con scale/rotación al hover del grupo.
+- event-feed.tsx: cada evento nuevo entra con destello de boxShadow que se disipa (1.6s).
+- Verificación: tsc sin errores nuevos (los de examples/skills y llm/engine son preexistentes), eslint 0 problemas, consola del navegador sin errores, overflow horizontal 0 en móvil (390px) y desktop (1440px). Campaña OPERACIÓN TITANIO ejecutada end-to-end desde la UI: 8 rondas, victoria BLUE 35-80, conocimiento 30→34 (bucle de evolución intacto).
+
+Stage Summary:
+- UI con capa de "feel premium": progreso de scroll, cursor glow, grano, parallax, radares, paquetes, scanlines, ticker en vivo, sheens y spotlights; motor de campañas/conocimiento intacto.
+- Ficheros clave: src/app/globals.css, src/app/page.tsx, src/components/arena/{chrome,hero,network-map,arena-live,agent-avatar,control-center,roster,event-feed}.tsx

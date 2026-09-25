@@ -13,6 +13,7 @@ import { Roster } from '@/components/arena/roster'
 import { HistoryPanel } from '@/components/arena/history-panel'
 import { ModelStudio } from '@/components/arena/model-studio'
 import { SectionTitle, Reveal } from '@/components/arena/section'
+import { ScrollProgress, CursorGlow } from '@/components/arena/chrome'
 
 const NAV_LINKS = [
   { href: '#mando', label: 'Escenarios' },
@@ -86,6 +87,11 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col overflow-x-clip">
+      {/* Capas globales de ambiente */}
+      <ScrollProgress />
+      <CursorGlow />
+      <div className="noise-overlay" aria-hidden />
+
       {/* Barra superior */}
       <nav className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#08090d]/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">

@@ -5,6 +5,12 @@ import { cn } from '@/lib/utils'
 import { AgentAvatar } from './agent-avatar'
 import type { AgentDTO } from '@/lib/api-types'
 
+const SPOTLIGHT_MOVE = (e: React.MouseEvent<HTMLElement>) => {
+  const r = e.currentTarget.getBoundingClientRect()
+  e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`)
+  e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`)
+}
+
 function RosterCard({ agent, index }: { agent: AgentDTO; index: number }) {
   const isRed = agent.team === 'RED'
   return (
@@ -14,7 +20,8 @@ function RosterCard({ agent, index }: { agent: AgentDTO; index: number }) {
       viewport={{ once: true, margin: '-30px' }}
       transition={{ delay: Math.min(index * 0.05, 0.35), duration: 0.45 }}
       whileHover={{ y: -4 }}
-      className="panel panel-hover group relative overflow-hidden rounded-xl p-4"
+      onMouseMove={SPOTLIGHT_MOVE}
+      className="panel panel-hover spot-card group relative overflow-hidden rounded-xl p-4"
     >
       {/* aura sutil */}
       <div
@@ -24,8 +31,10 @@ function RosterCard({ agent, index }: { agent: AgentDTO; index: number }) {
         )}
       />
       <div className="flex items-start gap-3">
-        <div className={isRed ? 'anim-float' : ''} style={{ animationDelay: `${index * 0.2}s` }}>
-          <AgentAvatar agent={agent} size="lg" />
+        <div className={cn(isRed ? 'anim-float' : '')} style={{ animationDelay: `${index * 0.2}s` }}>
+          <span className="inline-block transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6">
+            <AgentAvatar agent={agent} size="lg" />
+          </span>
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">

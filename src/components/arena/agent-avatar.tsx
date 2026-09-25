@@ -137,7 +137,7 @@ export function AgentCard({
       }}
       className={cn(
         'panel relative overflow-hidden rounded-xl p-3 transition-colors',
-        active && (isRed ? 'active-red' : 'active-blue')
+        active && (isRed ? 'active-red scan-sweep' : 'active-blue scan-sweep')
       )}
     >
       {active && (
@@ -166,9 +166,15 @@ export function AgentCard({
         </div>
       </div>
       {lastAction && (
-        <p className="mt-2 truncate rounded-md bg-white/[0.04] px-2 py-1 text-[11px] italic text-foreground/80">
+        <motion.p
+          key={lastAction}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: 'easeOut' }}
+          className="mt-2 truncate rounded-md bg-white/[0.04] px-2 py-1 text-[11px] italic text-foreground/80"
+        >
           “{lastAction}”
-        </p>
+        </motion.p>
       )}
       <div className="mt-2 flex items-center gap-2">
         <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/[0.07]">

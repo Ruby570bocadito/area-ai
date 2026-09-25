@@ -72,10 +72,10 @@ export function EventFeed({
             <motion.div
               key={ev.id}
               layout
-              initial={{ opacity: 0, y: 14, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
+              initial={{ opacity: 0, y: 14, scale: 0.98, boxShadow: '0 0 0 1px rgba(255,255,255,0.14), 0 6px 24px -8px rgba(139,147,165,0.35)' }}
+              animate={{ opacity: 1, y: 0, scale: 1, boxShadow: '0 0 0 0 rgba(255,255,255,0), 0 0 0 rgba(0,0,0,0)' }}
               exit={{ opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 28, boxShadow: { duration: 1.6, ease: 'easeOut' } }}
               className={cn(
                 'anim-rise relative mb-1.5 flex gap-2.5 overflow-hidden rounded-lg border border-white/[0.05] bg-white/[0.02] p-2.5 pl-3',
               )}
