@@ -171,13 +171,13 @@ export function AgentCard({
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
-          className="mt-2 truncate rounded-md bg-[#f9fafb] px-2 py-1 text-[11px] italic text-[#475467]"
+          className="mt-2 truncate rounded-md bg-surface-50 px-2 py-1 text-[11px] italic text-ink-600"
         >
           “{lastAction}”
         </motion.p>
       )}
       <div className="mt-2 flex items-center gap-2">
-        <div className="h-1 flex-1 overflow-hidden rounded-full bg-[#f2f4f7]">
+        <div className="h-1 flex-1 overflow-hidden rounded-full bg-surface-100">
           <motion.div
             className={cn('h-full rounded-full', isRed ? 'bg-[#d92d20]' : 'bg-[#0086c9]')}
             initial={{ width: 0 }}

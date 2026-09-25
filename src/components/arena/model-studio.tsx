@@ -185,7 +185,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
       {/* Configuración */}
       <div className="panel rounded-2xl p-5 sm:p-6">
         {/* Estado actual */}
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[#e4e7ec] bg-[#f9fafb] px-3.5 py-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-surface-200 bg-surface-50 px-3.5 py-2.5">
           <span className={cn('flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono-tight text-[10px] font-bold uppercase tracking-wider', sourceBadge.cls)}>
             {sourceBadge.icon}
             {sourceBadge.label}
@@ -219,8 +219,8 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
                 className={cn(
                   'flex flex-col items-center gap-1.5 rounded-lg border px-2 py-2.5 text-[10px] font-semibold transition-colors',
                   activePreset === p.id
-                    ? 'border-ink-900 bg-[#f9fafb] text-ink-900 shadow-sm'
-                    : 'border-[#e4e7ec] bg-white text-ink-500 hover:border-[#d0d5dd] hover:text-ink-900'
+                    ? 'border-ink-900 bg-surface-50 text-ink-900 shadow-sm'
+                    : 'border-surface-200 bg-white text-ink-500 hover:border-surface-300 hover:text-ink-900'
                 )}
               >
                 <span className="text-base">{p.icon}</span>
@@ -244,7 +244,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
                 setActivePreset(null)
               }}
               placeholder="https://api.deepseek.com/v1"
-              className="mt-1.5 border-[#d0d5dd] bg-white font-mono-tight text-xs"
+              className="mt-1.5 border-surface-300 bg-white font-mono-tight text-xs"
             />
           </div>
           <div>
@@ -257,7 +257,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="sk-…"
-              className="mt-1.5 border-[#d0d5dd] bg-white font-mono-tight text-xs"
+              className="mt-1.5 border-surface-300 bg-white font-mono-tight text-xs"
             />
           </div>
         </div>
@@ -288,10 +288,10 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Filtrar modelos…"
-                  className="h-8 border-[#d0d5dd] bg-white pl-8 font-mono-tight text-xs"
+                  className="h-8 border-surface-300 bg-white pl-8 font-mono-tight text-xs"
                 />
               </div>
-              <ScrollArea className="mt-2 h-44 rounded-lg border border-[#e4e7ec] bg-white">
+              <ScrollArea className="mt-2 h-44 rounded-lg border border-surface-200 bg-white">
                 <AnimatePresence initial={false}>
                   {filtered.map((m) => (
                     <motion.button
@@ -302,11 +302,11 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
                       exit={{ opacity: 0 }}
                       onClick={() => setModel(m.id)}
                       className={cn(
-                        'flex w-full items-center justify-between gap-2 border-b border-[#f2f4f7] px-3 py-2 text-left transition-colors last:border-0',
-                        model === m.id ? 'bg-[#f0f9ff]' : 'hover:bg-[#f9fafb]'
+                        'flex w-full items-center justify-between gap-2 border-b border-surface-100 px-3 py-2 text-left transition-colors last:border-0',
+                        model === m.id ? 'bg-[#f0f9ff]' : 'hover:bg-surface-50'
                       )}
                     >
-                      <span className={cn('font-mono-tight text-[11px]', model === m.id ? 'font-semibold text-[#026aa2]' : 'text-[#344054]')}>
+                      <span className={cn('font-mono-tight text-[11px]', model === m.id ? 'font-semibold text-[#026aa2]' : 'text-ink-700')}>
                         {m.id}
                       </span>
                       {model === m.id ? (
@@ -328,7 +328,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
             </>
           )}
           {models.length === 0 && (
-            <p className="mt-2 flex items-center gap-1.5 rounded-lg border border-dashed border-[#d0d5dd] bg-[#f9fafb] px-3 py-2.5 text-[11px] text-ink-500">
+            <p className="mt-2 flex items-center gap-1.5 rounded-lg border border-dashed border-surface-300 bg-surface-50 px-3 py-2.5 text-[11px] text-ink-500">
               <CircleAlert className="h-3.5 w-3.5 shrink-0" />
               Pulsa «Descargar modelos» para sincronizar el catálogo del proveedor.
             </p>
@@ -345,7 +345,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
             value={model}
             onChange={(e) => setModel(e.target.value)}
             placeholder="deepseek-chat · gpt-4o-mini · llama-3.3-70b-versatile…"
-            className="mt-1.5 border-[#d0d5dd] bg-white font-mono-tight text-xs"
+            className="mt-1.5 border-surface-300 bg-white font-mono-tight text-xs"
           />
         </div>
 
@@ -366,7 +366,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
           <p className="flex items-center gap-2 font-mono-tight text-[10px] font-bold uppercase tracking-[0.18em] text-ink-500">
             <Info className="h-3.5 w-3.5" /> Qué hace esta configuración
           </p>
-          <ul className="mt-3 space-y-2.5 text-[12px] leading-relaxed text-[#475467]">
+          <ul className="mt-3 space-y-2.5 text-[12px] leading-relaxed text-ink-600">
             <li className="flex gap-2">
               <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink-400" />
               Cada acción de los agentes (tácticas, narrativa, lecciones archivadas) la decide el modelo activo.

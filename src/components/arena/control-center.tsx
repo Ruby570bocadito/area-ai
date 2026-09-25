@@ -70,8 +70,8 @@ export function ControlCenter({
     <div className="panel relative overflow-hidden rounded-2xl p-5 sm:p-6">
       <div className="relative z-10 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3.5">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#e4e7ec] bg-[#f2f4f7]">
-            <RadioTower className="h-4.5 w-4.5 text-[#344054]" />
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-surface-200 bg-surface-100">
+            <RadioTower className="h-4.5 w-4.5 text-ink-700" />
           </span>
           <div>
             <h3 className="font-display text-base font-semibold tracking-tight text-ink-900 sm:text-lg">
@@ -83,7 +83,7 @@ export function ControlCenter({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1.5 rounded-full border border-[#e4e7ec] bg-white px-3 py-1.5 font-mono-tight text-[10px] text-ink-500">
+          <span className="flex items-center gap-1.5 rounded-full border border-surface-200 bg-white px-3 py-1.5 font-mono-tight text-[10px] text-ink-500">
             <Cpu className="h-3 w-3 text-[#0086c9]" />
             Motor: <span className="text-ink-900">{provider}</span>
           </span>
@@ -103,14 +103,14 @@ export function ControlCenter({
       <div
         className={cn(
           'relative z-10 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 transition-colors',
-          autopilot ? 'border-[#ddd6fe] bg-[#f5f3ff]' : 'border-[#e4e7ec] bg-[#f9fafb]'
+          autopilot ? 'border-[#ddd6fe] bg-[#f5f3ff]' : 'border-surface-200 bg-surface-50'
         )}
       >
         <div className="flex min-w-0 items-center gap-3">
           <span
             className={cn(
               'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border',
-              autopilot ? 'border-[#ddd6fe] bg-white text-[#6941c6]' : 'border-[#e4e7ec] bg-white text-ink-500'
+              autopilot ? 'border-[#ddd6fe] bg-white text-[#6941c6]' : 'border-surface-200 bg-white text-ink-500'
             )}
           >
             <InfinityIcon className="h-4 w-4" />
@@ -132,7 +132,7 @@ export function ControlCenter({
           onClick={() => onToggleAutopilot(!autopilot)}
           className={cn(
             'relative h-6.5 w-11 shrink-0 rounded-full border transition-colors',
-            autopilot ? 'border-[#7c3aed] bg-[#7c3aed]' : 'border-[#d0d5dd] bg-[#eaecf0]'
+            autopilot ? 'border-[#7c3aed] bg-[#7c3aed]' : 'border-surface-300 bg-[#eaecf0]'
           )}
         >
           <motion.span
@@ -164,7 +164,7 @@ export function ControlCenter({
                 'group relative overflow-hidden rounded-xl border text-left transition-all disabled:opacity-50',
                 isSel
                   ? 'border-ink-900 bg-white shadow-[0_8px_24px_-12px_rgba(16,24,40,0.35)]'
-                  : 'border-[#e4e7ec] bg-white hover:border-[#d0d5dd] hover:shadow-[0_4px_16px_-8px_rgba(16,24,40,0.18)]'
+                  : 'border-surface-200 bg-white hover:border-surface-300 hover:shadow-[0_4px_16px_-8px_rgba(16,24,40,0.18)]'
               )}
             >
               {/* halo de selección */}

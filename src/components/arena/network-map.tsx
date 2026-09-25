@@ -339,7 +339,7 @@ export function NetworkMap({
       </svg>
 
       {/* leyenda + contadores */}
-      <div className="relative z-10 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-[#f2f4f7] px-3.5 py-2.5 font-mono-tight text-[10px] text-ink-500">
+      <div className="relative z-10 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-surface-100 px-3.5 py-2.5 font-mono-tight text-[10px] text-ink-500">
         <span className="flex items-center gap-1.5">
           <Skull className="h-3 w-3 text-[#d92d20]" /> Comprometido
         </span>
@@ -365,9 +365,9 @@ export function NetworkMap({
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="relative z-10 overflow-hidden border-t border-[#f2f4f7]"
+            className="relative z-10 overflow-hidden border-t border-surface-100"
           >
-            <div className="grid gap-4 bg-[#f9fafb] p-4 sm:grid-cols-[1.1fr_1fr_1fr]">
+            <div className="grid gap-4 bg-surface-50 p-4 sm:grid-cols-[1.1fr_1fr_1fr]">
               <div className="min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
@@ -380,7 +380,7 @@ export function NetworkMap({
                     type="button"
                     onClick={() => setSelectedId(null)}
                     aria-label="Cerrar detalle"
-                    className="rounded p-1 text-ink-400 transition-colors hover:bg-[#f2f4f7] hover:text-ink-900"
+                    className="rounded p-1 text-ink-400 transition-colors hover:bg-surface-100 hover:text-ink-900"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -398,7 +398,7 @@ export function NetworkMap({
                       />
                     ))}
                   </span>
-                  <span className="font-mono-tight text-[10px] text-[#475467]">{selected.criticality}/5</span>
+                  <span className="font-mono-tight text-[10px] text-ink-600">{selected.criticality}/5</span>
                 </div>
                 {(compromised.has(selected.id) || hardened.has(selected.id)) && (
                   <p
@@ -416,12 +416,12 @@ export function NetworkMap({
 
                 {/* Estado real del laboratorio para este nodo */}
                 {labNode && (
-                  <div className="mt-2.5 rounded-lg border border-[#e4e7ec] bg-white p-2.5">
+                  <div className="mt-2.5 rounded-lg border border-surface-200 bg-white p-2.5">
                     <p className="flex items-center gap-1.5 font-mono-tight text-[9px] font-bold uppercase tracking-[0.16em] text-ink-500">
                       <Server className="h-3 w-3" /> Servicio real del lab
                     </p>
                     <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                      <span className="rounded border border-[#e4e7ec] bg-[#f9fafb] px-1.5 py-px font-mono-tight text-[9px] text-[#475467]">
+                      <span className="rounded border border-surface-200 bg-surface-50 px-1.5 py-px font-mono-tight text-[9px] text-ink-600">
                         {labNode.compromised ? `${labNode.sessions} sesión(es) RED` : 'sin sesiones RED'}
                       </span>
                       {labNode.isolated && (
@@ -467,7 +467,7 @@ export function NetworkMap({
                     selected.vulnerabilities.map((v) => {
                       const st = labNode?.vulnerabilities.find((x) => x.name === v)?.status
                       return (
-                        <li key={v} className="flex items-center gap-1.5 text-[11.5px] leading-snug text-[#344054]">
+                        <li key={v} className="flex items-center gap-1.5 text-[11.5px] leading-snug text-ink-700">
                           <span>{v}</span>
                           {st === 'PATCHED' && (
                             <span className="shrink-0 rounded border border-[#a6f4c5] bg-[#ecfdf3] px-1 font-mono-tight text-[8.5px] font-bold text-[#067647]">PARCHEADA</span>
@@ -487,7 +487,7 @@ export function NetworkMap({
                 <ul className="mt-1.5 space-y-1">
                   {selected.controls.length > 0 ? (
                     selected.controls.map((c) => (
-                      <li key={c} className="text-[11.5px] leading-snug text-[#344054]">
+                      <li key={c} className="text-[11.5px] leading-snug text-ink-700">
                         {c}
                       </li>
                     ))
@@ -503,7 +503,7 @@ export function NetworkMap({
 
       {/* pista cuando no hay selección */}
       {!selected && (
-        <div className="relative z-10 flex items-center justify-center gap-1.5 border-t border-[#f2f4f7] px-3.5 py-1.5 text-[10px] text-ink-400">
+        <div className="relative z-10 flex items-center justify-center gap-1.5 border-t border-surface-100 px-3.5 py-1.5 text-[10px] text-ink-400">
           <MousePointerClick className="h-3 w-3" />
           Selecciona un activo del mapa para ver sus vulnerabilidades y controles reales.
         </div>

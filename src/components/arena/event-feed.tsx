@@ -21,7 +21,7 @@ import type { EventDTO } from '@/lib/api-types'
 const RESULT_STYLE: Record<string, { label: string; cls: string; icon: LucideIcon }> = {
   EXITO: { label: 'ÉXITO', cls: 'bg-[#fef3f2] text-[#b42318] border-[#fecdca]', icon: Zap },
   PARCIAL: { label: 'PARCIAL', cls: 'bg-[#fffaeb] text-[#b54708] border-[#fedf89]', icon: AlertTriangle },
-  FALLO: { label: 'FALLO', cls: 'bg-[#f9fafb] text-ink-500 border-[#e4e7ec]', icon: ShieldX },
+  FALLO: { label: 'FALLO', cls: 'bg-surface-50 text-ink-500 border-surface-200', icon: ShieldX },
   BLOQUEADO: { label: 'BLOQUEADO', cls: 'bg-[#f0f9ff] text-[#026aa2] border-[#b2ddff]', icon: ShieldCheck },
   DETECTADO: { label: 'DETECTADO', cls: 'bg-[#ecfdf3] text-[#067647] border-[#a6f4c5]', icon: Eye },
   CONTENIDO: { label: 'CONTENIDO', cls: 'bg-[#f5f3ff] text-[#6941c6] border-[#ddd6fe]', icon: Lock },
@@ -46,7 +46,7 @@ function parseEvidence(raw: string | null): EvidenceParsed | null {
 }
 
 function statusTone(status: number): string {
-  if (status === 0) return 'bg-[#f9fafb] text-ink-500 border-[#e4e7ec]'
+  if (status === 0) return 'bg-surface-50 text-ink-500 border-surface-200'
   if (status < 300) return 'bg-[#ecfdf3] text-[#067647] border-[#a6f4c5]'
   if (status < 400) return 'bg-[#f0f9ff] text-[#026aa2] border-[#b2ddff]'
   return 'bg-[#fef3f2] text-[#b42318] border-[#fecdca]'
@@ -103,7 +103,7 @@ export function EventFeed({
               exit={{ opacity: 0 }}
               transition={{ type: 'spring', stiffness: 320, damping: 28, boxShadow: { duration: 1.6, ease: 'easeOut' } }}
               className={cn(
-                'anim-rise relative mb-1.5 flex gap-2.5 overflow-hidden rounded-lg border border-[#f2f4f7] bg-[#f9fafb] p-2.5 pl-3',
+                'anim-rise relative mb-1.5 flex gap-2.5 overflow-hidden rounded-lg border border-surface-100 bg-surface-50 p-2.5 pl-3',
               )}
             >
               {/* acento lateral por equipo */}
@@ -146,7 +146,7 @@ export function EventFeed({
                     </span>
                   )}
                   {ev.targetNode && (
-                    <span className="rounded bg-[#f2f4f7] px-1.5 py-px font-mono-tight text-[9px] text-ink-500">
+                    <span className="rounded bg-surface-100 px-1.5 py-px font-mono-tight text-[9px] text-ink-500">
                       → {ev.targetNode}
                     </span>
                   )}
@@ -154,8 +154,8 @@ export function EventFeed({
                 <p className="mt-0.5 text-[12px] font-semibold leading-snug text-ink-900">{ev.action}</p>
                 <p className="text-[11px] leading-snug text-ink-500">{ev.detail}</p>
                 {ev.command && (
-                  <div className="mt-1.5 overflow-hidden rounded-md border border-[#e4e7ec] bg-white">
-                    <div className="flex items-center gap-1.5 border-b border-[#f2f4f7] px-2 py-1">
+                  <div className="mt-1.5 overflow-hidden rounded-md border border-surface-200 bg-white">
+                    <div className="flex items-center gap-1.5 border-b border-surface-100 px-2 py-1">
                       <TerminalSquare className="h-3 w-3 shrink-0 text-ink-400" />
                       <span className="font-mono-tight text-[8.5px] font-bold uppercase tracking-[0.14em] text-ink-400">
                         comando real · laboratorio
@@ -174,7 +174,7 @@ export function EventFeed({
                         </span>
                       )}
                     </div>
-                    <p className="truncate px-2 py-1 font-mono-tight text-[10px] leading-relaxed text-[#344054]" title={ev.command}>
+                    <p className="truncate px-2 py-1 font-mono-tight text-[10px] leading-relaxed text-ink-700" title={ev.command}>
                       {ev.command}
                     </p>
                   </div>
@@ -182,7 +182,7 @@ export function EventFeed({
                 {evidence?.artifacts && evidence.artifacts.length > 0 && (
                   <div className="mt-1 flex flex-wrap gap-1">
                     {evidence.artifacts.slice(0, 3).map((a, i) => (
-                      <span key={i} className="rounded bg-[#f9fafb] border border-[#f2f4f7] px-1.5 py-px font-mono-tight text-[9px] text-[#475467]">
+                      <span key={i} className="rounded bg-surface-50 border border-surface-100 px-1.5 py-px font-mono-tight text-[9px] text-ink-600">
                         {a}
                       </span>
                     ))}

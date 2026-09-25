@@ -46,8 +46,14 @@
   --color-arena-blue: var(--arena-blue);
   --color-arena-blue-soft: var(--arena-blue-soft);
   --color-ink-900: var(--ink-900);
+  --color-ink-700: var(--ink-700);
+  --color-ink-600: var(--ink-600);
   --color-ink-500: var(--ink-500);
   --color-ink-400: var(--ink-400);
+  --color-surface-50: var(--surface-50);
+  --color-surface-100: var(--surface-100);
+  --color-surface-200: var(--surface-200);
+  --color-surface-300: var(--surface-300);
 }
 
 /* ═══════════ area·ai — Design system "enterprise clarity" ═══════════
@@ -93,13 +99,24 @@
   --arena-blue-soft: #f0f9ff;
   --arena-amber: #d97706;
 
-  /* Paleta neutra compartida — espejo de los tres grises de texto del sistema
-     (análogo a --arena-*): principal, secundario y terciario. Tailwind genera
-     las utilidades ink-* desde @theme (text-ink-900, bg-ink-500, border-ink-400…);
-     cambiar un valor aquí re-tiñe toda la UI de ese tono. */
+  /* Paleta neutra compartida — grises de texto del sistema (análogo a --arena-*).
+     Escala completa de Untitled UI: 900 principal, 700 etiquetas fuertes,
+     600 micro-labels uppercase, 500 secundario, 400 terciario/disabled.
+     Tailwind genera las utilidades ink-* desde @theme (text-ink-900,
+     bg-ink-500, border-ink-400…); cambiar un valor aquí re-tiñe toda la UI. */
   --ink-900: #101828;
+  --ink-700: #344054;
+  --ink-600: #475467;
   --ink-500: #667085;
   --ink-400: #98a2b3;
+
+  /* Superficies y bordes — la mitad clara de la misma escala (50/100/200/300):
+     fondo sutil de chips/tracks, hairline de divisores, borde estándar y
+     borde fuerte/input. Misma propiedad clave: un solo punto de cambio. */
+  --surface-50: #f9fafb;
+  --surface-100: #f2f4f7;
+  --surface-200: #e4e7ec;
+  --surface-300: #d0d5dd;
 }
 
 html {
@@ -143,7 +160,7 @@ body {
   transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 .panel-hover:hover {
-  border-color: #d0d5dd;
+  border-color: var(--surface-300);
   box-shadow: 0 4px 16px -6px rgba(16, 24, 40, 0.14);
 }
 
@@ -411,11 +428,11 @@ h1, h2, h3 { text-wrap: balance; }
   padding: 0.5rem 0.7rem;
   font-size: 13px;
   font-weight: 500;
-  color: #475467;
+  color: var(--ink-600);
   transition: background-color 0.18s ease, color 0.18s ease;
 }
 .side-link:hover {
-  background: #f2f4f7;
+  background: var(--surface-100);
   color: var(--ink-900);
 }
 .side-link[data-active="true"] {

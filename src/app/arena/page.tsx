@@ -39,7 +39,7 @@ function ArenaPage() {
           transition={{ duration: 0.4 }}
           className="panel flex flex-col items-center gap-3.5 rounded-2xl px-6 py-14 text-center"
         >
-          <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#e4e7ec] bg-[#f2f4f7]">
+          <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-surface-200 bg-surface-100">
             <Radio className="h-5 w-5 text-ink-500" />
           </span>
           <div>

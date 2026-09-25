@@ -35,17 +35,17 @@ import { EventFeed } from '@/components/arena/event-feed'
 
 const QUICK_LINKS = [
   { href: '/arena', label: 'Operaciones', desc: 'Mapa y telemetría en vivo', icon: Radio, tint: 'text-[#0086c9] bg-[#f0f9ff] border-[#bae6fd]' },
-  { href: '/agentes', label: 'Agentes', desc: 'Roster y actividad real', icon: Users, tint: 'text-ink-900 bg-[#f2f4f7] border-[#e4e7ec]' },
+  { href: '/agentes', label: 'Agentes', desc: 'Roster y actividad real', icon: Users, tint: 'text-ink-900 bg-surface-100 border-surface-200' },
   { href: '/conocimiento', label: 'Conocimiento', desc: 'Lecciones que evolucionan', icon: BrainCircuit, tint: 'text-[#7c3aed] bg-[#f5f3ff] border-[#ddd6fe]' },
   { href: '/historial', label: 'Historial', desc: 'Archivo de campañas', icon: History, tint: 'text-[#b54708] bg-[#fffaeb] border-[#fedf89]' },
   { href: '/analitica', label: 'Analítica', desc: 'Balance y evolución', icon: BarChart3, tint: 'text-[#067647] bg-[#ecfdf3] border-[#a6f4c5]' },
-  { href: '/modelos', label: 'Modelos', desc: 'Motor LLM del sistema', icon: SlidersHorizontal, tint: 'text-ink-900 bg-[#f2f4f7] border-[#e4e7ec]' },
+  { href: '/modelos', label: 'Modelos', desc: 'Motor LLM del sistema', icon: SlidersHorizontal, tint: 'text-ink-900 bg-surface-100 border-surface-200' },
 ] as const
 
 const RESULT_CHIP: Record<string, string> = {
   EXITO: 'bg-[#fef3f2] text-[#b42318] border-[#fecdca]',
   PARCIAL: 'bg-[#fffaeb] text-[#b54708] border-[#fedf89]',
-  FALLO: 'bg-[#f9fafb] text-ink-500 border-[#e4e7ec]',
+  FALLO: 'bg-surface-50 text-ink-500 border-surface-200',
   BLOQUEADO: 'bg-[#f0f9ff] text-[#026aa2] border-[#b2ddff]',
   DETECTADO: 'bg-[#ecfdf3] text-[#067647] border-[#a6f4c5]',
   CONTENIDO: 'bg-[#f5f3ff] text-[#6941c6] border-[#ddd6fe]',
@@ -115,7 +115,7 @@ function LabStatusCard({ delay }: { delay: number }) {
         <span
           className={cn(
             'flex items-center gap-1.5 rounded-full px-2 py-0.5 font-mono-tight text-[9px] font-bold uppercase tracking-wider',
-            lab.online ? 'bg-[#ecfdf3] text-[#067647]' : 'bg-[#f2f4f7] text-ink-500'
+            lab.online ? 'bg-[#ecfdf3] text-[#067647]' : 'bg-surface-100 text-ink-500'
           )}
         >
           <span className={cn('h-1.5 w-1.5 rounded-full', lab.online ? 'bg-[#12b76a] pulse-dot' : 'bg-ink-400')} />
@@ -124,25 +124,25 @@ function LabStatusCard({ delay }: { delay: number }) {
       </div>
       {lab.online || liveLab ? (
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <div className="rounded-lg border border-[#f2f4f7] bg-[#f9fafb] px-2.5 py-1.5">
+          <div className="rounded-lg border border-surface-100 bg-surface-50 px-2.5 py-1.5">
             <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Servicios HTTP</p>
             <p className="font-mono-tight text-[13px] font-bold text-ink-900">
               127.0.0.1:{lab.port ?? '—'}
             </p>
           </div>
-          <div className="rounded-lg border border-[#f2f4f7] bg-[#f9fafb] px-2.5 py-1.5">
+          <div className="rounded-lg border border-surface-100 bg-surface-50 px-2.5 py-1.5">
             <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Intercambios reales</p>
             <p className="font-mono-tight text-[13px] font-bold text-ink-900">
               <NumberFlow value={lab.exchanges} />
             </p>
           </div>
-          <div className="rounded-lg border border-[#f2f4f7] bg-[#f9fafb] px-2.5 py-1.5">
+          <div className="rounded-lg border border-surface-100 bg-surface-50 px-2.5 py-1.5">
             <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Sesiones activas</p>
             <p className="font-mono-tight text-[13px] font-bold text-ink-900">
               <NumberFlow value={liveLab?.sessions ?? 0} />
             </p>
           </div>
-          <div className="rounded-lg border border-[#f2f4f7] bg-[#f9fafb] px-2.5 py-1.5">
+          <div className="rounded-lg border border-surface-100 bg-surface-50 px-2.5 py-1.5">
             <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Reglas SIEM</p>
             <p className="font-mono-tight text-[13px] font-bold text-ink-900">
               <NumberFlow value={activeMonitors} />
@@ -155,7 +155,7 @@ function LabStatusCard({ delay }: { delay: number }) {
           segmentos y SIEM. Cada acción de los agentes es un intercambio verificable.
         </p>
       )}
-      <p className="mt-2.5 border-t border-[#f2f4f7] pt-2 text-[10px] leading-snug text-ink-400">
+      <p className="mt-2.5 border-t border-surface-100 pt-2 text-[10px] leading-snug text-ink-400">
         {running && liveLab
           ? `${liveLab.exchanges} intercambios HTTP en la campaña en curso · ${liveLab.nodes.filter((n) => n.compromised).length} nodos comprometidos · ${liveLab.nodes.filter((n) => n.isolated).length} aislados`
           : 'Los resultados se derivan de respuestas reales, no de dados.'}
@@ -184,16 +184,16 @@ function RecentActivity() {
       </div>
       <ul className="mt-3 space-y-1.5">
         {state.recentActivity.slice(0, 8).map((e) => (
-          <li key={e.id} className="flex items-center gap-2.5 rounded-lg border border-[#f2f4f7] bg-[#f9fafb] px-2.5 py-1.5">
+          <li key={e.id} className="flex items-center gap-2.5 rounded-lg border border-surface-100 bg-surface-50 px-2.5 py-1.5">
             <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', e.team === 'RED' ? 'bg-[#d92d20]' : 'bg-[#0086c9]')} />
             <span className="font-mono-tight text-[10.5px] font-bold tracking-wide text-ink-900">{e.agentCodename}</span>
-            <span className="min-w-0 flex-1 truncate text-[11px] text-[#475467]">{e.action}</span>
+            <span className="min-w-0 flex-1 truncate text-[11px] text-ink-600">{e.action}</span>
             {e.result && (
-              <span className={cn('shrink-0 rounded border px-1.5 py-px font-mono-tight text-[9px] font-bold', RESULT_CHIP[e.result] ?? 'border-[#e4e7ec] bg-white text-ink-500')}>
+              <span className={cn('shrink-0 rounded border px-1.5 py-px font-mono-tight text-[9px] font-bold', RESULT_CHIP[e.result] ?? 'border-surface-200 bg-white text-ink-500')}>
                 {e.result}
               </span>
             )}
-            <span className="hidden shrink-0 rounded bg-white border border-[#f2f4f7] px-1.5 py-px font-mono-tight text-[9px] text-ink-400 sm:block">
+            <span className="hidden shrink-0 rounded bg-white border border-surface-100 px-1.5 py-px font-mono-tight text-[9px] text-ink-400 sm:block">
               {e.campaignCodename}
             </span>
             <span className="shrink-0 font-mono-tight text-[9px] text-ink-400">{relTime(e.createdAt)}</span>
@@ -236,7 +236,7 @@ function TopOperatorsAndSpark() {
               <span className="w-4 shrink-0 text-center font-mono-tight text-[10px] font-bold text-ink-400">{i + 1}</span>
               <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', a.team === 'RED' ? 'bg-[#d92d20]' : 'bg-[#0086c9]')} />
               <span className="w-[74px] shrink-0 truncate font-mono-tight text-[10.5px] font-bold tracking-wide text-ink-900">{a.codename}</span>
-              <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-[#f2f4f7]">
+              <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-surface-100">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${Math.round((a.xp / max) * 100)}%` }}
@@ -266,12 +266,12 @@ function TopOperatorsAndSpark() {
               initial={{ height: 2 }}
               animate={{ height: Math.max(3, Math.round((v / sparkMax) * 70)) }}
               transition={{ duration: 0.5, delay: i * 0.03, ease: [0.22, 1, 0.36, 1] }}
-              className={cn('flex-1 rounded-t-[3px]', v > 0 ? 'bg-gradient-to-t from-[#0086c9]/60 to-[#0086c9]' : 'bg-[#f2f4f7]')}
+              className={cn('flex-1 rounded-t-[3px]', v > 0 ? 'bg-gradient-to-t from-[#0086c9]/60 to-[#0086c9]' : 'bg-surface-100')}
               title={`${v} lecciones`}
             />
           ))}
         </div>
-        <p className="mt-2 border-t border-[#f2f4f7] pt-2 text-[10px] leading-snug text-ink-400">
+        <p className="mt-2 border-t border-surface-100 pt-2 text-[10px] leading-snug text-ink-400">
           Cada lección nace de una campaña real y se reutiliza en las siguientes con su tasa de éxito.
         </p>
       </div>
@@ -294,7 +294,7 @@ function DashboardPage() {
         title="Panel de mando"
         subtitle="Ciber range real: los agentes ejecutan comandos verificables contra servicios desplegados, archivan conocimiento y evolucionan campaña tras campaña."
         actions={
-          <span className="flex items-center gap-1.5 rounded-full border border-[#e4e7ec] bg-white px-3 py-1.5 font-mono-tight text-[10px] font-bold uppercase tracking-wider text-ink-500 shadow-sm">
+          <span className="flex items-center gap-1.5 rounded-full border border-surface-200 bg-white px-3 py-1.5 font-mono-tight text-[10px] font-bold uppercase tracking-wider text-ink-500 shadow-sm">
             <InfinityIcon className={cn('h-3.5 w-3.5', state.autopilot ? 'text-[#7c3aed]' : 'text-ink-400')} />
             {state.autopilot ? 'Operación continua activa' : 'Motor listo'}
           </span>
@@ -317,9 +317,9 @@ function DashboardPage() {
           sub={
             <span className="flex items-center gap-2 font-mono-tight text-[10px]">
               <span><b className="font-bold text-[#b42318]">{stats.redWins}</b> red</span>
-              <span className="text-[#d0d5dd]">·</span>
+              <span className="text-surface-300">·</span>
               <span><b className="font-bold text-[#026aa2]">{stats.blueWins}</b> blue</span>
-              <span className="text-[#d0d5dd]">·</span>
+              <span className="text-surface-300">·</span>
               <span><b className="font-bold text-[#b54708]">{stats.draws}</b> empates</span>
             </span>
           }

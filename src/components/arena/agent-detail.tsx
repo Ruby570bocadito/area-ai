@@ -89,7 +89,7 @@ export function AgentDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent aria-describedby={undefined} className="nice-scroll max-h-[85vh] max-w-md gap-0 overflow-y-auto border-[#e4e7ec] bg-white p-0 shadow-xl">
+      <DialogContent aria-describedby={undefined} className="nice-scroll max-h-[85vh] max-w-md gap-0 overflow-y-auto border-surface-200 bg-white p-0 shadow-xl">
         {/* Cabecera con aura de equipo */}
         <div className="relative overflow-hidden p-6 pb-5">
           <div
@@ -129,7 +129,7 @@ export function AgentDetailDialog({
                     {agent.team}
                   </span>
                 </div>
-                <p className="mt-0.5 text-[12.5px] font-medium text-[#344054]">{agent.role}</p>
+                <p className="mt-0.5 text-[12.5px] font-medium text-ink-700">{agent.role}</p>
                 <p className="mt-1 flex items-start gap-1.5 text-[11.5px] italic text-ink-400">
                   <Quote className="mt-0.5 h-3 w-3 shrink-0 opacity-50" />
                   {agent.specialty}
@@ -151,7 +151,7 @@ export function AgentDetailDialog({
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + i * 0.08, duration: 0.35 }}
-              className="rounded-xl border border-[#f2f4f7] bg-[#f9fafb] p-3 text-center"
+              className="rounded-xl border border-surface-100 bg-surface-50 p-3 text-center"
             >
               <s.icon className={cn('mx-auto h-3.5 w-3.5', s.color)} />
               <p className={cn('font-display mt-1 text-lg font-extrabold', s.color)}>{s.value}</p>
@@ -169,7 +169,7 @@ export function AgentDetailDialog({
                 {xpIntoLevel}/{XP_PER_LEVEL} XP
               </span>
             </div>
-            <div className="h-1.5 overflow-hidden rounded-full bg-[#f2f4f7]">
+            <div className="h-1.5 overflow-hidden rounded-full bg-surface-100">
               <motion.div
                 className="h-full rounded-full"
                 style={{ background: `linear-gradient(90deg, ${accent}99, ${accent})` }}
@@ -184,7 +184,7 @@ export function AgentDetailDialog({
               <span>Tasa de victorias</span>
               <span>{winRate}%</span>
             </div>
-            <div className="flex h-1.5 overflow-hidden rounded-full bg-[#f2f4f7]">
+            <div className="flex h-1.5 overflow-hidden rounded-full bg-surface-100">
               <motion.div
                 className="h-full bg-[#12b76a]"
                 initial={{ width: 0 }}
@@ -227,11 +227,11 @@ export function AgentDetailDialog({
           {sum && sum.totalActions > 0 ? (
             <>
               <div className="mt-2 grid grid-cols-2 gap-2">
-                <div className="rounded-lg border border-[#f2f4f7] bg-[#f9fafb] p-2.5 text-center">
+                <div className="rounded-lg border border-surface-100 bg-surface-50 p-2.5 text-center">
                   <p className="font-display text-base font-extrabold text-ink-900">{sum.totalActions}</p>
                   <p className="font-mono-tight text-[8.5px] uppercase tracking-[0.16em] text-ink-400">Acciones totales</p>
                 </div>
-                <div className="rounded-lg border border-[#f2f4f7] bg-[#f9fafb] p-2.5 text-center">
+                <div className="rounded-lg border border-surface-100 bg-surface-50 p-2.5 text-center">
                   <p className="font-display text-base font-extrabold" style={{ color: sum.successRate >= 50 ? '#067647' : soft }}>
                     {sum.successRate}%
                   </p>
@@ -246,7 +246,7 @@ export function AgentDetailDialog({
                   <p className="font-mono-tight text-[9px] uppercase tracking-[0.16em] text-ink-400">Técnicas más usadas</p>
                   <div className="mt-1 flex flex-wrap gap-1.5">
                     {sum.techniques.slice(0, 4).map((t) => (
-                      <span key={t.name} className="rounded bg-[#f2f4f7] px-1.5 py-0.5 text-[10px] text-[#344054]" title={`${t.count} usos`}>
+                      <span key={t.name} className="rounded bg-surface-100 px-1.5 py-0.5 text-[10px] text-ink-700" title={`${t.count} usos`}>
                         {t.name} <span className="font-mono-tight text-ink-500">×{t.count}</span>
                       </span>
                     ))}
@@ -260,7 +260,7 @@ export function AgentDetailDialog({
                   {sum.byPhase.map((p) => (
                     <div key={p.phase} className="flex items-center gap-2">
                       <span className="w-16 shrink-0 font-mono-tight text-[9.5px] text-ink-500">{PHASE_SHORT[p.phase] ?? p.phase}</span>
-                      <div className="h-1 flex-1 overflow-hidden rounded-full bg-[#f2f4f7]">
+                      <div className="h-1 flex-1 overflow-hidden rounded-full bg-surface-100">
                         <motion.div
                           className="h-full rounded-full"
                           style={{ background: accent }}
@@ -278,7 +278,7 @@ export function AgentDetailDialog({
               )}
 
               {/* últimas acciones */}
-              <div className="mt-3 space-y-1.5 border-t border-[#f2f4f7] pt-3">
+              <div className="mt-3 space-y-1.5 border-t border-surface-100 pt-3">
                 {activityForAgent?.events?.slice(0, 5).map((e, i) => {
                   const good = isRed ? e.result === 'EXITO' || e.result === 'PARCIAL' : e.result === 'BLOQUEADO' || e.result === 'DETECTADO' || e.result === 'CONTENIDO'
                   return (
@@ -290,7 +290,7 @@ export function AgentDetailDialog({
                       className="flex items-start gap-2"
                     >
                       <span
-                        className={cn('mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm', good ? 'bg-[#ecfdf3] text-[#12b76a]' : 'bg-[#f2f4f7] text-ink-400')}
+                        className={cn('mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm', good ? 'bg-[#ecfdf3] text-[#12b76a]' : 'bg-surface-100 text-ink-400')}
                       >
                         {isRed ? <Bug className="h-2.5 w-2.5" /> : <ShieldCheck className="h-2.5 w-2.5" />}
                       </span>
@@ -310,7 +310,7 @@ export function AgentDetailDialog({
             </>
           ) : (
             !loading && (
-              <p className="mt-2 flex items-center gap-1.5 rounded-lg border border-[#f2f4f7] bg-[#f9fafb] p-2.5 text-[11px] text-ink-500">
+              <p className="mt-2 flex items-center gap-1.5 rounded-lg border border-surface-100 bg-surface-50 p-2.5 text-[11px] text-ink-500">
                 <Activity className="h-3.5 w-3.5" />
                 Sin acciones registradas todavía — entrará en combate en las campañas próximas.
               </p>
@@ -323,7 +323,7 @@ export function AgentDetailDialog({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.5 }}
-          className="mt-4 border-t border-[#f2f4f7] px-6 py-4 text-[12px] leading-relaxed text-ink-500"
+          className="mt-4 border-t border-surface-100 px-6 py-4 text-[12px] leading-relaxed text-ink-500"
         >
           {agent.description}
         </motion.p>

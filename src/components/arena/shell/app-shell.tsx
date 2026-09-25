@@ -103,7 +103,7 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       {/* Estado del laboratorio */}
-      <div className="mx-3 mb-5 rounded-xl border border-[#e4e7ec] bg-[#f9fafb] p-3.5">
+      <div className="mx-3 mb-5 rounded-xl border border-surface-200 bg-surface-50 p-3.5">
         <div className="flex items-center justify-between gap-2">
           <span className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.16em] text-ink-500">
             <Cpu className="h-3 w-3" /> Motor
@@ -118,10 +118,10 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
             {running ? 'En directo' : 'En espera'}
           </span>
         </div>
-        <p className="mt-2 truncate font-mono-tight text-[10.5px] text-[#475467]">
+        <p className="mt-2 truncate font-mono-tight text-[10.5px] text-ink-600">
           {state?.provider ?? 'z-ai-sdk'}
         </p>
-        <div className="mt-2.5 flex items-center justify-between border-t border-[#e4e7ec] pt-2.5 font-mono-tight text-[9.5px] text-ink-500">
+        <div className="mt-2.5 flex items-center justify-between border-t border-surface-200 pt-2.5 font-mono-tight text-[9.5px] text-ink-500">
           <span>{state?.stats.totalCampaigns ?? 0} campañas</span>
           <span className="flex items-center gap-1">
             {state?.autopilot && <InfinityIcon className="h-3 w-3 text-[#7c3aed]" />}
@@ -142,14 +142,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
       {/* Sidebar de escritorio */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[246px] flex-col border-r border-[#e4e7ec] bg-white lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[246px] flex-col border-r border-surface-200 bg-white lg:flex">
         <SideNav />
       </aside>
 
       {/* Área principal */}
       <div className="flex min-h-screen w-full flex-col lg:pl-[246px]">
         {/* Topbar */}
-        <header className="sticky top-0 z-30 border-b border-[#e4e7ec] bg-white/85 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 border-b border-surface-200 bg-white/85 backdrop-blur-xl">
           <div className="mx-auto flex h-14 w-full max-w-[1240px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
             <div className="flex min-w-0 items-center gap-3">
               {/* Menú móvil */}
@@ -157,7 +157,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 type="button"
                 onClick={() => setMobileOpen(true)}
                 aria-label="Abrir navegación"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#e4e7ec] bg-white text-[#344054] transition-colors hover:bg-[#f2f4f7] lg:hidden"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-surface-200 bg-white text-ink-700 transition-colors hover:bg-surface-100 lg:hidden"
               >
                 <Menu className="h-4 w-4" />
               </button>
@@ -187,7 +187,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   'flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono-tight text-[10px] font-bold uppercase tracking-wider',
                   running
                     ? 'status-live'
-                    : 'border-[#e4e7ec] bg-white text-ink-500'
+                    : 'border-surface-200 bg-white text-ink-500'
                 )}
               >
                 <Radio className="h-3 w-3" />
@@ -220,7 +220,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               animate={{ x: 0 }}
               exit={{ x: -280 }}
               transition={{ type: 'spring', stiffness: 380, damping: 36 }}
-              className="fixed inset-y-0 left-0 z-50 w-[264px] border-r border-[#e4e7ec] bg-white shadow-2xl lg:hidden"
+              className="fixed inset-y-0 left-0 z-50 w-[264px] border-r border-surface-200 bg-white shadow-2xl lg:hidden"
               role="dialog"
               aria-label="Navegación"
             >
@@ -228,7 +228,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 type="button"
                 onClick={() => setMobileOpen(false)}
                 aria-label="Cerrar navegación"
-                className="absolute right-3 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 transition-colors hover:bg-[#f2f4f7] hover:text-ink-900"
+                className="absolute right-3 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 transition-colors hover:bg-surface-100 hover:text-ink-900"
               >
                 <X className="h-4 w-4" />
               </button>

@@ -64,7 +64,7 @@ export function ArenaGate({ children }: { children: React.ReactNode }) {
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 2.4, repeat: Infinity, ease: 'linear' }}
-            className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#e4e7ec] bg-white shadow-sm"
+            className="flex h-14 w-14 items-center justify-center rounded-xl border border-surface-200 bg-white shadow-sm"
           >
             <Swords className="h-6 w-6 text-ink-500" />
           </motion.div>

@@ -93,7 +93,7 @@ function OutcomeDonut({ red, blue, draws }: { red: number; blue: number; draws: 
           >
             <Link
               href={`/historial?resultado=${row.filter}`}
-              className="group flex items-center gap-2.5 rounded-md px-1 py-0.5 transition-colors hover:bg-[#f9fafb]"
+              className="group flex items-center gap-2.5 rounded-md px-1 py-0.5 transition-colors hover:bg-surface-50"
               aria-label={`Ver en el historial las campañas filtradas por ${row.label}`}
               title={`Abrir el historial filtrado: ${row.label}`}
             >
@@ -105,7 +105,7 @@ function OutcomeDonut({ red, blue, draws }: { red: number; blue: number; draws: 
               <span className="w-10 text-right font-mono-tight text-[10px] text-ink-400">
                 {total > 0 ? Math.round((row.v / total) * 100) : 0}%
               </span>
-              <ChevronRight className="h-3 w-3 shrink-0 text-[#d0d5dd] transition-all group-hover:translate-x-0.5 group-hover:text-ink-400" />
+              <ChevronRight className="h-3 w-3 shrink-0 text-surface-300 transition-all group-hover:translate-x-0.5 group-hover:text-ink-400" />
             </Link>
           </motion.div>
         ))}
@@ -230,7 +230,7 @@ function EvolutionChart({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
           </motion.circle>
         ))}
       </svg>
-      <p className="mt-1 text-right font-mono-tight text-[9px] text-[#d0d5dd]">
+      <p className="mt-1 text-right font-mono-tight text-[9px] text-surface-300">
         clic en un punto → ficha de la campaña
       </p>
     </div>
@@ -272,7 +272,7 @@ function Leaderboard({ agents }: { agents: AgentDTO[] }) {
                 </p>
               </div>
             </div>
-            <div className="ml-7 h-1 overflow-hidden rounded-full bg-[#f2f4f7]">
+            <div className="ml-7 h-1 overflow-hidden rounded-full bg-surface-100">
               <motion.div
                 className="h-full rounded-full"
                 style={{ background: isRed ? RED : BLUE }}
@@ -318,7 +318,7 @@ function KnowledgeEffectiveness({ items, team }: { items: KnowledgeDTO[]; team: 
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.09, duration: 0.4 }}
-            className="rounded-lg border border-[#f2f4f7] bg-[#f9fafb] p-2.5"
+            className="rounded-lg border border-surface-100 bg-surface-50 p-2.5"
           >
             <div className="flex items-center justify-between gap-2">
               <p className="truncate text-[11.5px] font-medium text-ink-900">{k.title}</p>
@@ -327,7 +327,7 @@ function KnowledgeEffectiveness({ items, team }: { items: KnowledgeDTO[]; team: 
               </span>
             </div>
             <div className="mt-1.5 flex items-center gap-2">
-              <div className="h-1 flex-1 overflow-hidden rounded-full bg-[#f2f4f7]">
+              <div className="h-1 flex-1 overflow-hidden rounded-full bg-surface-100">
                 <motion.div
                   className={cn('h-full rounded-full', isRed ? 'bg-[#d92d20]' : 'bg-[#0086c9]')}
                   initial={{ width: 0 }}
@@ -378,7 +378,7 @@ function ScenarioMatrix({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
           >
             <Link
               href={`/historial?escenario=${encodeURIComponent(s.codename)}`}
-              className="group flex h-full flex-col gap-2.5 rounded-xl border border-[#f2f4f7] bg-[#f9fafb] p-3 transition-colors hover:border-[#e4e7ec] hover:bg-white"
+              className="group flex h-full flex-col gap-2.5 rounded-xl border border-surface-100 bg-surface-50 p-3 transition-colors hover:border-surface-200 hover:bg-white"
               aria-label={`Abrir el historial filtrado por el escenario ${s.codename}`}
               title={`Abrir el historial prefiltrado: ${s.codename}`}
             >
@@ -397,7 +397,7 @@ function ScenarioMatrix({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
               </div>
 
               {/* Barra apilada del balance sobre finalizadas */}
-              <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-[#f2f4f7]">
+              <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-surface-100">
                 {s.redPct > 0 && <div style={{ width: `${s.redPct}%`, background: RED }} />}
                 {s.bluePct > 0 && <div style={{ width: `${s.bluePct}%`, background: BLUE }} />}
                 {drawPct > 0 && <div style={{ width: `${drawPct}%`, background: AMBER }} />}
@@ -414,7 +414,7 @@ function ScenarioMatrix({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
                 </div>
                 <span className="flex shrink-0 items-center font-mono-tight text-[9px] text-ink-400">
                   {s.completed > 0 ? `${s.redPct}% RED` : 'sin datos'}
-                  <ChevronRight className="h-3 w-3 text-[#d0d5dd] transition-all group-hover:translate-x-0.5 group-hover:text-ink-400" />
+                  <ChevronRight className="h-3 w-3 text-surface-300 transition-all group-hover:translate-x-0.5 group-hover:text-ink-400" />
                 </span>
               </div>
             </Link>
@@ -452,7 +452,7 @@ export function Analytics({
       >
         <div className="mb-4 flex items-center gap-2">
           <Trophy className="h-3.5 w-3.5 text-[#b54708]" />
-          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-[#475467]">
+          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-ink-600">
             Balance de victorias
           </h3>
         </div>
@@ -481,12 +481,12 @@ export function Analytics({
       >
         <div className="mb-4 flex items-center gap-2">
           <TrendingUp className="h-3.5 w-3.5 text-ink-500" />
-          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-[#475467]">
+          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-ink-600">
             Evolución de puntuaciones
           </h3>
         </div>
         <EvolutionChart campaigns={campaigns} />
-        <div className="mt-3 flex items-center justify-between border-t border-[#f2f4f7] pt-3">
+        <div className="mt-3 flex items-center justify-between border-t border-surface-100 pt-3">
           <span className="flex items-center gap-1.5 font-mono-tight text-[10px] text-ink-500">
             <Target className="h-3 w-3 text-[#b42318]" /> RED gana {redWinRate}% de las campañas
           </span>
@@ -508,7 +508,7 @@ export function Analytics({
       >
         <div className="mb-4 flex items-center gap-2">
           <Sparkles className="h-3.5 w-3.5 text-[#b54708]" />
-          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-[#475467]">
+          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-ink-600">
             Ranking de agentes
           </h3>
         </div>
@@ -525,7 +525,7 @@ export function Analytics({
       >
         <div className="mb-4 flex items-center gap-2">
           <Map className="h-3.5 w-3.5 text-ink-500" />
-          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-[#475467]">
+          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-ink-600">
             Balance por escenario
           </h3>
           <span className="font-mono-tight text-[9.5px] normal-case tracking-normal text-ink-400">
@@ -545,7 +545,7 @@ export function Analytics({
       >
         <div className="mb-4 flex items-center gap-2">
           <BrainCircuit className="h-3.5 w-3.5 text-ink-500" />
-          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-[#475467]">
+          <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-ink-600">
             Conocimiento más efectivo
           </h3>
           <span className="font-mono-tight text-[9.5px] normal-case tracking-normal text-ink-400">

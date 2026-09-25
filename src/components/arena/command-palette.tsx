@@ -60,7 +60,7 @@ export function CommandPalette() {
       <button
         onClick={() => setOpen(true)}
         aria-label="Abrir paleta de comandos"
-        className="hidden items-center gap-1.5 rounded-md border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] text-ink-500 shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-ink-900 md:flex"
+        className="hidden items-center gap-1.5 rounded-md border border-surface-200 bg-white px-2.5 py-1.5 font-mono-tight text-[10px] text-ink-500 shadow-sm transition-colors hover:border-surface-300 hover:text-ink-900 md:flex"
         title="Paleta de comandos (⌘K)"
       >
         <span className="text-[11px]">⌘</span>K
