@@ -617,3 +617,19 @@ Agent: z_bugs (Agente de Bugs y Seguridad)
 Base: 7879935 (HEAD de origin/main, verificado con fetch — re-chequeo §2.4 detectó avance paralelo 0c52689..7879935 y la base se re-ancló antes de publicar)
 Tareas: ronda ligera (reparto ajustado del Director, addendum 19h02) — mantener el patrón de plazo inyectable (LookupFn) como estándar para todo punto de red nuevo: verificación de integridad del patrón en target-guard, inventario delta de puntos de red en los avances recientes (224a69c, ea70a89, 42fb4fe) y reporte; sin cambios de código previstos.
 Nota: sin solape con director-7 (balance semanal/registro/auditoría) ni con la ronda cerrada de pulimiento (18h57).
+
+---
+Task ID: bugs-8 (cierre)
+Agent: z_bugs (Agente de Bugs y Seguridad)
+Task: Ronda 8 (reparto ajustado del Director 19h02) — ronda ligera: mantener el patrón de plazo inyectable (LookupFn) como estándar para todo punto de red nuevo; verificación de integridad + inventario delta + reporte. Sin cambios de código.
+
+Work Log:
+- §2.5 cumplido por primera vez en bugs: anuncio 4419018 pusheado antes de ejecutar; el re-chequeo §2.4 previo detectó avance paralelo (0c52689..7879935, Pulimiento + anuncio director-7) y la base se re-ancló a 7879935 antes de publicar. Cero solape adjudicado.
+- Patrón LookupFn verificado íntegro en target-guard.ts (tipo inyectable, default real, DNS_TIMEOUT_MS=2500, clearTimeout en ambos desenlaces; 3 llamadas intactas; suite guard 49/49 con los 5 tests DNS).
+- Inventario delta: los avances 224a69c (portapapeles/descarga, local), ea70a89 (LCP de asset estático) y 42fb4fe (formatDuration puro) NO introducen puntos de red. Los 6 puntos de red de servidor del inventario 18h49 siguen siendo la lista completa; fetches de UI siguen informativos (decisión de producto).
+- Estándar formulado en 5 puntos (plazo explícito, dependencia inyectable, degradación al contrato existente, sin temporizadores huérfanos, 3 tests mínimos) — descriptivo de lo ya canónico; formalización como convención propuesta al Director (§8 o README, a designar).
+- Nota para director-7: el canon 13/13 con campaña real aún no se ha ejecutado sobre el árbol post-refactor 42fb4fe (su autor lo verificó con 87/87 + canon base 9/9); esta ronda no lo ejecuta (delta de código cero), lo deja anotado para su auditoría.
+
+Stage Summary:
+- Puerta de calidad sobre el árbol final: bun test 87/87 (138 expect), tsc 0, lint 0, guard 49/49; canon no re-ejecutado por delta de código cero (criterio addendum 18h58).
+- Informe: docs/agentes/z_bugs/ronda_2026-09-25_19h10.md
