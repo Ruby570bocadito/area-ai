@@ -21,14 +21,25 @@ export const PHASE_LABEL: Record<Phase, string> = {
   OBJETIVO: 'Objetivo / Exfiltración',
 }
 
+// Campañas LARGAS: 2 rondas por cada una de las 6 fases → 12 rondas
+// (petición directa del usuario: rondas más largas, intensas y extensas).
+// El motor deriva maxRounds de esta lista y la fase de cada ronda con
+// PHASE_ORDER[round - 1]; el roster rota especialistas dentro de cada fase
+// (pickAgentForPhase) para que las dos rondas de una fase no repitan agente.
+// maxRounds se archiva en BD por campaña: las fichas históricas (8 rondas)
+// siguen siendo consistentes con sus propios eventos.
 export const PHASE_ORDER: Phase[] = [
   'RECON',
   'RECON',
   'ARMADO',
+  'ARMADO',
   'INTRUSION',
+  'INTRUSION',
+  'ESCALADA',
   'ESCALADA',
   'LATERAL',
   'LATERAL',
+  'OBJETIVO',
   'OBJETIVO',
 ]
 

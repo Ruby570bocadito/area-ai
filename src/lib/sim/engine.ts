@@ -4,6 +4,16 @@ import { ensureSeed } from './seed'
 import { ensureProgressionMigration, levelForXp } from './progression'
 import { knowledgeScore } from './knowledge-score'
 import { normalizeLessonCategory, normalizeLessonTags } from './taxonomy'
+import {
+  BLUE_GAIN_BY_VERDICT,
+  BLUE_HUNT_ROLL,
+  CHAINABLE_PHASES,
+  DEFAULT_SEVERITY_BY_PHASE,
+  PARTIAL_IMPACT_FACTOR,
+  RED_CHAIN_ON_EXITO,
+  RED_CHAIN_ON_PARCIAL,
+  RED_IMPACT_BY_SEVERITY,
+} from './pace'
 import { RED_AGENTS, BLUE_AGENTS } from './roster'
 import {
   PHASE_ORDER,
@@ -122,9 +132,11 @@ export async function startCampaign(scenarioId?: string) {
 // ─────────────────────────────────────────────────────────────
 
 async function loadMemory(team: 'RED' | 'BLUE'): Promise<KnowledgeRef[]> {
+  // Campañas EXTENSAS: la memoria institucional que viaja en cada prompt
+  // crece de 8 a 10 referencias (petición directa del usuario).
   const items = await db.knowledge.findMany({ where: { team } })
   items.sort((a, b) => knowledgeScore(b) - knowledgeScore(a))
-  return items.slice(0, 8).map((k) => ({
+  return items.slice(0, 10).map((k) => ({
     id: k.id,
     team: k.team,
     category: k.category,
@@ -146,7 +158,9 @@ const PHASE_TAGS: Record<Phase, string[]> = {
   OBJETIVO: ['exfiltracion', 'ransomware', 'dlp', 'backup', 'contencion', 'c2'],
 }
 
-function pickPhaseKnowledge(mem: KnowledgeRef[], phase: Phase, n = 3): KnowledgeRef[] {
+// Campañas EXTENSAS: 4 referencias por turno (antes 3) para que cada
+// decisión cite más conocimiento archivado.
+function pickPhaseKnowledge(mem: KnowledgeRef[], phase: Phase, n = 4): KnowledgeRef[] {
   const scored = mem.map((k) => {
     const tags = k.tags.toLowerCase().split(',').map((t) => t.trim())
     const overlap = tags.filter((t) => PHASE_TAGS[phase].some((p) => t.includes(p) || p.includes(t))).length
@@ -244,10 +258,12 @@ async function runCampaign(campaignId: string) {
   }
 
   const recentEvents = async () => {
+    // Campañas EXTENSAS: el contexto de decisión incluye 10 eventos recientes
+    // (antes 6) para que las narrativas mantengan coherencia con el ritmo alto.
     const evs = await db.campaignEvent.findMany({
       where: { campaignId, team: { not: 'SYSTEM' } },
       orderBy: { seq: 'desc' },
-      take: 6,
+      take: 10,
     })
     return evs.reverse().map((e) => `[R${e.round}/${e.phase}] ${e.team} ${e.agentCodename ?? ''}: ${e.action} → ${e.result ?? '—'} (impacto ${e.impact}). ${e.detail}`)
   }
@@ -325,14 +341,12 @@ Elige el targetNode más lógico para la fase ${PHASE_LABEL[phase]}.`, 22000)
       ? newExchanges.find((e) => e.signature)?.signature
       : undefined
 
-    // ── Impacto derivado del resultado real
-    const sevImpact: Record<string, number> = { LOW: 4, MEDIUM: 7, HIGH: 11, CRITICAL: 16 }
-    const defaultSev: Record<Phase, string> = { RECON: 'LOW', ARMADO: 'MEDIUM', INTRUSION: 'HIGH', ESCALADA: 'HIGH', LATERAL: 'HIGH', OBJETIVO: 'CRITICAL' }
-    const severity = (redDec.severity && ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(redDec.severity) ? redDec.severity : defaultSev[phase]) as string
+    // ── Impacto derivado del resultado real (escalas en pace.ts)
+    const severity = (redDec.severity && ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(redDec.severity) ? redDec.severity : DEFAULT_SEVERITY_BY_PHASE[phase]) as string
     const critFactor = 0.7 + target.criticality / 10
     let impact = 0
-    if (outcome.result === 'EXITO') impact = Math.round(sevImpact[severity] * critFactor * (1 - blueProgress / 160))
-    else if (outcome.result === 'PARCIAL') impact = Math.round(sevImpact[severity] * 0.45)
+    if (outcome.result === 'EXITO') impact = Math.round(RED_IMPACT_BY_SEVERITY[severity] * critFactor * (1 - blueProgress / 160))
+    else if (outcome.result === 'PARCIAL') impact = Math.round(RED_IMPACT_BY_SEVERITY[severity] * PARTIAL_IMPACT_FACTOR)
     impact = clamp(impact, 0, 20)
     // Escala cerrada [0, 100]: acumulación RED acotada en memoria (simétrica a
     // blueProgress más abajo), para que el ganador, la narrativa, las lecciones
@@ -475,8 +489,7 @@ Contexto: fase ${PHASE_LABEL[phase]}, ronda ${round}.`,
     if (!actionName) actionName = fallbackBlueName(op, verdict)
     if (!detail) detail = fallbackBlueDetail(op, outcome, verdict)
 
-    const defGain: Record<string, number> = { BLOQUEADO: 10, CONTENIDO: 8, DETECTADO: 6, ENDURECIDO: 5, IGNORADO: 1 }
-    const defImpact = defGain[verdict] ?? 1
+    const defImpact = BLUE_GAIN_BY_VERDICT[verdict] ?? 1
     blueProgress = clamp(blueProgress + defImpact + 2, 0, 100)
     blueScore += defImpact * 2
     trackKnowledge(blueTurnIds, verdict === 'BLOQUEADO' || verdict === 'DETECTADO' || verdict === 'CONTENIDO')
@@ -506,11 +519,55 @@ Contexto: fase ${PHASE_LABEL[phase]}, ronda ${round}.`,
   }
 
   // ─────────────────────────────────────────────────────────
-  // Bucle de rondas con CADENCIA DINÁMICA (no 1-1 estricto):
-  // RED abre; si prospera puede encadenar; BLUE responde a
-  // detecciones reales del SIEM y actúa de forma proactiva
-  // cuando no hay señal. 2-4 acciones por ronda, orden variable.
+  // Bucle de rondas con CADENCIA DINÁMICA e INTENSIDAD (no 1-1):
+  // RED abre; si prospera puede encadenar (0.65 tras ÉXITO, 0.35
+  // tras PARCIAL); BLUE responde SIEMPRE — a detecciones reales
+  // del SIEM, a golpes confirmados sin correlación aún, o de
+  // forma proactiva (caza o endurecimiento) cuando no hubo
+  // señal. 3-6 acciones por ronda, orden variable. Parámetros
+  // de ritmo en pace.ts.
   // ─────────────────────────────────────────────────────────
+
+  // Reacción defensiva a una acción RED ya ejecutada: responde a
+  // detecciones reales del SIEM y, si no hay correlación pero el
+  // golpe está confirmado (ÉXITO/PARCIAL en fase de contacto),
+  // responde igualmente cortando sesión, parcheando o monitorizando.
+  // Devuelve true si BLUE actuó (para la cadencia de la ronda).
+  async function blueReact(round: number, phase: Phase, redResult: string | undefined, targetId: string, newExchanges: LabCampaignState['journal']): Promise<boolean> {
+    const detections = evaluateDetections(lab, newExchanges.map((e) => e.id))
+    const sessionToBlock = [...lab.sessions.values()].find((s) => s.team === 'RED' && !s.revoked && s.homeNodeId === targetId)?.id
+
+    if (detections.length > 0) {
+      const detPayload = detections.map((d) => ({ nodeId: d.nodeId, signature: d.signature as Signature })).filter((x, i, arr) => arr.findIndex((y) => y.nodeId === x.nodeId && y.signature === x.signature) === i)
+      const op = sessionToBlock && phase !== 'RECON' ? 'BLOCK' : 'MONITOR'
+      await blueAct(round, phase, op, {
+        detections: detPayload,
+        sessionToBlock: op === 'BLOCK' ? sessionToBlock : undefined,
+        redNode: targetId,
+      })
+      return true
+    }
+
+    // Respuesta a golpe confirmado aunque el SIEM aún no haya
+    // correlacionado: endurece el nodo golpeado (parchea la vuln
+    // explotada) o monitoriza, pero NO revoca sesiones — el bloqueo
+    // de sesión queda reservado a detecciones reales del SIEM.
+    // Cortar la sesión en cuanto RED toca tierra vaciaba el resto
+    // de la kill-chain en cascada (calibrado con campañas reales:
+    // finales RED 22-26/100 con la escalada entera en FALLO).
+    if (CHAINABLE_PHASES.includes(phase) && (redResult === 'EXITO' || redResult === 'PARCIAL')) {
+      const { nodeId, vuln } = bestPatchTarget(lab, targetId)
+      if (nodeId && vuln) {
+        await blueAct(round, phase, 'PATCH', { patchNode: nodeId, patchVuln: vuln, redNode: targetId })
+        return true
+      }
+      await blueAct(round, phase, 'MONITOR', { redNode: targetId })
+      return true
+    }
+
+    return false
+  }
+
   for (let round = 1; round <= maxRounds; round++) {
     const phase = PHASE_ORDER[round - 1]
     setLabRound(campaignId, round)
@@ -518,52 +575,38 @@ Contexto: fase ${PHASE_LABEL[phase]}, ronda ${round}.`,
 
     let blueActionsThisRound = 0
 
-    // 1) Acción RED obligatoria
+    // 1) Acción RED obligatoria + respuesta defensiva inmediata
     const first = await redAct(round, phase, redAgent)
     let lastTarget = first.target
     let lastOutcome = first.outcome
+    if (await blueReact(round, phase, first.outcome.result, lastTarget.id, first.newExchanges)) blueActionsThisRound++
 
-    // Reacción inmediata de BLUE a detecciones reales
-    const detectIds = first.newExchanges.map((e) => e.id)
-    const detections = evaluateDetections(lab, detectIds)
-    if (detections.length > 0) {
-      const sessionToBlock = [...lab.sessions.values()].find((s) => s.team === 'RED' && !s.revoked && s.homeNodeId === lastTarget.id)?.id
-      const detPayload = detections.map((d) => ({ nodeId: d.nodeId, signature: d.signature as Signature })).filter((x, i, arr) => arr.findIndex((y) => y.nodeId === x.nodeId && y.signature === x.signature) === i)
-      const op = sessionToBlock && phase !== 'RECON' ? 'BLOCK' : 'MONITOR'
-      await blueAct(round, phase, op, {
-        detections: detPayload,
-        sessionToBlock: op === 'BLOCK' ? sessionToBlock : undefined,
-        redNode: lastTarget.id,
-      })
-      blueActionsThisRound++
-    }
-
-    // 2) RED encadena si prosperó (la ofensiva real aprovecha el momentum)
-    const chainable = phase === 'INTRUSION' || phase === 'ESCALADA' || phase === 'LATERAL' || phase === 'OBJETIVO'
-    if (chainable && lastOutcome.result === 'EXITO' && Math.random() < 0.4) {
-      const second = await redAct(round, phase, redAgent, lastTarget.id)
-      lastTarget = second.target
-      lastOutcome = second.outcome
-      const det2 = evaluateDetections(lab, second.newExchanges.map((e) => e.id))
-      if (det2.length > 0) {
-        const sessionToBlock = [...lab.sessions.values()].find((s) => s.team === 'RED' && !s.revoked && s.homeNodeId === lastTarget.id)?.id
-        await blueAct(round, phase, sessionToBlock ? 'BLOCK' : 'MONITOR', {
-          detections: det2.map((d) => ({ nodeId: d.nodeId, signature: d.signature as Signature })),
-          sessionToBlock,
-          redNode: lastTarget.id,
-        })
-        blueActionsThisRound++
+    // 2) RED encadena con el momentum vivo (ÉXITO alto, PARCIAL moderado)
+    if (CHAINABLE_PHASES.includes(phase)) {
+      const chainP = lastOutcome.result === 'EXITO' ? RED_CHAIN_ON_EXITO : lastOutcome.result === 'PARCIAL' ? RED_CHAIN_ON_PARCIAL : 0
+      if (chainP > 0 && Math.random() < chainP) {
+        const second = await redAct(round, phase, redAgent, lastTarget.id)
+        lastTarget = second.target
+        lastOutcome = second.outcome
+        if (await blueReact(round, phase, second.outcome.result, lastTarget.id, second.newExchanges)) blueActionsThisRound++
       }
     }
 
-    // 3) BLUE proactivo si no ha actuado todavía: hunting o endurecimiento
+    // 3) BLUE proactivo SIEMPRE que no haya actuado todavía: una defensa
+    // que solo espera no defiende (antes 15% de rondas sin respuesta azul).
+    // Endurecimiento CON CRITERIO: con señales vivas de compromiso (sesiones
+    // RED o nodos comprometidos) parchea el mejor objetivo; sin ellas,
+    // monitoriza — el parche ciego ronda a ronda vaciaría la superficie
+    // explotable y mataría el arco ofensivo (calibrado con campañas reales).
     if (blueActionsThisRound === 0) {
-      const roll = Math.random()
-      if (roll < 0.3) {
+      if (Math.random() < BLUE_HUNT_ROLL) {
         await blueAct(round, phase, 'HUNT', { hypothesis: huntHypothesis(phase), redNode: lastTarget.id })
         blueActionsThisRound++
-      } else if (roll < 0.85) {
-        const { nodeId, vuln } = bestPatchTarget(lab, lastTarget.id)
+      } else {
+        const liveCompromise =
+          [...lab.sessions.values()].some((s) => s.team === 'RED' && !s.revoked) ||
+          [...lab.nodes.values()].some((n) => n.compromised)
+        const { nodeId, vuln } = liveCompromise ? bestPatchTarget(lab, lastTarget.id) : { nodeId: undefined, vuln: undefined }
         if (nodeId && vuln) {
           await blueAct(round, phase, 'PATCH', { patchNode: nodeId, patchVuln: vuln, redNode: lastTarget.id })
           blueActionsThisRound++
@@ -603,14 +646,14 @@ Contexto: fase ${PHASE_LABEL[phase]}, ronda ${round}.`,
     .map((e) => `${e.team} ${e.agentCodename}: ${e.action} sobre ${e.targetNode ?? '—'} → ${e.result} (impacto ${e.impact}). ${e.detail}`)
 
   const lessonsSchema = `Devuelve JSON estricto:
-{"narrative":"resumen de 3-4 frases de la campaña en español",
+{"narrative":"resumen de 4-6 frases de la campaña en español, con el arco de las 12 rondas y los puntos de giro",
  "red":[{"category":"TACTICA|TECNICA|LECCION|VULNERABILIDAD","title":"título corto","content":"2-3 frases del aprendizaje concreto y accionable","tags":["tag1","tag2"],"confidence":0.0-1.0}],
  "blue":[...igual, aprendizajes defensivos...]}`
   const lessonsUser = `Campaña ${scenario.codename} sobre ${scenario.company}. Ganador: ${winner}. Progreso RED ${redProgress}/100, postura BLUE ${blueProgress}/100.
 Todo se ejecutó contra un laboratorio real (intercambios HTTP verificados). Eventos:
 ${compact.join('\n')}
 
-Extrae 2 lecciones por equipo: qué funcionó, qué falló y cómo aplicarlo la próxima campaña. Sé específico.`
+Extrae 3 lecciones por equipo: qué funcionó, qué falló y cómo aplicarlo la próxima campaña. Sé específico.`
 
   type LessonsOut = { narrative?: string; red?: LessonDraft[]; blue?: LessonDraft[] }
   let lessons: LessonsOut | null = llmAlive ? await llmJson<LessonsOut>(lessonsSchema, lessonsUser, 30000) : null
@@ -842,6 +885,13 @@ function fallbackLessons(winner: string, redProgress: number, blueProgress: numb
         tags: ['opsec', 'stealth'],
         confidence: 0.5,
       },
+      {
+        category: 'TECNICA',
+        title: 'Diversificar objetivos dentro de cada fase',
+        content: 'Con dos rondas por fase, repetir nodo y técnica facilita que la defensa correlacione. Alternar vectores sobre activos distintos dispersa la respuesta azul.',
+        tags: ['planificacion', 'evasion'],
+        confidence: 0.5,
+      },
     ],
     blue: [
       {
@@ -856,6 +906,13 @@ function fallbackLessons(winner: string, redProgress: number, blueProgress: numb
         title: 'Contención más rápida ante éxito rojo',
         content: 'Cuando el rojo consigue una sesión real, bloquearla inmediatamente y aislar el host limita la escalada de la siguiente fase.',
         tags: ['respuesta', 'contencion'],
+        confidence: 0.5,
+      },
+      {
+        category: 'INTELIGENCIA',
+        title: 'Cerrar la ventana entre golpe y correlación',
+        content: 'Con el ritmo alto de las campañas largas, cada ronda sin regla nueva sobre el segmento golpeado es una exfiltración más. Automatizar la regla tras cada confirmado.',
+        tags: ['siem', 'duracion'],
         confidence: 0.5,
       },
     ],
