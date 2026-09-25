@@ -116,10 +116,39 @@ describe('rateLimit — ventana deslizante', () => {
   })
 })
 
-describe('clientKey', () => {
+describe('clientKey — confianza en XFF bajo TRUST_PROXY', () => {
+  afterEach(() => {
+    delete process.env.TRUST_PROXY
+  })
+
   test('sin XFF → "direct" (conexión directa)', () => expect(clientKey(new Headers())).toBe('direct'))
-  test('con XFF → primera entrada', () =>
-    expect(clientKey(new Headers({ 'x-forwarded-for': '203.0.113.7, 10.0.0.1' }))).toBe('203.0.113.7'))
-  test('XFF con espacios se recorta', () =>
-    expect(clientKey(new Headers({ 'x-forwarded-for': ' 198.51.100.2 ' }))).toBe('198.51.100.2'))
+
+  test('por defecto (sin proxy de confianza) XFF se IGNORA aunque venga → "direct"', () => {
+    // cualquier cliente puede enviar X-Forwarded-For arbitraria: sin proxy de
+    // confianza declarado, esa cabecera NO es identidad fiable para el límite
+    expect(clientKey(new Headers({ 'x-forwarded-for': '203.0.113.7' }))).toBe('direct')
+  })
+
+  test('rotar XFF por petición NO rota la clave de rate limit sin TRUST_PROXY', () => {
+    for (const ip of ['203.0.113.7', '198.51.100.2', '10.0.0.9']) {
+      expect(clientKey(new Headers({ 'x-forwarded-for': ip }))).toBe('direct')
+    }
+  })
+
+  test('TRUST_PROXY=1 → primera entrada de XFF', () => {
+    process.env.TRUST_PROXY = '1'
+    expect(clientKey(new Headers({ 'x-forwarded-for': '203.0.113.7, 10.0.0.1' }))).toBe('203.0.113.7')
+  })
+
+  test('TRUST_PROXY=1 con espacios → recortado', () => {
+    process.env.TRUST_PROXY = '1'
+    expect(clientKey(new Headers({ 'x-forwarded-for': ' 198.51.100.2 ' }))).toBe('198.51.100.2')
+  })
+
+  test('TRUST_PROXY con otro valor ("true", "0", "yes", vacío) NO activa la confianza', () => {
+    for (const value of ['true', '0', 'yes', '']) {
+      process.env.TRUST_PROXY = value
+      expect(clientKey(new Headers({ 'x-forwarded-for': '203.0.113.7' }))).toBe('direct')
+    }
+  })
 })
