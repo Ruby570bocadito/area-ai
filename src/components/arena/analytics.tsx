@@ -1,8 +1,10 @@
 'use client'
 
 import { useMemo } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Trophy, TrendingUp, BrainCircuit, Crown, Target, Sparkles } from 'lucide-react'
+import { ChevronRight, Trophy, TrendingUp, BrainCircuit, Crown, Target, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AgentAvatar } from './agent-avatar'
 import type { AgentDTO, CampaignListItemDTO, KnowledgeDTO } from '@/lib/api-types'
@@ -78,9 +80,9 @@ function OutcomeDonut({ red, blue, draws }: { red: number; blue: number; draws: 
       </div>
       <div className="min-w-0 flex-1 space-y-2.5">
         {[
-          { color: RED, label: 'Victorias RED', v: red },
-          { color: BLUE, label: 'Victorias BLUE', v: blue },
-          { color: AMBER, label: 'Empates', v: draws },
+          { color: RED, label: 'Victorias RED', v: red, filter: 'RED' },
+          { color: BLUE, label: 'Victorias BLUE', v: blue, filter: 'BLUE' },
+          { color: AMBER, label: 'Empates', v: draws, filter: 'DRAW' },
         ].map((row, i) => (
           <motion.div
             key={row.label}
@@ -88,14 +90,23 @@ function OutcomeDonut({ red, blue, draws }: { red: number; blue: number; draws: 
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.35 + i * 0.12, duration: 0.45 }}
-            className="flex items-center gap-2.5"
           >
-            <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: row.color }} />
-            <span className="flex-1 truncate font-mono-tight text-[11px] text-[#667085]">{row.label}</span>
-            <span className="font-mono-tight text-sm font-bold text-[#101828]">{row.v}</span>
-            <span className="w-10 text-right font-mono-tight text-[10px] text-[#98a2b3]">
-              {total > 0 ? Math.round((row.v / total) * 100) : 0}%
-            </span>
+            <Link
+              href={`/historial?resultado=${row.filter}`}
+              className="group flex items-center gap-2.5 rounded-md px-1 py-0.5 transition-colors hover:bg-[#f9fafb]"
+              aria-label={`Ver en el historial las campañas filtradas por ${row.label}`}
+              title={`Abrir el historial filtrado: ${row.label}`}
+            >
+              <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: row.color }} />
+              <span className="flex-1 truncate font-mono-tight text-[11px] text-[#667085] group-hover:text-[#101828] group-hover:underline group-hover:underline-offset-2">
+                {row.label}
+              </span>
+              <span className="font-mono-tight text-sm font-bold text-[#101828]">{row.v}</span>
+              <span className="w-10 text-right font-mono-tight text-[10px] text-[#98a2b3]">
+                {total > 0 ? Math.round((row.v / total) * 100) : 0}%
+              </span>
+              <ChevronRight className="h-3 w-3 shrink-0 text-[#d0d5dd] transition-all group-hover:translate-x-0.5 group-hover:text-[#98a2b3]" />
+            </Link>
           </motion.div>
         ))}
       </div>
@@ -105,6 +116,7 @@ function OutcomeDonut({ red, blue, draws }: { red: number; blue: number; draws: 
 
 /* ---------- Curva de evolución de puntuaciones ---------- */
 function EvolutionChart({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
+  const router = useRouter()
   const data = useMemo(() => {
     return campaigns
       .filter((c) => c.status === 'COMPLETED')
@@ -155,6 +167,7 @@ function EvolutionChart({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
         </span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="h-[150px] w-full overflow-visible">
+        <title>Haz clic en un punto para abrir la ficha de esa campaña</title>
         <defs>
           <linearGradient id="evol-red" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={RED} stopOpacity="0.18" />
@@ -186,8 +199,12 @@ function EvolutionChart({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
             viewport={{ once: true }}
             transition={{ delay: 0.55 + i * 0.07, type: 'spring', stiffness: 300, damping: 18 }}
             whileHover={{ r: 5.5 }}
+            className="cursor-pointer"
+            onClick={() => router.push(`/historial/${p.c.id}`)}
+            role="link"
+            aria-label={`Abrir ficha de la campaña ${p.c.scenario.codename}`}
           >
-            <title>{`${p.c.scenario.codename} — RED ${p.c.redScore} pts`}</title>
+            <title>{`${p.c.scenario.codename} — RED ${p.c.redScore} pts · clic para abrir la ficha`}</title>
           </motion.circle>
         ))}
         {bluePts.map((p, i) => (
@@ -204,11 +221,18 @@ function EvolutionChart({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
             viewport={{ once: true }}
             transition={{ delay: 0.65 + i * 0.07, type: 'spring', stiffness: 300, damping: 18 }}
             whileHover={{ r: 5.5 }}
+            className="cursor-pointer"
+            onClick={() => router.push(`/historial/${p.c.id}`)}
+            role="link"
+            aria-label={`Abrir ficha de la campaña ${p.c.scenario.codename}`}
           >
-            <title>{`${p.c.scenario.codename} — BLUE ${p.c.blueScore} pts`}</title>
+            <title>{`${p.c.scenario.codename} — BLUE ${p.c.blueScore} pts · clic para abrir la ficha`}</title>
           </motion.circle>
         ))}
       </svg>
+      <p className="mt-1 text-right font-mono-tight text-[9px] text-[#d0d5dd]">
+        clic en un punto → ficha de la campaña
+      </p>
     </div>
   )
 }

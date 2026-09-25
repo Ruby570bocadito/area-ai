@@ -2,8 +2,9 @@
 
 import { motion } from 'framer-motion'
 import NumberFlow from '@number-flow/react'
-import { Building2, Crown, Download, Swords, ShieldCheck, Trophy, Target, TerminalSquare } from 'lucide-react'
+import { Building2, Crown, Download, Info, Swords, ShieldCheck, Trophy, Target, TerminalSquare } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { explainWinner, VICTORY_RULE_DETAIL } from '@/lib/victory'
 import type { AgentDTO, CampaignSummaryDTO, EventDTO, InfraNodeDTO, LiveLabDTO } from '@/lib/api-types'
 import { AgentCard } from './agent-avatar'
 import { EventFeed } from './event-feed'
@@ -470,14 +471,17 @@ export function ArenaLive({
                     ? 'Victoria del BLUE TEAM'
                     : 'Empate táctico'}
               </p>
-              <p className="mt-1 text-[13px] leading-relaxed text-[#667085]">{campaign.narrative}</p>
-              <p
-                className="mt-2 inline-flex font-mono-tight text-[9.5px] uppercase tracking-[0.14em] text-[#98a2b3]"
-                title="La puntuación refleja impacto causado y detecciones; el resultado se decide por el progreso de los objetivos."
-              >
-                Decidido por progreso de objetivos — RED {campaign.redProgress}/100 vs BLUE {campaign.blueProgress}/100
+              <p className="mt-0.5 font-mono-tight text-[10.5px] text-[#475467]">
+                {explainWinner(winner, campaign.redProgress, campaign.blueProgress)}
               </p>
+              <p className="mt-1 text-[13px] leading-relaxed text-[#667085]">{campaign.narrative}</p>
             </div>
+            <span
+              className="hidden cursor-help items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white/70 px-2.5 py-1.5 font-mono-tight text-[9.5px] font-bold text-[#667085] sm:flex"
+              title={VICTORY_RULE_DETAIL}
+            >
+              <Info className="h-3 w-3" /> regla: progreso, no puntos
+            </span>
           </div>
         </motion.div>
       )}

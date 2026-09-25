@@ -8,6 +8,7 @@ import {
   Download,
   History,
   Hourglass,
+  Info,
   Minus,
   Search,
   ShieldCheck,
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { normalizeText } from '@/lib/text'
+import { decisiveProgressLabel, VICTORY_RULE_DETAIL, VICTORY_RULE_SHORT } from '@/lib/victory'
 import type { CampaignListItemDTO } from '@/lib/api-types'
 
 // ─────────────────────────────────────────────────────────────
@@ -25,6 +27,8 @@ import type { CampaignListItemDTO } from '@/lib/api-types'
 
 type ResultFilter = 'ALL' | 'RED' | 'BLUE' | 'DRAW' | 'RUNNING'
 
+export type { ResultFilter }
+
 const RESULT_FILTERS: Array<{ key: ResultFilter; label: string }> = [
   { key: 'ALL', label: 'Todas' },
   { key: 'RED', label: 'Gana RED' },
@@ -33,25 +37,33 @@ const RESULT_FILTERS: Array<{ key: ResultFilter; label: string }> = [
   { key: 'RUNNING', label: 'En curso' },
 ]
 
-// El ganador se decide por progreso de objetivos (no por la puntuación,
-// que refleja impacto y detecciones) — se explica en los tooltips.
-const RULE_HINT = 'Puntuación por impacto/detecciones. El ganador se decide por progreso de objetivos (≥70 y por delante del rival).'
-
-function WinnerBadge({ winner }: { winner: string | null }) {
+// La regla de victoria y sus textos viven en src/lib/victory.ts (fuente única
+// compartida con el banner de resolución y el toast de fin de campaña).
+function WinnerBadge({ winner, redProgress, blueProgress }: { winner: string | null; redProgress: number; blueProgress: number }) {
+  const title = `${VICTORY_RULE_SHORT} · ${decisiveProgressLabel(winner, redProgress, blueProgress)}`
   if (winner === 'RED')
     return (
-      <span title={RULE_HINT} className="flex items-center gap-1 rounded-full border border-[#fecdca] bg-[#fef3f2] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#b42318]">
+      <span
+        title={title}
+        className="flex cursor-help items-center gap-1 rounded-full border border-[#fecdca] bg-[#fef3f2] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#b42318]"
+      >
         <Swords className="h-2.5 w-2.5" /> GANA RED
       </span>
     )
   if (winner === 'BLUE')
     return (
-      <span title={RULE_HINT} className="flex items-center gap-1 rounded-full border border-[#b2ddff] bg-[#f0f9ff] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#026aa2]">
+      <span
+        title={title}
+        className="flex cursor-help items-center gap-1 rounded-full border border-[#b2ddff] bg-[#f0f9ff] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#026aa2]"
+      >
         <ShieldCheck className="h-2.5 w-2.5" /> GANA BLUE
       </span>
     )
   return (
-    <span title={RULE_HINT} className="flex items-center gap-1 rounded-full border border-[#fedf89] bg-[#fffaeb] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#b54708]">
+    <span
+      title={title}
+      className="flex cursor-help items-center gap-1 rounded-full border border-[#fedf89] bg-[#fffaeb] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#b54708]"
+    >
       <Minus className="h-2.5 w-2.5" /> EMPATE
     </span>
   )
@@ -95,9 +107,15 @@ function exportCsv(campaigns: CampaignListItemDTO[]) {
   URL.revokeObjectURL(url)
 }
 
-export function HistoryPanel({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
+export function HistoryPanel({
+  campaigns,
+  initialResult = 'ALL',
+}: {
+  campaigns: CampaignListItemDTO[]
+  initialResult?: ResultFilter
+}) {
   const [query, setQuery] = useState('')
-  const [result, setResult] = useState<ResultFilter>('ALL')
+  const [result, setResult] = useState<ResultFilter>(initialResult)
   const [scenario, setScenario] = useState('ALL')
 
   const scenarioOptions = useMemo(
@@ -223,16 +241,23 @@ export function HistoryPanel({ campaigns }: { campaigns: CampaignListItemDTO[] }
                       })}{' '}
                       · dificultad {c.scenario.difficulty}/5
                       {c.status === 'COMPLETED' && (
-                        <span className="ml-2" title={RULE_HINT}>
-                          · resultado <b className="text-[#475467]">{c.redScore}–{c.blueScore}</b>
-                          <span className="ml-1.5 text-[#98a2b3]">· objetivos RED {c.redProgress}% vs BLU {c.blueProgress}%</span>
+                        <span className="ml-2 inline-flex items-center gap-1">
+                          · marcador <b className="text-[#475467]">{c.redScore}–{c.blueScore}</b>
+                          <span className="ml-1 text-[#98a2b3]">· {VICTORY_RULE_SHORT}:</span>
+                          <b
+                            className="cursor-help text-[#475467]"
+                            title={`El ganador lo decide el progreso del objetivo, no la puntuación (${c.redScore}–${c.blueScore} son puntos de actividad). ${VICTORY_RULE_DETAIL}`}
+                          >
+                            {decisiveProgressLabel(c.winner, c.redProgress, c.blueProgress)}
+                          </b>
+                          <Info className="h-3 w-3 text-[#d0d5dd]" />
                         </span>
                       )}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     {c.status === 'COMPLETED' ? (
-                      <WinnerBadge winner={c.winner} />
+                      <WinnerBadge winner={c.winner} redProgress={c.redProgress} blueProgress={c.blueProgress} />
                     ) : c.status === 'RUNNING' ? (
                       <span className="flex items-center gap-1 rounded-full border border-[#fedf89] bg-[#fffaeb] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#b54708]">
                         <Hourglass className="h-2.5 w-2.5" /> EN CURSO

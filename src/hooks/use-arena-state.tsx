@@ -1,23 +1,22 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
+import { ToastAction } from '@/components/ui/toast'
+import { explainWinner } from '@/lib/victory'
 import type { StateResponse } from '@/lib/api-types'
 
 // ─────────────────────────────────────────────────────────────
 // Estado vivo del laboratorio: carga + sondeo adaptativo +
 // lanzamiento de campañas. Compartido vía ArenaProvider para
-// toda la aplicación multi-página. Además, avisa con un toast
-// cuando una campaña que estaba en directo finaliza (visible
-// sobre todo con "Operación continua" activada).
+// toda la aplicación multi-página.
+//
+// Además, detecta el FIN de una campaña entre sondeos (p. ej.
+// con "Operación continua" activa) y avisa con un toast con el
+// resultado, el motivo y acceso directo a la ficha, salvo que
+// el usuario esté ya viendo la arena en directo.
 // ─────────────────────────────────────────────────────────────
-
-function winnerLabel(winner: string | null): string {
-  if (winner === 'RED') return 'Victoria del RED TEAM'
-  if (winner === 'BLUE') return 'Victoria del BLUE TEAM'
-  return 'Empate táctico'
-}
 
 export function useArenaState() {
   const [state, setState] = useState<StateResponse | null>(null)
@@ -25,12 +24,83 @@ export function useArenaState() {
   const stateRef = useRef<StateResponse | null>(null)
   const { toast } = useToast()
   const router = useRouter()
+  const pathname = usePathname()
+
+  // Seguimiento de la campaña activa entre sondeos para detectar su fin
+  const prevActiveIdRef = useRef<string | null>(null)
+  const notifiedRef = useRef<Set<string>>(new Set())
+  // Ruta actual vía ref: mantiene `load` estable (sin fetch extra al navegar)
+  const pathnameRef = useRef<string | null>(null)
+  useEffect(() => {
+    pathnameRef.current = pathname
+  }, [pathname])
+
+  const announceFinished = useCallback(
+    (prevActiveId: string, data: StateResponse) => {
+      if (notifiedRef.current.has(prevActiveId)) return
+      // El usuario en /arena ya ve la resolución en directo: no molestar
+      if (pathnameRef.current?.startsWith('/arena')) return
+
+      notifiedRef.current.add(prevActiveId)
+      const finished = data.campaigns.find((c) => c.id === prevActiveId)
+
+      if (!finished) {
+        toast({
+          title: 'La campaña ha finalizado',
+          description: 'Consulta el resultado en el historial de campañas.',
+          action: (
+            <ToastAction altText="Abrir el historial de campañas" onClick={() => router.push('/historial')}>
+              Ver historial
+            </ToastAction>
+          ),
+        })
+        return
+      }
+
+      const codename = finished.scenario.codename
+
+      if (finished.status === 'ABORTED') {
+        toast({
+          title: `${codename} abortada`,
+          description: 'La campaña se detuvo antes de completarse. Queda registrada en el archivo.',
+          action: (
+            <ToastAction altText={`Abrir la ficha de la campaña ${codename}`} onClick={() => router.push(`/historial/${finished.id}`)}>
+              Ver ficha
+            </ToastAction>
+          ),
+        })
+        return
+      }
+
+      const winnerLabel = finished.winner === 'RED' ? 'gana RED' : finished.winner === 'BLUE' ? 'gana BLUE' : 'empate táctico'
+      const autopilotNote = data.autopilot ? ' Operación continua encadena la siguiente campaña.' : ''
+      toast({
+        title: `${codename} — ${winnerLabel}`,
+        description: `${explainWinner(finished.winner, finished.redProgress, finished.blueProgress)} Puntuación ${finished.redScore}–${finished.blueScore}.${autopilotNote}`,
+        action: (
+          <ToastAction altText={`Abrir la ficha de la campaña ${codename}`} onClick={() => router.push(`/historial/${finished.id}`)}>
+            Ver ficha
+          </ToastAction>
+        ),
+        duration: 12000,
+      })
+    },
+    [router, toast]
+  )
 
   const load = useCallback(async () => {
     try {
       const res = await fetch('/api/state', { cache: 'no-store' })
       const data = (await res.json()) as StateResponse
       if (data.ok) {
+        // Detección de fin de campaña: la activa anterior ya no lo es
+        const prevActiveId = prevActiveIdRef.current
+        const currentActiveId = data.activeCampaign?.id ?? null
+        if (prevActiveId && prevActiveId !== currentActiveId) {
+          announceFinished(prevActiveId, data)
+        }
+        prevActiveIdRef.current = currentActiveId
+
         setState(data)
         stateRef.current = data
         setLoadError(false)
@@ -38,7 +108,7 @@ export function useArenaState() {
     } catch {
       setLoadError(true)
     }
-  }, [])
+  }, [announceFinished])
 
   useEffect(() => {
     void load()
@@ -50,26 +120,6 @@ export function useArenaState() {
     const id = setInterval(() => void load(), running ? 2000 : 6000)
     return () => clearInterval(id)
   }, [state?.activeCampaign, load])
-
-  // Aviso de fin de campaña: transición RUNNING→COMPLETED observada
-  // en el sondeo (no se avisa si la campaña ya estaba finalizada al abrir).
-  const lastSeenRef = useRef<{ id: string; status: string } | null>(null)
-  const liveId = state?.liveCampaign?.id
-  const liveStatus = state?.liveCampaign?.status
-  useEffect(() => {
-    const live = state?.liveCampaign
-    if (!live) return
-    const prev = lastSeenRef.current
-    lastSeenRef.current = { id: live.id, status: live.status }
-    if (prev && prev.id === live.id && prev.status === 'RUNNING' && live.status === 'COMPLETED') {
-      toast({
-        title: `${winnerLabel(live.winner)} — ${live.scenario.codename}`,
-        description: `Marcador ${live.redScore}–${live.blueScore} · progreso de objetivos RED ${live.redProgress}% vs BLUE ${live.blueProgress}% (el ganador se decide por objetivos). La ficha completa está en Historial.`,
-        // el provider de radix auto-cierra a 5s: este aviso merece más tiempo
-        duration: 12000,
-      })
-    }
-  }, [liveId, liveStatus, state?.liveCampaign, toast])
 
   const handleStart = useCallback(
     async (scenarioId?: string) => {
@@ -111,7 +161,7 @@ export function useArenaState() {
         toast({
           title: enabled ? 'Operación continua activada' : 'Operación continua detenida',
           description: enabled
-            ? 'El motor lanzará campañas reales en segundo plano sin parar.'
+            ? 'El motor lanzará campañas reales en segundo plano sin parar. Avisaremos al completar cada una.'
             : 'El motor terminará la campaña en curso y quedará en espera.',
         })
         await load()
