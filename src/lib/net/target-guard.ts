@@ -31,15 +31,41 @@ const ALWAYS_BLOCKED_HOSTS = new Set([
 const METADATA_IPV4 = new Set(['169.254.169.254', '169.254.170.2'])
 
 /**
+ * Canonización de literales IPv6 con el parser WHATWG (hardening HD1,
+ * Ronda 16 de bugs — propuesta de la revisión cruzada de la Ronda 13).
+ *
+ * La serialización WHATWG es canónica (RFC 5952): SIEMPRE comprimida y
+ * con el embebido en hex normal. Así, formas IPv6 VÁLIDAS con `::`
+ * intercalado que las regex de abajo no casan — `0:0::0:0:ffff:a9fe:a9fe`,
+ * `0::0:0:0:ffff:…` — caen en la misma representación que produce
+ * `url.hostname` en producción, que es la que las regex sí reconocen.
+ * Ningún call-site actual puede alcanzar las formas crudas (todos pasan
+ * por `new URL(...)` delante — PoC de la Ronda 13), pero la función
+ * pública acepta cualquier string: el hardening blinda el call-site
+ * futuro que saltase el canon «los bordes de validación trabajan sobre
+ * la representación canónica». Entrada inválida (no debería llegar:
+ * isIP valida antes) degrada a la forma original y las regex deciden.
+ */
+function canonicalizeIPv6(ip: string): string {
+  try {
+    return new URL(`http://[${ip}]/`).hostname.replace(/^\[(.+)\]$/, '$1')
+  } catch {
+    return ip
+  }
+}
+
+/**
  * Extrae el IPv4 embebido de una dirección IPv4-mapped. Cubre TODAS las
  * formas equivalentes: `::ffff:a.b.c.d` (dotted), `::ffff:a9fe:a9fe` (hex —
  * es la forma que `URL.hostname` produce para `[::ffff:169.254.169.254]`)
  * y la forma completa `0:0:0:0:0:ffff:…`. Devuelve null si no es mapped.
  * (Hallazgo Ronda 11 de bugs: la regex previa solo aceptaba la forma dotted,
- * así que la forma hex de la MISMA dirección clasificaba como pública.)
+ * así que la forma hex de la MISMA dirección clasificaba como pública.
+ * Hardening HD1 Ronda 16: la entrada se canoniza antes, de modo que las
+ * formas válidas con `::` intercalado también casan.)
  */
 function embeddedIPv4(ip: string): string | null {
-  const lower = ip.toLowerCase()
+  const lower = canonicalizeIPv6(ip.toLowerCase())
   const dotted = lower.match(/^(?:::|(?:0+:){5})ffff:(\d{1,3}(?:\.\d{1,3}){3})$/)
   if (dotted) return dotted[1]
   const hex = lower.match(/^(?:::|(?:0+:){5})ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/)
@@ -49,6 +75,27 @@ function embeddedIPv4(ip: string): string | null {
     return `${(hi >> 8) & 255}.${hi & 255}.${(lo >> 8) & 255}.${lo & 255}`
   }
   return null
+}
+
+/**
+ * Extrae el IPv4 embebido bajo el prefijo NAT64 well-known `64:ff9b::/96`
+ * (hardening HD1b, Ronda 16 de bugs — nota de la revisión cruzada de la
+ * Ronda 13: `64:ff9b::a9fe:a9fe` — IMDS vía NAT64 — clasificaba 'private',
+ * PERMITIDO en local, en vez del bloqueo SIEMPRE que merece la metadata).
+ * Tras la canonización WHATWG toda forma del prefijo queda comprimida
+ * (`64:ff9b:0:0:0:0:a9fe:a9fe` → `64:ff9b::a9fe:a9fe`; la dotted
+ * `64:ff9b::169.254.169.254` → hex), así que una sola regex cubre todas.
+ * Devuelve null fuera del prefijo o si el sufijo no es un embebido de
+ * 32 bits. El prefijo local-use `64:ff9b:1::/48` (RFC 8215) NO casa —
+ * es otro prefijo y no merece la extracción.
+ */
+function nat64EmbeddedIPv4(ip: string): string | null {
+  const lower = canonicalizeIPv6(ip.toLowerCase())
+  const hex = lower.match(/^64:ff9b::([0-9a-f]{1,4}):([0-9a-f]{1,4})$/)
+  if (!hex) return null
+  const hi = parseInt(hex[1], 16)
+  const lo = parseInt(hex[2], 16)
+  return `${(hi >> 8) & 255}.${hi & 255}.${(lo >> 8) & 255}.${lo & 255}`
 }
 
 function isPrivateIPv4(ip: string): boolean {
@@ -84,6 +131,13 @@ function isPrivateIPv6(ip: string): boolean {
 function classifyIp(ip: string): TargetKind {
   const embedded = embeddedIPv4(ip)
   if (embedded && METADATA_IPV4.has(embedded)) return 'metadata'
+  // HD1b: el embebido bajo el prefijo NAT64 solo se usa para el bloqueo
+  // SIEMPRE de metadata; para decidir private/public NO se extrae — un
+  // `64:ff9b::<pública>` (IPv4 de Internet traducido) se queda en la
+  // clasificación conservadora 'private' que hoy produce isPrivateIPv6
+  // vía el prefijo, sin reajustar nada hacia 'public'.
+  const nat64 = nat64EmbeddedIPv4(ip)
+  if (nat64 && METADATA_IPV4.has(nat64)) return 'metadata'
   if (METADATA_IPV4.has(ip.toLowerCase())) return 'metadata'
   return isPrivateIp(ip) ? 'private' : 'public'
 }

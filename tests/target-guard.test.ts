@@ -168,3 +168,66 @@ describe('classifyTarget — literales IPv6 con corchetes (regresión bypass Ron
       await classifyTarget('evIL.example', async () => [{ address: '::ffff:a9fe:a9fe', family: 6 }])
     ).toBe('metadata'))
 })
+
+// ─────────────────────────────────────────────────────────────
+// Hardening HD1/HD1b — Ronda 16 de bugs (D23 del reparto 11;
+// propuestas de la revisión cruzada de la Ronda 13).
+//
+// HD1: `embeddedIPv4` canoniza la entrada con el parser WHATWG,
+// de modo que las formas IPv6 VÁLIDAS con `::` intercalado —
+// no producibles por URL.hostname, pero aceptables a la entrada
+// de la función pública — dejan de colarse como 'public'.
+//
+// HD1b: el IPv4 embebido bajo el prefijo NAT64 well-known
+// 64:ff9b::/96 participa del bloqueo SIEMPRE de metadata (IMDS
+// vía NAT64 clasificaba 'private', permitido en local); el resto
+// del prefijo conserva la clasificación conservadora 'private'.
+// ─────────────────────────────────────────────────────────────
+
+describe('classifyTarget — hardening HD1: formas con :: intercalado (regresión Ronda 16)', () => {
+  const noDns = async (): Promise<never> => {
+    throw new Error('DNS no debe consultarse para un literal IP')
+  }
+
+  test('compresión intercalada con embebido hex: IMDS → metadata (antes public)', async () =>
+    expect(await classifyTarget('0:0::0:0:ffff:a9fe:a9fe', noDns)).toBe('metadata'))
+
+  test('variante de compresión 0::0:0:0:ffff:… → metadata', async () =>
+    expect(await classifyTarget('0::0:0:0:ffff:a9fe:a9fe', noDns)).toBe('metadata'))
+
+  test('compresión intercalada con embebido dotted: privado → private (antes public)', async () =>
+    expect(await classifyTarget('0::0:0:0:ffff:10.0.0.9', noDns)).toBe('private'))
+
+  test('la forma canónica equivalente sigue clasificando igual (sin cambio de semántica)', async () =>
+    expect(await classifyTarget('::ffff:a9fe:a9fe', noDns)).toBe('metadata'))
+
+  test('isPrivateIp con forma intercalada de mapped privado → true', () =>
+    expect(isPrivateIp('0:0::0:0:ffff:10.0.0.9')).toBe(true))
+})
+
+describe('classifyTarget — hardening HD1b: metadata bajo el prefijo NAT64 (regresión Ronda 16)', () => {
+  const noDns = async (): Promise<never> => {
+    throw new Error('DNS no debe consultarse para un literal IP')
+  }
+
+  test('IMDS vía NAT64 64:ff9b::a9fe:a9fe → metadata (antes private, permitido en local)', async () =>
+    expect(await classifyTarget('64:ff9b::a9fe:a9fe', noDns)).toBe('metadata'))
+
+  test('task metadata ECS vía NAT64 64:ff9b::a9fe:aa02 → metadata', async () =>
+    expect(await classifyTarget('64:ff9b::a9fe:aa02', noDns)).toBe('metadata'))
+
+  test('forma completa 64:ff9b:0:0:0:0:a9fe:a9fe → metadata', async () =>
+    expect(await classifyTarget('64:ff9b:0:0:0:0:a9fe:a9fe', noDns)).toBe('metadata'))
+
+  test('forma dotted 64:ff9b::169.254.169.254 → metadata', async () =>
+    expect(await classifyTarget('64:ff9b::169.254.169.254', noDns)).toBe('metadata'))
+
+  test('NAT64 con embebido NO metadata conserva la clasificación conservadora private', async () =>
+    expect(await classifyTarget('64:ff9b::8.8.8.8', noDns)).toBe('private'))
+
+  test('loopback embebido vía NAT64 (forma completa) → private', async () =>
+    expect(await classifyTarget('64:ff9b:0:0:0:0:7f00:1', noDns)).toBe('private'))
+
+  test('prefijo local-use 64:ff9b:1::/48 (RFC 8215) no extrae embebido: sigue private', async () =>
+    expect(await classifyTarget('64:ff9b:1::a9fe:a9fe', noDns)).toBe('private'))
+})
