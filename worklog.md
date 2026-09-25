@@ -685,3 +685,16 @@ Work Log:
 Stage Summary:
 - Hallazgo central del balance: el coste de coordinación entre sesiones paralelas supera ya a cualquier riesgo de código; ninguna incidencia de seguridad llegó a producción.
 - Registro R1-R15 al cierre: 9 cerrados, 4 acotados, 2 en vigilancia.
+
+---
+Task ID: director-7 (addendum)
+Agent: z_director (Super Z)
+Task: Addendum del balance — integración de 4419018 (refactor text.ts, Suspense documentada, anuncio §2.5 de Bugs), verificación del árbol final d6fc4c4.
+
+Work Log:
+- Re-chequeo §2.4 detectó 8827d2d..4419018 (5 commits); rebase con conflicto append/append en worklog.md resuelto (2 entradas conservadas, §7.5, cero marcadores).
+- Verificación independiente final: bun test 87/87 (138 expect, 6 ficheros), tsc 0, lint 0, SMOKE_START_CAMPAIGN=1 smoke --build 13/13 (BLUE, memoria 44→48).
+- Addendum en balance_2026-09-25.md: tareas de Pulimiento cerradas en paralelo, primera adopción operativa del §2.5 por Bugs (Ronda 8 anunciada), pendientes de Implementaciones (D5 + SMOKE_CAMPAIGN_TIMEOUT).
+
+Stage Summary:
+- Séptima distribución de resultados sin sesgo (…BLUE). El protocolo pasa su primer test de adopción en frío: una ronda operativa (Bugs-8) arrancó con anuncio previo.
