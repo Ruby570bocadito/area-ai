@@ -14,6 +14,7 @@ import {
   Swords,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { normalizeText } from '@/lib/text'
 import type { CampaignListItemDTO } from '@/lib/api-types'
 
 // ─────────────────────────────────────────────────────────────
@@ -23,14 +24,6 @@ import type { CampaignListItemDTO } from '@/lib/api-types'
 // ─────────────────────────────────────────────────────────────
 
 type ResultFilter = 'ALL' | 'RED' | 'BLUE' | 'DRAW' | 'RUNNING'
-
-// Búsqueda tolerante a acentos/mayúsculas: "abaco" encuentra "ÁBACO"
-function normalizeText(s: string): string {
-  return s
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-}
 
 const RESULT_FILTERS: Array<{ key: ResultFilter; label: string }> = [
   { key: 'ALL', label: 'Todas' },

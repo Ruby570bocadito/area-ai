@@ -12,6 +12,7 @@ import {
   TrendingUp,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { normalizeText } from '@/lib/text'
 import type { KnowledgeDTO } from '@/lib/api-types'
 
 // ─────────────────────────────────────────────────────────────
@@ -22,14 +23,6 @@ import type { KnowledgeDTO } from '@/lib/api-types'
 
 type KnowledgeItem = KnowledgeDTO & { campaignCodename?: string | null }
 type SortKey = 'FUERZA' | 'CONFIANZA' | 'USOS' | 'RECIENTES'
-
-// Búsqueda tolerante a acentos/mayúsculas: "exfiltracion" encuentra "exfiltración"
-function normalizeText(s: string): string {
-  return s
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-}
 
 const CATEGORY_LABEL: Record<string, string> = {
   TACTICA: 'Táctica',
