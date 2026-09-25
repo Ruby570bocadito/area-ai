@@ -391,7 +391,7 @@ h1, h2, h3 { text-wrap: balance; }
 }
 .nav-link:hover { color: var(--foreground); }
 
-/* ───────── Item de navegación de la barra lateral ───────── */
+/* ───────── Item de navegación de la barra lateral (tema claro unificado) ───────── */
 .side-link {
   display: flex;
   align-items: center;
@@ -400,15 +400,15 @@ h1, h2, h3 { text-wrap: balance; }
   padding: 0.5rem 0.7rem;
   font-size: 13px;
   font-weight: 500;
-  color: #b8c0cc;
+  color: #475467;
   transition: background-color 0.18s ease, color 0.18s ease;
 }
 .side-link:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
+  background: #f2f4f7;
+  color: #101828;
 }
 .side-link[data-active="true"] {
-  background: rgba(255, 255, 255, 0.1);
+  background: #101828;
   color: #ffffff;
   font-weight: 600;
 }

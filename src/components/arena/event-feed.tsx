@@ -12,6 +12,7 @@ import {
   Lock,
   Flag,
   Info,
+  TerminalSquare,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -24,7 +25,31 @@ const RESULT_STYLE: Record<string, { label: string; cls: string; icon: LucideIco
   BLOQUEADO: { label: 'BLOQUEADO', cls: 'bg-[#f0f9ff] text-[#026aa2] border-[#b2ddff]', icon: ShieldCheck },
   DETECTADO: { label: 'DETECTADO', cls: 'bg-[#ecfdf3] text-[#067647] border-[#a6f4c5]', icon: Eye },
   CONTENIDO: { label: 'CONTENIDO', cls: 'bg-[#f5f3ff] text-[#6941c6] border-[#ddd6fe]', icon: Lock },
+  ENDURECIDO: { label: 'ENDURECIDO', cls: 'bg-[#f0f9ff] text-[#026aa2] border-[#b2ddff]', icon: ShieldCheck },
   IGNORADO: { label: 'IGNORADO', cls: 'bg-[#fffaeb] text-[#b54708] border-[#fedf89]', icon: AlertTriangle },
+}
+
+interface EvidenceParsed {
+  exchanges?: Array<{ method: string; path: string; status: number; ms: number; res?: string }>
+  artifacts?: string[]
+  detections?: string[]
+}
+
+function parseEvidence(raw: string | null): EvidenceParsed | null {
+  if (!raw) return null
+  try {
+    const p = JSON.parse(raw) as EvidenceParsed
+    return p && (p.exchanges?.length || p.artifacts?.length) ? p : null
+  } catch {
+    return null
+  }
+}
+
+function statusTone(status: number): string {
+  if (status === 0) return 'bg-[#f9fafb] text-[#667085] border-[#e4e7ec]'
+  if (status < 300) return 'bg-[#ecfdf3] text-[#067647] border-[#a6f4c5]'
+  if (status < 400) return 'bg-[#f0f9ff] text-[#026aa2] border-[#b2ddff]'
+  return 'bg-[#fef3f2] text-[#b42318] border-[#fecdca]'
 }
 
 const SEVERITY_COLOR: Record<string, string> = {
@@ -68,6 +93,7 @@ export function EventFeed({
           const isBlue = ev.team === 'BLUE'
           const res = ev.result ? RESULT_STYLE[ev.result] : null
           const ResIcon = res?.icon
+          const evidence = parseEvidence(ev.evidence)
           return (
             <motion.div
               key={ev.id}
@@ -127,6 +153,41 @@ export function EventFeed({
                 </div>
                 <p className="mt-0.5 text-[12px] font-semibold leading-snug text-[#101828]">{ev.action}</p>
                 <p className="text-[11px] leading-snug text-[#667085]">{ev.detail}</p>
+                {ev.command && (
+                  <div className="mt-1.5 overflow-hidden rounded-md border border-[#e4e7ec] bg-white">
+                    <div className="flex items-center gap-1.5 border-b border-[#f2f4f7] px-2 py-1">
+                      <TerminalSquare className="h-3 w-3 shrink-0 text-[#98a2b3]" />
+                      <span className="font-mono-tight text-[8.5px] font-bold uppercase tracking-[0.14em] text-[#98a2b3]">
+                        comando real · laboratorio
+                      </span>
+                      {evidence?.exchanges && evidence.exchanges.length > 0 && (
+                        <span className="ml-auto flex items-center gap-1">
+                          {evidence.exchanges.slice(0, 4).map((x, i) => (
+                            <span
+                              key={i}
+                              className={cn('rounded border px-1 font-mono-tight text-[8.5px] font-bold', statusTone(x.status))}
+                              title={`${x.method} ${x.path} → ${x.status} (${x.ms}ms)${x.res ? ` · ${x.res}` : ''}`}
+                            >
+                              {x.status || 'ERR'}
+                            </span>
+                          ))}
+                        </span>
+                      )}
+                    </div>
+                    <p className="truncate px-2 py-1 font-mono-tight text-[10px] leading-relaxed text-[#344054]" title={ev.command}>
+                      {ev.command}
+                    </p>
+                  </div>
+                )}
+                {evidence?.artifacts && evidence.artifacts.length > 0 && (
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {evidence.artifacts.slice(0, 3).map((a, i) => (
+                      <span key={i} className="rounded bg-[#f9fafb] border border-[#f2f4f7] px-1.5 py-px font-mono-tight text-[9px] text-[#475467]">
+                        {a}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </motion.div>
           )

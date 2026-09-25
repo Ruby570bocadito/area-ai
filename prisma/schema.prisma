@@ -90,6 +90,8 @@ model CampaignEvent {
   impact        Int      @default(0)
   severity      String   @default("INFO") // INFO | LOW | MEDIUM | HIGH | CRITICAL
   targetNode    String?
+  command       String? // comando real ejecutado contra el laboratorio (curl/fetch)
+  evidence      String? // JSON: intercambios HTTP reales {method, path, status, ms, res} + artefactos
   createdAt     DateTime @default(now())
 
   campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)

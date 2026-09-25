@@ -4,6 +4,7 @@ import { ensureSeed } from '@/lib/sim/seed'
 import { recoverOrphanCampaigns } from '@/lib/sim/engine'
 import { getAutopilot, maybeRunAutopilot } from '@/lib/sim/autopilot'
 import { llmProviderName } from '@/lib/sim/llm'
+import { labInfo } from '@/lib/lab/store'
 import type { Infrastructure } from '@/lib/sim/types'
 
 export const dynamic = 'force-dynamic'
@@ -44,6 +45,44 @@ export async function GET() {
           take: 200,
         })
       : []
+
+    // Actividad reciente del laboratorio: últimos eventos reales entre campañas
+    const recentRaw = await db.campaignEvent.findMany({
+      where: { team: { not: 'SYSTEM' } },
+      orderBy: { createdAt: 'desc' },
+      take: 14,
+      include: { campaign: { include: { scenario: { select: { codename: true } } } } },
+    })
+    const recentActivity = recentRaw.map((e) => ({
+      id: e.id,
+      team: e.team as 'RED' | 'BLUE',
+      agentCodename: e.agentCodename,
+      action: e.action,
+      result: e.result,
+      phase: e.phase,
+      impact: e.impact,
+      campaignCodename: e.campaign.scenario.codename,
+      createdAt: e.createdAt,
+    }))
+
+    // Chispa de conocimiento: lecciones creadas por día (últimos 14 días)
+    const allKnowledgeRows = await db.knowledge.findMany({ select: { createdAt: true } })
+    const dayMs = 24 * 3600 * 1000
+    const today = new Date()
+    today.setHours(23, 59, 59, 999)
+    const knowledgeSpark: number[] = []
+    for (let d = 13; d >= 0; d--) {
+      const end = today.getTime() - d * dayMs
+      const start = end - dayMs
+      knowledgeSpark.push(allKnowledgeRows.filter((k) => {
+        const t = new Date(k.createdAt).getTime()
+        return t > start && t <= end
+      }).length)
+    }
+
+    // Estado real del laboratorio (servicios HTTP del ciber range)
+    const info = labInfo()
+    const liveLab = liveCampaign ? info.campaigns.find((c) => c.campaignId === liveCampaign.id) ?? null : null
 
     const completed = campaigns.filter((c) => c.status === 'COMPLETED')
     const redWins = completed.filter((c) => c.winner === 'RED').length
@@ -102,6 +141,15 @@ export async function GET() {
         : null,
       liveEvents,
       liveInfra,
+      liveLab,
+      recentActivity,
+      knowledgeSpark,
+      lab: {
+        online: info.online,
+        port: info.port,
+        activeCampaigns: info.activeCampaigns,
+        exchanges: info.exchanges,
+      },
       knowledge: { red: redKnowledge, blue: blueKnowledge },
       stats: {
         totalCampaigns: completed.length,

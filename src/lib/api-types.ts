@@ -81,7 +81,45 @@ export interface EventDTO {
   impact: number
   severity: string
   targetNode: string | null
+  command: string | null
+  evidence: string | null
   createdAt: string
+}
+
+export interface RecentActivityDTO {
+  id: string
+  team: 'RED' | 'BLUE'
+  agentCodename: string | null
+  action: string
+  result: string | null
+  phase: string
+  impact: number
+  campaignCodename: string
+  createdAt: string
+}
+
+export interface LabNodeInfoDTO {
+  nodeId: string
+  segment: string
+  criticality: number
+  compromised: boolean
+  isolated: boolean
+  vulnerabilities: Array<{ name: string; status: 'OPEN' | 'PATCHED' }>
+  sessions: number
+}
+
+export interface LiveLabDTO {
+  campaignId: string
+  scenarioKey: string
+  company: string
+  round: number
+  nodes: LabNodeInfoDTO[]
+  sessions: number
+  monitors: Array<{ segment: string; signature: string; nodeId?: string; by: string; deployedRound: number }>
+  firewall: Array<{ reason: string; blockNodeId: string | null; blockSessionId: string | null; deployedRound: number; by: string }>
+  exfiltrated: Array<{ table: string; bytes: number; at: string }>
+  exchanges: number
+  lastExchanges: Array<{ nodeId: string; method: string; path: string; status: number; ms: number; team: string; signature: string | null }>
 }
 
 export interface InfraNodeDTO {
@@ -121,6 +159,10 @@ export interface StateResponse {
   liveCampaign: CampaignSummaryDTO | null
   liveEvents: EventDTO[]
   liveInfra: { nodes: InfraNodeDTO[] } | null
+  liveLab: LiveLabDTO | null
+  recentActivity: RecentActivityDTO[]
+  knowledgeSpark: number[]
+  lab: { online: boolean; port: number | null; activeCampaigns: number; exchanges: number }
   knowledge: { red: KnowledgeDTO[]; blue: KnowledgeDTO[] }
   stats: {
     totalCampaigns: number

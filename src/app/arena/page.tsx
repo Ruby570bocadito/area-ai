@@ -30,6 +30,7 @@ function ArenaPage() {
           agents={state.agents}
           infraNodes={state.liveInfra?.nodes ?? []}
           running={running}
+          liveLab={state.liveLab}
         />
       ) : (
         <motion.div

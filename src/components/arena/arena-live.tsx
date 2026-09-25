@@ -2,9 +2,9 @@
 
 import { motion } from 'framer-motion'
 import NumberFlow from '@number-flow/react'
-import { Building2, Crown, Download, Swords, ShieldCheck, Trophy, Target } from 'lucide-react'
+import { Building2, Crown, Download, Swords, ShieldCheck, Trophy, Target, TerminalSquare } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { AgentDTO, CampaignSummaryDTO, EventDTO, InfraNodeDTO } from '@/lib/api-types'
+import type { AgentDTO, CampaignSummaryDTO, EventDTO, InfraNodeDTO, LiveLabDTO } from '@/lib/api-types'
 import { AgentCard } from './agent-avatar'
 import { EventFeed } from './event-feed'
 import { NetworkMap } from './network-map'
@@ -18,6 +18,7 @@ const RESULT_BADGE: Record<string, { label: string; cls: string }> = {
   BLOQUEADO: { label: 'BLOQUEADO', cls: 'border-[#b2ddff] bg-[#f0f9ff] text-[#026aa2]' },
   DETECTADO: { label: 'DETECTADO', cls: 'border-[#a6f4c5] bg-[#ecfdf3] text-[#067647]' },
   CONTENIDO: { label: 'CONTENIDO', cls: 'border-[#ddd6fe] bg-[#f5f3ff] text-[#6941c6]' },
+  ENDURECIDO: { label: 'ENDURECIDO', cls: 'border-[#b2ddff] bg-[#f0f9ff] text-[#026aa2]' },
   IGNORADO: { label: 'IGNORADO', cls: 'border-[#fedf89] bg-[#fffaeb] text-[#b54708]' },
 }
 
@@ -29,7 +30,7 @@ function TurnOperator({
 }: {
   team: 'red' | 'blue'
   agent?: { codename: string; role: string; level: number }
-  event?: { action: string; detail: string; result: string | null; targetNode: string | null; impact: number }
+  event?: { action: string; detail: string; result: string | null; targetNode: string | null; impact: number; command?: string | null; evidence?: string | null }
 }) {
   const accent = team === 'red' ? '#d92d20' : '#0086c9'
   const deep = team === 'red' ? '#b42318' : '#026aa2'
@@ -77,6 +78,12 @@ function TurnOperator({
             )}
           </p>
           <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-[#667085]">{event.detail}</p>
+          {event.command && (
+            <p className="mt-1.5 truncate rounded-md border border-[#e4e7ec] bg-[#f9fafb] px-2 py-1 font-mono-tight text-[9.5px] text-[#475467]" title={event.command}>
+              <TerminalSquare className="mr-1 inline h-3 w-3 text-[#98a2b3]" />
+              {event.command}
+            </p>
+          )}
         </>
       )}
     </motion.div>
@@ -123,12 +130,14 @@ export function ArenaLive({
   agents,
   infraNodes,
   running,
+  liveLab,
 }: {
   campaign: CampaignSummaryDTO
   events: EventDTO[]
   agents: AgentDTO[]
   infraNodes: InfraNodeDTO[]
   running: boolean
+  liveLab?: LiveLabDTO | null
 }) {
   const redAgents = agents.filter((a) => a.team === 'RED')
   const blueAgents = agents.filter((a) => a.team === 'BLUE')
@@ -295,7 +304,7 @@ export function ArenaLive({
             agent={agents.find((a) => a.key === lastRed?.agentKey) ?? undefined}
             event={
               lastRed
-                ? { action: lastRed.action, detail: lastRed.detail, result: lastRed.result, targetNode: lastRed.targetNode, impact: lastRed.impact }
+                ? { action: lastRed.action, detail: lastRed.detail, result: lastRed.result, targetNode: lastRed.targetNode, impact: lastRed.impact, command: lastRed.command }
                 : undefined
             }
           />
@@ -304,7 +313,7 @@ export function ArenaLive({
             agent={agents.find((a) => a.key === lastBlue?.agentKey) ?? undefined}
             event={
               lastBlue
-                ? { action: lastBlue.action, detail: lastBlue.detail, result: lastBlue.result, targetNode: lastBlue.targetNode, impact: lastBlue.impact }
+                ? { action: lastBlue.action, detail: lastBlue.detail, result: lastBlue.result, targetNode: lastBlue.targetNode, impact: lastBlue.impact, command: lastBlue.command }
                 : undefined
             }
           />
@@ -405,7 +414,7 @@ export function ArenaLive({
       {/* Mapa + Feed */}
       <div className="grid gap-4 xl:grid-cols-2">
         {infraNodes.length > 0 ? (
-          <NetworkMap nodes={infraNodes} events={events} running={running} phase={campaign.phase} />
+          <NetworkMap nodes={infraNodes} events={events} running={running} phase={campaign.phase} liveLab={liveLab} />
         ) : (
           <div className="panel rounded-xl p-6 text-sm text-[#667085]">Sin mapa disponible.</div>
         )}

@@ -59,7 +59,7 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
       <div className="flex items-center gap-3 px-5 pb-6 pt-6">
         <Link href="/" onClick={onNavigate} className="flex items-center gap-3">
           <BrandMark />
-          <Wordmark tone="light" />
+          <Wordmark tone="dark" />
         </Link>
       </div>
 
@@ -78,14 +78,14 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
               {active && (
                 <motion.span
                   layoutId="side-active"
-                  className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-gradient-to-b from-[#f97066] to-[#36bffa]"
+                  className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-gradient-to-b from-[#d92d20] to-[#0086c9]"
                   transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                 />
               )}
-              <item.icon className={cn('h-4 w-4 shrink-0', active ? 'text-white' : 'text-[#8a94a6]')} />
+              <item.icon className={cn('h-4 w-4 shrink-0', active ? 'text-white' : 'text-[#667085]')} />
               <span className="truncate">{item.label}</span>
               {item.href === '/arena' && running && (
-                <span className="ml-auto flex h-1.5 w-1.5 shrink-0 rounded-full bg-[#fdb022] pulse-dot" />
+                <span className="ml-auto flex h-1.5 w-1.5 shrink-0 rounded-full bg-[#d97706] pulse-dot" />
               )}
             </Link>
           )
@@ -93,9 +93,9 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       {/* Estado del laboratorio */}
-      <div className="mx-3 mb-5 rounded-xl border border-white/[0.07] bg-white/[0.04] p-3.5">
+      <div className="mx-3 mb-5 rounded-xl border border-[#e4e7ec] bg-[#f9fafb] p-3.5">
         <div className="flex items-center justify-between gap-2">
-          <span className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.16em] text-[#8a94a6]">
+          <span className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.16em] text-[#667085]">
             <Cpu className="h-3 w-3" /> Motor
           </span>
           <span
@@ -108,13 +108,13 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
             {running ? 'En directo' : 'En espera'}
           </span>
         </div>
-        <p className="mt-2 truncate font-mono-tight text-[10.5px] text-[#c8cdd7]">
+        <p className="mt-2 truncate font-mono-tight text-[10.5px] text-[#475467]">
           {state?.provider ?? 'z-ai-sdk'}
         </p>
-        <div className="mt-2.5 flex items-center justify-between border-t border-white/[0.07] pt-2.5 font-mono-tight text-[9.5px] text-[#8a94a6]">
+        <div className="mt-2.5 flex items-center justify-between border-t border-[#e4e7ec] pt-2.5 font-mono-tight text-[9.5px] text-[#667085]">
           <span>{state?.stats.totalCampaigns ?? 0} campañas</span>
           <span className="flex items-center gap-1">
-            {state?.autopilot && <InfinityIcon className="h-3 w-3 text-[#9b8afb]" />}
+            {state?.autopilot && <InfinityIcon className="h-3 w-3 text-[#7c3aed]" />}
             {state?.stats.knowledgeCount ?? 0} lecciones
           </span>
         </div>
@@ -132,7 +132,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
       {/* Sidebar de escritorio */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[246px] flex-col bg-[#0c111d] lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[246px] flex-col border-r border-[#e4e7ec] bg-white lg:flex">
         <SideNav />
       </aside>
 
@@ -202,7 +202,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileOpen(false)}
-              className="fixed inset-0 z-40 bg-[#0c111d]/60 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-40 bg-[#101828]/40 backdrop-blur-sm lg:hidden"
               aria-hidden
             />
             <motion.aside
@@ -210,7 +210,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               animate={{ x: 0 }}
               exit={{ x: -280 }}
               transition={{ type: 'spring', stiffness: 380, damping: 36 }}
-              className="fixed inset-y-0 left-0 z-50 w-[264px] bg-[#0c111d] shadow-2xl lg:hidden"
+              className="fixed inset-y-0 left-0 z-50 w-[264px] border-r border-[#e4e7ec] bg-white shadow-2xl lg:hidden"
               role="dialog"
               aria-label="Navegación"
             >
@@ -218,7 +218,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 type="button"
                 onClick={() => setMobileOpen(false)}
                 aria-label="Cerrar navegación"
-                className="absolute right-3 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-[#8a94a6] transition-colors hover:bg-white/[0.08] hover:text-white"
+                className="absolute right-3 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-[#667085] transition-colors hover:bg-[#f2f4f7] hover:text-[#101828]"
               >
                 <X className="h-4 w-4" />
               </button>

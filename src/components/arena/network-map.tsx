@@ -2,9 +2,9 @@
 
 import { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Shield, Skull, Crosshair, Bug, Lock, MousePointerClick, X } from 'lucide-react'
+import { Shield, Skull, Crosshair, Bug, Lock, MousePointerClick, X, Server, ShieldAlert } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { EventDTO, InfraNodeDTO } from '@/lib/api-types'
+import type { EventDTO, InfraNodeDTO, LiveLabDTO } from '@/lib/api-types'
 
 // ─────────────────────────────────────────────────────────────
 // Mapa de operaciones — topología real del escenario:
@@ -61,11 +61,13 @@ export function NetworkMap({
   events,
   running,
   phase,
+  liveLab,
 }: {
   nodes: InfraNodeDTO[]
   events: EventDTO[]
   running: boolean
   phase: string
+  liveLab?: LiveLabDTO | null
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
@@ -149,6 +151,10 @@ export function NetworkMap({
   const BLUE_BASE = { x: VIEW_W - 74, y: 262 }
 
   const selected = selectedId ? byId.get(selectedId) ?? null : null
+  const labNode = selected ? liveLab?.nodes.find((n) => n.nodeId === selected.id) : undefined
+  const labLastExchanges = selected
+    ? (liveLab?.lastExchanges ?? []).filter((x) => x.nodeId === selected.id).slice(-3).reverse()
+    : []
   const redTarget = lastRed?.targetNode ? byId.get(lastRed.targetNode) : undefined
   const blueTarget = lastBlue?.targetNode ? byId.get(lastBlue.targetNode) : undefined
 
@@ -407,6 +413,50 @@ export function NetworkMap({
                     {compromised.has(selected.id) ? 'COMPROMETIDO POR RED' : 'ENDURECIDO POR BLUE'}
                   </p>
                 )}
+
+                {/* Estado real del laboratorio para este nodo */}
+                {labNode && (
+                  <div className="mt-2.5 rounded-lg border border-[#e4e7ec] bg-white p-2.5">
+                    <p className="flex items-center gap-1.5 font-mono-tight text-[9px] font-bold uppercase tracking-[0.16em] text-[#667085]">
+                      <Server className="h-3 w-3" /> Servicio real del lab
+                    </p>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                      <span className="rounded border border-[#e4e7ec] bg-[#f9fafb] px-1.5 py-px font-mono-tight text-[9px] text-[#475467]">
+                        {labNode.compromised ? `${labNode.sessions} sesión(es) RED` : 'sin sesiones RED'}
+                      </span>
+                      {labNode.isolated && (
+                        <span className="flex items-center gap-1 rounded border border-[#fecdca] bg-[#fef3f2] px-1.5 py-px font-mono-tight text-[9px] font-bold text-[#b42318]">
+                          <ShieldAlert className="h-2.5 w-2.5" /> AISLADO POR SOC
+                        </span>
+                      )}
+                      {(labNode.vulnerabilities.filter((v) => v.status === 'PATCHED').length > 0) && (
+                        <span className="rounded border border-[#a6f4c5] bg-[#ecfdf3] px-1.5 py-px font-mono-tight text-[9px] font-bold text-[#067647]">
+                          {labNode.vulnerabilities.filter((v) => v.status === 'PATCHED').length} parche(s) aplicado(s)
+                        </span>
+                      )}
+                    </div>
+                    {labLastExchanges.length > 0 && (
+                      <ul className="mt-2 space-y-0.5">
+                        {labLastExchanges.map((x, i) => (
+                          <li key={i} className="flex items-center gap-1.5 font-mono-tight text-[9px] text-[#667085]">
+                            <span
+                              className={cn(
+                                'rounded px-1 font-bold',
+                                x.status < 300 ? 'bg-[#ecfdf3] text-[#067647]' : x.status < 400 ? 'bg-[#f0f9ff] text-[#026aa2]' : 'bg-[#fef3f2] text-[#b42318]'
+                              )}
+                            >
+                              {x.status || 'ERR'}
+                            </span>
+                            <span className="truncate">
+                              {x.method} {x.path}
+                            </span>
+                            {x.signature && <span className="shrink-0 text-[#b42318]">· {x.signature}</span>}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="min-w-0">
                 <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-[#b42318]">
@@ -414,11 +464,17 @@ export function NetworkMap({
                 </p>
                 <ul className="mt-1.5 space-y-1">
                   {selected.vulnerabilities.length > 0 ? (
-                    selected.vulnerabilities.map((v) => (
-                      <li key={v} className="text-[11.5px] leading-snug text-[#344054]">
-                        {v}
-                      </li>
-                    ))
+                    selected.vulnerabilities.map((v) => {
+                      const st = labNode?.vulnerabilities.find((x) => x.name === v)?.status
+                      return (
+                        <li key={v} className="flex items-center gap-1.5 text-[11.5px] leading-snug text-[#344054]">
+                          <span>{v}</span>
+                          {st === 'PATCHED' && (
+                            <span className="shrink-0 rounded border border-[#a6f4c5] bg-[#ecfdf3] px-1 font-mono-tight text-[8.5px] font-bold text-[#067647]">PARCHEADA</span>
+                          )}
+                        </li>
+                      )
+                    })
                   ) : (
                     <li className="text-[11.5px] text-[#667085]">Sin vulnerabilidades conocidas.</li>
                   )}
