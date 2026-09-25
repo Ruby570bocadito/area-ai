@@ -116,4 +116,5 @@ model Knowledge {
   createdAt     DateTime @default(now())
 
   @@index([team])
+  @@index([campaignId]) // la ficha de campaña (/historial/[id]) filtra lecciones por campaignId
 }
