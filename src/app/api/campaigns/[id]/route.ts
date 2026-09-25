@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import type { EventDTO, InfraNodeDTO, KnowledgeDTO } from '@/lib/api-types'
+import type { CampaignSiblingDTO, EventDTO, InfraNodeDTO, KnowledgeDTO } from '@/lib/api-types'
 import type { Infrastructure } from '@/lib/sim/types'
 
 export const dynamic = 'force-dynamic'
@@ -9,7 +9,8 @@ export const dynamic = 'force-dynamic'
 // GET /api/campaigns/[id] — Ficha completa de cualquier campaña
 // del archivo: resultado, registro íntegro de eventos (con
 // comandos reales y evidencia HTTP), lecciones archivadas por
-// esta campaña e infraestructura del escenario para el mapa.
+// esta campaña, infraestructura del escenario para el mapa y
+// las demás campañas del mismo escenario (comparativa).
 // ─────────────────────────────────────────────────────────────
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -24,7 +25,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ ok: false, error: 'Campaña no encontrada' }, { status: 404 })
     }
 
-    const [events, knowledge] = await Promise.all([
+    const [events, knowledge, siblings] = await Promise.all([
       db.campaignEvent.findMany({
         where: { campaignId: id },
         orderBy: { seq: 'asc' },
@@ -33,6 +34,25 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       db.knowledge.findMany({
         where: { campaignId: id },
         orderBy: { createdAt: 'asc' },
+      }),
+      // Otras campañas del mismo escenario para la comparativa de la ficha
+      db.campaign.findMany({
+        where: { scenarioId: campaign.scenarioId, id: { not: id } },
+        orderBy: { startedAt: 'desc' },
+        take: 8,
+        select: {
+          id: true,
+          status: true,
+          winner: true,
+          redProgress: true,
+          blueProgress: true,
+          redScore: true,
+          blueScore: true,
+          round: true,
+          maxRounds: true,
+          startedAt: true,
+          endedAt: true,
+        },
       }),
     ])
 
@@ -73,6 +93,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       },
       events: events as unknown as EventDTO[],
       knowledge: knowledge as unknown as KnowledgeDTO[],
+      siblings: siblings as unknown as CampaignSiblingDTO[],
       infra,
     })
   } catch (error) {

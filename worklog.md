@@ -633,3 +633,23 @@ Work Log:
 Stage Summary:
 - Puerta de calidad sobre el árbol final: bun test 87/87 (138 expect), tsc 0, lint 0, guard 49/49; canon no re-ejecutado por delta de código cero (criterio addendum 18h58).
 - Informe: docs/agentes/z_bugs/ronda_2026-09-25_19h10.md
+---
+Task ID: implementaciones-8 (ronda 7)
+Agent: z_implementaciones (Super Z)
+Task: Ronda 7 — tareas asignadas (18h10) ya canonizadas por sesiones paralelas (colisiones 8 y 12); derivación §2.4/§8 al backlog #4 (14h39): comparativa entre campañas en la ficha. El reparto ajustado del Director (18h50: D5 + SMOKE_CAMPAIGN_TIMEOUT) llegó durante la ronda y quedó también ejecutado.
+
+Work Log:
+- Verificado el árbol al inicio: mis dos tareas asignadas (Fase 5 por campaignId, toast #6) ya canónicas — nada que re-ejecutar. Derivo al backlog #4, el ítem más antiguo activo.
+- Mejora 1: «Evolución ronda a ronda» en /historial/[id] — módulo puro nuevo src/lib/round-progression.ts (agregación por ronda de eventos: acciones, impacto, aciertos, acumulados, liderato, puntos de giro) + suite tests/round-progression.test.ts (6 tests) + componentes RoundEvolution/ScenarioSiblings en src/components/arena/campaign-analysis.tsx.
+- Mejora 2: «Otras campañas en este escenario» — /api/campaigns/[id] expone siblings (mismo scenarioId, take 8, select acotado); CampaignSiblingDTO en api-types; comparativa en la ficha con la actual destacada, medias del escenario y enlaces a hermanas.
+- Verificado contra datos reales: Σ impactos RED 114 = progreso registrado exacto; BLUE 40×2 = marcador 80; API con hermana temporal siblings=[2] y /historial/[id] 200 (dato temporal eliminado, BD limpia).
+- Hallazgo para z_bugs: el update final del motor escribe redProgress/blueProgress SIN clamp (engine.ts ~674-685) — campaña real archivó 114/100.
+- Propuesta al Director: retirar «rondas medias» del backlog (motor sin terminación temprana → métrica constante); backlog 14h39 cerrado.
+- README no tocado (propietario único §8): deuda documental reportada en el informe para Pulimiento.
+
+Stage Summary:
+- Mejora 3 (reparto ajustado 18h50): D5 adoptado en el canon — Fase 5 valida estructura de lecciones (team/categoría/título/contenido/campaignCodename), mínimo ≥2 y cruce ficha=memoria (canon 13→14 comprobaciones) — y SMOKE_CAMPAIGN_TIMEOUT configurable (defecto 240s, mínimo 30, no-numérico → defecto).
+- Re-chequeo §2.4 pre-commit detectó DOS avances paralelos: 3a6212f..0c52689 (fix DNS de Bugs + Director + Pulimiento) y 0c52689..4419018 (Suspense documentada + refactor formatDuration de Pulimiento + anuncio §2.5 de Bugs). Dos rebases; conflictos append/append en worklog resueltos a mano (§7.5), entradas en orden cronológico.
+- Colisión 13: el refactor formatDuration de Pulimiento tocaba la misma ficha — merge limpio (hunks disjuntos), relectura completa y dedupe manual: mi fmtDuration local de campaign-analysis.tsx eliminado, adoptado el formatDuration canónico de @/lib/text.
+- Backlog 14h39 #4 cerrado en sus dos caras. Puerta de calidad sobre el árbol rebaseado 4419018: tsc 0, lint 0, bun test 93/93 (74 canónicos + 6 nuevos + 5 DNS + 8 text), SMOKE_START_CAMPAIGN=1 --build → 14/14 OK (COMPLETED 8/8, 17 eventos, RED; 4 lecciones, memoria 14→18, estructura válida, ficha 4 = memoria 4).
+- Informe: docs/agentes/z_implementaciones/ronda_2026-09-25_19h03.md

@@ -18,12 +18,15 @@ import { useArena } from '@/components/arena/shell/arena-provider'
 import { ArenaGate, PageContainer } from '@/components/arena/shell/page-frame'
 import { PageHeader } from '@/components/arena/shell/page-frame'
 import { ArenaLive } from '@/components/arena/arena-live'
+import { RoundEvolution, ScenarioSiblings } from '@/components/arena/campaign-analysis'
 import type { CampaignDetailResponse } from '@/lib/api-types'
 
 // ─────────────────────────────────────────────────────────────
 // /historial/[id] — Ficha completa de cualquier campaña del
 // archivo: telemetría íntegra (mapa, comandos reales, evidencia
-// HTTP), resultado y lecciones que archivó esta campaña.
+// HTTP), resultado, lecciones que archivó esta campaña, la
+// evolución ronda a ronda y la comparativa con las demás
+// campañas del mismo escenario.
 // ─────────────────────────────────────────────────────────────
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -165,6 +168,10 @@ function DetailPage() {
         infraNodes={detail.infra?.nodes ?? []}
         running={isRunning}
       />
+
+      {/* Evolución ronda a ronda (backlog 14h39 #4) + comparativa del escenario */}
+      <RoundEvolution events={detail.events} maxRounds={campaign.maxRounds} />
+      <ScenarioSiblings current={campaign} siblings={detail.siblings ?? []} />
 
       {/* Lecciones que archivó esta campaña */}
       <section className="mt-4">

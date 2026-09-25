@@ -148,6 +148,20 @@ export interface KnowledgeDTO {
   createdAt: string
 }
 
+export interface CampaignSiblingDTO {
+  id: string
+  status: string
+  winner: string | null
+  redProgress: number
+  blueProgress: number
+  redScore: number
+  blueScore: number
+  round: number
+  maxRounds: number
+  startedAt: string
+  endedAt: string | null
+}
+
 export interface CampaignDetailResponse {
   ok: boolean
   error?: string
@@ -155,6 +169,8 @@ export interface CampaignDetailResponse {
   events: EventDTO[]
   knowledge: KnowledgeDTO[]
   infra: { nodes: InfraNodeDTO[] } | null
+  /** Otras campañas del mismo escenario (comparativa en la ficha) */
+  siblings: CampaignSiblingDTO[]
 }
 
 export interface CampaignsListResponse {

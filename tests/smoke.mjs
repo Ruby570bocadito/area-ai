@@ -8,7 +8,9 @@
 //   SMOKE_SKIP_TSC=1              → salta el chequeo de tipos (para iterar rápido)
 //   SMOKE_SKIP_UNIT=1             → salta los tests unitarios (fase 0)
 //   SMOKE_START_CAMPAIGN=1        → lanza UNA campaña real y espera su fin (opt-in:
-//                                   escribe en la BD objetivo; hasta ~4 min)
+//                                   escribe en la BD objetivo)
+//   SMOKE_CAMPAIGN_TIMEOUT=<seg>  → techo de espera de la campaña real (segundos;
+//                                   por defecto 240 — el motor completo ronda los ~40 s)
 //
 // Fases: (0) bun test tests/ — guard SSRF + token/rate limit  (1) tsc --noEmit
 // (2) entorno (.env, prisma db push)  (3) servidor de producción standalone
@@ -26,6 +28,8 @@ const PORT = Number(process.env.SMOKE_PORT || 3101)
 const DB_PATH = `${ROOT}/db/custom.db`
 const BASE = `http://127.0.0.1:${PORT}`
 const FORCE_BUILD = process.argv.includes('--build')
+const _timeoutRaw = Number(process.env.SMOKE_CAMPAIGN_TIMEOUT)
+const CAMPAIGN_TIMEOUT_S = Number.isFinite(_timeoutRaw) && _timeoutRaw >= 30 ? _timeoutRaw : 240
 const results = []
 
 function record(name, ok, detail = '') {
@@ -204,7 +208,7 @@ if (process.env.SMOKE_START_CAMPAIGN === '1' && up) {
 
   if (launched?.campaignId) {
     const id = launched.campaignId
-    const deadline = Date.now() + 240_000
+    const deadline = Date.now() + CAMPAIGN_TIMEOUT_S * 1000
     let detail = null
     while (Date.now() < deadline) {
       await new Promise((r) => setTimeout(r, 2000))
@@ -219,7 +223,7 @@ if (process.env.SMOKE_START_CAMPAIGN === '1' && up) {
     record(
       'campaña end-to-end COMPLETED',
       detail?.campaign?.status === 'COMPLETED',
-      detail ? `estado ${detail.campaign.status} · ronda ${detail.campaign.round}/${detail.campaign.maxRounds}` : 'timeout 240s sin finalizar'
+      detail ? `estado ${detail.campaign.status} · ronda ${detail.campaign.round}/${detail.campaign.maxRounds}` : `timeout ${CAMPAIGN_TIMEOUT_S}s sin finalizar`
     )
     record(
       'registro de eventos y lecciones',
@@ -229,7 +233,9 @@ if (process.env.SMOKE_START_CAMPAIGN === '1' && up) {
     )
 
     // refino Ronda 6: la memoria global debe archivar lecciones de esta
-    // campaña (/api/knowledge expone campaignId en cada lección)
+    // campaña (/api/knowledge expone campaignId en cada lección).
+    // Refino Ronda 7 (D5 ratificado): mínimo ≥2 lecciones — el fallback
+    // determinista del motor garantiza 2 por equipo; menos señala un cambio.
     const kAfter = await fetch(`${BASE}/api/knowledge`)
       .then((r) => (r.ok ? r.json().catch(() => null) : null))
       .catch(() => null)
@@ -241,10 +247,33 @@ if (process.env.SMOKE_START_CAMPAIGN === '1' && up) {
       knowledgeBefore !== null && Array.isArray(kAfter?.knowledge) && kAfter.knowledge.length > knowledgeBefore
     record(
       'lecciones archivadas en la memoria (campaignId)',
-      lessons.length > 0 && (grew || capped || knowledgeBefore === null),
+      lessons.length >= 2 && (grew || capped || knowledgeBefore === null),
       Array.isArray(kAfter?.knowledge)
         ? `${lessons.length} lecciones de la campaña ${id} · memoria ${knowledgeBefore ?? '?'}→${kAfter.knowledge.length}`
         : 'no se pudo leer /api/knowledge'
+    )
+
+    // refino Ronda 7 (D5 ratificado): validación estructural de cada lección
+    // propia + cruce con la ficha. El campaignCodename no vacío valida que el
+    // join Knowledge → Campaign → Scenario del endpoint no se rompa en silencio;
+    // el cruce exige que la ficha (/api/campaigns/[id]) archive exactamente
+    // las mismas lecciones que la memoria global atribuye a esta campaña.
+    const structurallyValid =
+      Array.isArray(lessons) &&
+      lessons.length > 0 &&
+      lessons.every(
+        (k) =>
+          (k.team === 'RED' || k.team === 'BLUE') &&
+          typeof k.category === 'string' && k.category.trim() !== '' &&
+          typeof k.title === 'string' && k.title.trim() !== '' &&
+          typeof k.content === 'string' && k.content.trim() !== '' &&
+          typeof k.campaignCodename === 'string' && k.campaignCodename.trim() !== ''
+      )
+    const fichaMatches = Array.isArray(detail?.knowledge) && detail.knowledge.length === lessons.length
+    record(
+      'lecciones estructuralmente válidas y cruce con la ficha',
+      structurallyValid && fichaMatches,
+      `estructura ${structurallyValid ? 'válida' : 'inválida'} · ficha ${detail?.knowledge?.length ?? '?'} vs memoria ${lessons.length}`
     )
   }
 } else if (process.env.SMOKE_START_CAMPAIGN === '1') {
