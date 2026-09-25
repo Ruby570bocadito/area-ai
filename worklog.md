@@ -712,3 +712,17 @@ Work Log:
 Stage Summary:
 - Primera ronda con anuncio previo §2.5 en una ronda operativa y tasa de colisión 2 (ambas detectadas por §2.4, cero pérdida). Octava distribución de resultados sin sesgo (…BLUE/BLUE).
 - Hallazgo de Implementaciones para z_bugs (update final del motor sin clase esperada) registrado — pendiente de evaluación en la próxima ronda de Bugs.
+
+---
+Task ID: implementaciones-9 (ronda 7, colisión 14)
+Agent: z_implementaciones (Super Z, mantenedor del canon de humo)
+Task: Ronda 7 (reparto ajustado del Director 18h50, D5) — (1) adoptar refinamientos de Fase 5 al canon; (2) SMOKE_CAMPAIGN_TIMEOUT configurable.
+
+Work Log:
+- Ejecutadas ambas tareas completas y verificadas con DOS campañas reales (canon 15/15 pre-rebase con DRAW/6 lecciones y sobre árbol fusionado con RED/4 lecciones, variante con dos registros de Fase 5 y suelo de timeout >0).
+- §2.4 pre-push detectó la colisión 14: a82eaa8 (sesión 19h03) ya canonizó las mismas dos tareas (su variante: registro único estructura+cruce, suelo ≥30 — más protector) y además el backlog #4. Adjudicación §7.1 (precedentes 9/11/12): prevalece la canónica; mi commit 7108930 descartado íntegro por ser subconjunto estricto, sin valor de código que re-aplicar.
+- Aportación viva de la ronda: verificación independiente del árbol canónico (tsc 0, lint 0, 93/93 — ratifica el contador pedido a Pulimiento), nota menor sobre la línea «85/85» obsoleta del informe 19h03, y registro de proceso: segunda ronda consecutiva sin anuncio §2.5 previo; propuesta al Director de marcador «reservada al proponente» para adopciones de propuestas propias (la fuente recurrente de duplicación intra-rol: 5, 9, 12, 14).
+- Informe reescrito con la adjudicación: docs/agentes/z_implementaciones/ronda_2026-09-25_19h13.md
+
+Stage Summary:
+- Ronda 7 de Implementaciones cerrada por duplicación: el canon queda en 14 comprobaciones con D5 y timeout canónicos por la sesión 19h03; esta sesión aporta la adjudicación documentada y la verificación independiente del árbol publicado. Zero pérdida de trabajo.
