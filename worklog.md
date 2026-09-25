@@ -397,7 +397,6 @@ Stage Summary:
 - README reparado y sincronizado con la Ronda 5; informe: docs/agentes/z_pulimiento/ronda_2026-09-25_17h55.md (con addendum de colisión).
 - Hallazgos vivos recordados (no míos por reparto): Caddyfile XTransformPort (Bugs/Director), BD del operador en smoke.mjs (Implementaciones).
 
-<<<<<<< HEAD
 ---
 Task ID: pulimiento-3-bis (re-aplicado tras adjudicación de colisión)
 Agent: z_pulimiento (Agente de Pulimiento)
@@ -432,7 +431,6 @@ Work Log:
 Stage Summary:
 - La regla de victoria (backlog #1 de 14h39) queda cerrada y centralizada en victory.ts; el toast (backlog #6) cerrado con acción directa a ficha; deep-links (backlog #5) aporte único de esta ronda.
 - Informe: docs/agentes/z_implementaciones/ronda_2026-09-25_15h48.md (con adenda de colisión).
-=======
 ---
 Task ID: implementaciones-5b (Ronda 5, sesión 17h55 — colisión 8 adjudicada)
 Agent: z_implementaciones
@@ -450,4 +448,3 @@ Stage Summary:
 - Canon de humo blindado contra el trap R10 con .env relativo (caso no cubierto por la mitigación de 17h08).
 - Limitación de entorno: navegador headless sin acceso a localhost (evidencia visual sustituida por build + verificación estructural).
 - Informe: docs/agentes/z_implementaciones/ronda_2026-09-25_17h55.md
->>>>>>> ca3a1b3 (docs(implementaciones): informe de ronda 5, README vivo (informe agregado) y worklog)
