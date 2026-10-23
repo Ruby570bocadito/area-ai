@@ -17,6 +17,7 @@
 //      la cookie acreditada sirve para mutar (UI sin cabeceras); logout DELETE expira.
 //  11. H-001 (hallazgo TEST): Transfer-Encoding: chunked NO sortea ni el tope de
 //      stream (caso 9) ni la acreditación: sin credencial con ADMIN_TOKEN → 401.
+//  12. caddy-hardening (ROADMAP): sin X-Powered-By (huella de versión de Next).
 //
 // Uso: bun scripts/security-verify.mjs   (requiere .next/standalone ya construido)
 // Puerto: SECURITY_VERIFY_PORT (defecto 3105; tarea security-verify-puerto del
@@ -70,9 +71,10 @@ for (const path of ['/', '/api/state']) {
   const pp = res.headers.get('permissions-policy')
   const coop = res.headers.get('cross-origin-opener-policy')
   const corp = res.headers.get('cross-origin-resource-policy')
+  const xpb = res.headers.get('x-powered-by')
   check(`cabeceras en ${path}`, xcto === 'nosniff' && xfo === 'SAMEORIGIN' && rp === 'strict-origin-when-cross-origin' && Boolean(pp)
-    && coop === 'same-origin' && corp === 'same-origin',
-    `nosniff=${xcto} xfo=${xfo} rp=${rp} pp=${pp ? 'sí' : 'no'} coop=${coop} corp=${corp}`)
+    && coop === 'same-origin' && corp === 'same-origin' && xpb === null,
+    `nosniff=${xcto} xfo=${xfo} rp=${rp} pp=${pp ? 'sí' : 'no'} coop=${coop} corp=${corp} x-powered-by=${xpb ?? 'ausente'}`)
 }
 const apiCache = await fetch(`${BASE}/api/state`)
 check('Cache-Control: no-store en /api/state (datos vivos sin caché)',

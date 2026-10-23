@@ -32,6 +32,9 @@ const nextConfig: NextConfig = {
      ignorarse en silencio (los contratos de guard/access/proxy son de
      seguridad). */
   reactStrictMode: false,
+  /* Sin huella de framework (tarea caddy-hardening): X-Powered-By expone la
+     versión exacta de Next.js a cualquier sondeo y no aporta nada. */
+  poweredByHeader: false,
   async headers() {
     return [
       {
