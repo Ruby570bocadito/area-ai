@@ -15,6 +15,7 @@
 
 import { afterEach, describe, expect, test } from 'bun:test'
 import {
+  adminTokenMatches,
   clientKey,
   contentLengthExceeds,
   isMutationAuthorized,
@@ -327,5 +328,20 @@ describe('readJsonBody — tope de stream (cuerpo-chunked)', () => {
     const req = requestWithStreamBody([payload])
     const res = await readJsonBody<{ a: string }>(req, payload.length)
     expect(res.ok).toBe(true)
+  })
+})
+
+describe('adminTokenMatches — comparación de tiempo constante para /api/auth', () => {
+  test('token correcto → true', () => {
+    expect(adminTokenMatches('secreto-largo-correcto', 'secreto-largo-correcto')).toBe(true)
+  })
+
+  test('token incorrecto → false', () => {
+    expect(adminTokenMatches('secreto-largo-incorrect', 'secreto-largo-correcto')).toBe(false)
+  })
+
+  test('longitud distinta → false sin filtrar por timing (compara igualmente)', () => {
+    expect(adminTokenMatches('corto', 'secreto-largo-correcto')).toBe(false)
+    expect(adminTokenMatches('', 'secreto-largo-correcto')).toBe(false)
   })
 })

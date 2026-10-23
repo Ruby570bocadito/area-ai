@@ -70,6 +70,22 @@ function dummyCompare(a: string, b: string): void {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Acreditación del token para POST /api/auth (tarea
+// cookie-admin-httponly del ROADMAP): la comparación de tiempo
+// constante existente, expuesta para el endpoint de login que fija
+// la cookie `admin_token` con HttpOnly/SameSite=Strict (sustituye
+// a la recomendación de document.cookie, que exigía exponer el
+// token a JavaScript de la página).
+// ─────────────────────────────────────────────────────────────
+
+export function adminTokenMatches(provided: string, expected: string): boolean {
+  return timingSafeEqual(provided, expected)
+}
+
+/** Caducidad de la cookie de sesión admin en segundos (12 h). */
+export const ADMIN_COOKIE_MAX_AGE_S = 60 * 60 * 12
+
+// ─────────────────────────────────────────────────────────────
 // Verificación de same-origin para mutaciones (CSRF).
 //
 // (Hallazgo Ronda 12 de bugs) Las mutaciones se protegían solo con

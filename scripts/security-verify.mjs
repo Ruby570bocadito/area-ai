@@ -12,6 +12,9 @@
 //   8. Tope de cuerpo pre-parse (Ronda 12): Content-Length > 1KB en autopilot → 413.
 //   9. Tope de cuerpo CHUNKED (tarea cuerpo-chunked del ROADMAP): 8KB chunked sin
 //      Content-Length en autopilot → 413; chunked pequeño → 200 (legítimo intacto).
+//  10. Login /api/auth (tarea cookie-admin-httponly del ROADMAP): token correcto
+//      fija cookie HttpOnly/SameSite=Strict; token erróneo → 401; cross-origin → 403;
+//      la cookie acreditada sirve para mutar (UI sin cabeceras); logout DELETE expira.
 //
 // Uso: bun scripts/security-verify.mjs   (requiere .next/standalone ya construido)
 import { spawn } from 'node:child_process'
@@ -62,16 +65,17 @@ for (const path of ['/', '/api/state']) {
 
 const authHeaders = (extra = {}) => ({ 'x-admin-token': TOKEN, ...extra })
 
-// POST crudo con node:http — control exacto de cabeceras (Origin es
+// POST/DELETE crudo con node:http — control exacto de cabeceras (Origin es
 // "forbidden header name" en la spec fetch y algunos runtimes la silencian).
-const rawPost = (path, headers, body) =>
+// Devuelve también las cabeceras de respuesta (set-cookie del login).
+const rawPost = (path, headers, body, method = 'POST') =>
   new Promise((resolveP) => {
     const req = httpRequest(
-      { host: '127.0.0.1', port: PORT, path, method: 'POST', headers },
+      { host: '127.0.0.1', port: PORT, path, method, headers },
       (res) => {
         let data = ''
         res.on('data', (c) => (data += c))
-        res.on('end', () => resolveP({ status: res.statusCode, body: data }))
+        res.on('end', () => resolveP({ status: res.statusCode, body: data, headers: res.headers }))
       }
     )
     req.on('error', (e) => resolveP({ status: 0, body: String(e) }))
@@ -221,6 +225,49 @@ const chunkedOk = await chunkedPost('/api/autopilot', {
 }, ['{"enabled":', 'false}'])
 check('cuerpo chunked pequeño → 200 (cliente legítimo intacto)',
   chunkedOk.status === 200 && /"enabled":false/.test(chunkedOk.body), `status=${chunkedOk.status}`)
+
+// 10 ── Login /api/auth (tarea cookie-admin-httponly): sustituye a la
+// recomendación de document.cookie — el servidor fija la cookie con
+// HttpOnly/SameSite=Strict y JavaScript no maneja el token.
+const authCsrf = await rawPost('/api/auth', {
+  origin: 'http://evil.example',
+  host: '127.0.0.1:' + PORT,
+  'content-type': 'text/plain',
+}, JSON.stringify({ token: TOKEN }))
+check('CSRF cross-origin /api/auth → 403 (misma barrera que las mutaciones)', authCsrf.status === 403, `status=${authCsrf.status}`)
+
+const badLogin = await rawPost('/api/auth', {
+  host: '127.0.0.1:' + PORT,
+  'content-type': 'application/json',
+}, JSON.stringify({ token: 'token-erróneo' }))
+check('login con token erróneo → 401 (sin oráculo de existencia)', badLogin.status === 401, `status=${badLogin.status}`)
+
+const login = await rawPost('/api/auth', {
+  host: '127.0.0.1:' + PORT,
+  'content-type': 'application/json',
+}, JSON.stringify({ token: TOKEN }))
+const setCookie = Array.isArray(login.headers?.['set-cookie']) ? login.headers['set-cookie'][0] : (login.headers?.['set-cookie'] ?? '')
+check('login correcto → 200 + cookie HttpOnly SameSite=Strict Path=/',
+  login.status === 200 && setCookie.includes('admin_token=') && setCookie.includes('HttpOnly') && setCookie.includes('SameSite=Strict') && setCookie.includes('Path=/'),
+  `status=${login.status} cookie=${setCookie.split(';').slice(0, 4).join(';')}`)
+check('cookie local (http) sin Secure — Secure solo en https', !setCookie.includes('Secure'), setCookie.includes('Secure') ? 'contiene Secure (no esperado en http)' : 'sin Secure')
+
+// La cookie fijada por el servidor acredita mutaciones sin cabeceras (camino de la UI)
+const cookiePair = (setCookie.split(';')[0] || '').trim()
+const mutateWithCookie = await rawPost('/api/autopilot', {
+  host: '127.0.0.1:' + PORT,
+  'content-type': 'application/json',
+  cookie: cookiePair,
+}, JSON.stringify({ enabled: false }))
+check('mutación con cookie del login → 200 (UI sin tocar document.cookie)',
+  mutateWithCookie.status === 200 && /"enabled":false/.test(mutateWithCookie.body), `status=${mutateWithCookie.status}`)
+
+const logout = await rawPost('/api/auth', {
+  host: '127.0.0.1:' + PORT,
+}, undefined, 'DELETE')
+const logoutCookie = Array.isArray(logout.headers?.['set-cookie']) ? logout.headers['set-cookie'][0] : (logout.headers?.['set-cookie'] ?? '')
+check('logout DELETE → 200 y cookie expirada (Max-Age=0)',
+  logout.status === 200 && (logoutCookie.includes('Max-Age=0') || /Expires=Thu, 01 Jan 1970/.test(logoutCookie)), `status=${logout.status}`)
 
 // 4 ── Tope de tamaño → 413
 const huge = 'x'.repeat(3000)
