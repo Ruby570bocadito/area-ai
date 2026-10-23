@@ -1,8 +1,0 @@
-# claim: h004-validacion-lanzamiento-restante
-
-- ID: IMP-1
-- Fecha: 2026-10-23 12:57 (Europe/Madrid)
-- Rutas: src/lib/sim/engine-select.ts, src/lib/sim/engine.ts, src/app/api/campaigns/route.ts, tests/validacion-lanzamiento.test.ts
-- Origen: hallazgo H-004 (casos 1 y 2 restantes, verificación DIR en primera persona, 11ª pasada) + petición directa en estado/DIR.md («el pendiente #1 de la persona usuario torpe... cabe dentro de dificultad-adaptativa o justo después» — dificultad-adaptativa ya está en main, 59148c7).
-- Detalle: los dos casos que H-004 tiene VIGENTES pasan de degradación silenciosa a rechazo explícito con 400, con el molde acceptSeed («no se silencia — pedir una semilla concreta y obtener otra al azar es una promesa rota»; el argumento aplica textual al escenario, como anotó DIR). (1) scenarioId inexistente: el `?? rand(scenarios)` de engine.ts:141 se sustituye por resolverEscenario (puro, en engine-select.ts) — azar SOLO explícito: sin scenarioId, '' o 'random'; un id que no existe lanza SCENARIO_NOT_FOUND y la ruta responde 400 con el id recibido (truncado a 80 chars). (2) JSON malformado: readJsonBody reason 'invalid' → 400 «Cuerpo JSON inválido» (antes caía al azar); sin cuerpo sigue siendo válido ({} del reader vacío) y 'too-large' sigue siendo 413 — orden canónico intacto. Autopiloto intacto: startCampaign() sin args sigue en la ruta del azar. Sin side effects en los 400: el rechazo ocurre ANTES del create (sin fila, sin bucle en segundo plano, sin lab).
-- Fuera de alcance: los mensajes de UI del error (zona IMP-2); la interfaz {scenarioId:'random'} se expone por API pero no lleva botón nuevo.
