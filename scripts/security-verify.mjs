@@ -59,6 +59,17 @@ const check = (name, ok, extra = '') => {
   if (!ok) failures++
 }
 
+// Espera a que el proceso del servidor SALGA de verdad (no un sleep fijo):
+// una instancia rezagada retendría el puerto y contaminaría los buckets de
+// rate limit en memoria de la ejecución siguiente (falsos ROJO intermitentes).
+const stopServer = (p) =>
+  new Promise((resolveP) => {
+    if (p.exitCode !== null || p.signalCode) return resolveP()
+    p.once('exit', () => resolveP())
+    p.kill()
+    setTimeout(resolveP, 3000) // cinturón: no colgarse si el exit no llega
+  })
+
 console.log('puerto de verificación:', PORT, PORT === 3105 ? '(defecto)' : '(SECURITY_VERIFY_PORT)')
 
 // 1 ── Cabeceras de seguridad (tarea cabeceras-extra: COOP/CORP en todas las
@@ -138,8 +149,7 @@ const limitedEvenWithToken = await fetch(`${BASE}/api/settings`, {
 check('429 se impone incluso con token válido (mismo bucket)', limitedEvenWithToken.status === 429,
   `status=${limitedEvenWithToken.status}`)
 
-server.kill()
-await new Promise((r) => setTimeout(r, 300))
+await stopServer(server)
 
 // ── Segundo arranque: sin exhaustar el bucket, para validar 413 y el guard
 const server2 = spawn('bun', [resolve(ROOT, '.next/standalone/server.js')], {
@@ -333,8 +343,7 @@ for (const [url, expected, kind] of cases) {
   check(`guard remoto ${url} → ${expected ?? 'no-bloqueado'} (${kind})`, ok, `status=${r.status}`)
 }
 
-server2.kill()
-await new Promise((r) => setTimeout(r, 200))
+await stopServer(server2)
 
 console.log(failures === 0 ? '\nVERDE: verificación de seguridad completa OK' : `\nROJO: ${failures} fallos`)
 process.exit(failures === 0 ? 0 : 1)
