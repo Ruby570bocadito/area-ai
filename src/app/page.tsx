@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import NumberFlow from '@number-flow/react'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import {
   Swords,
   BrainCircuit,
@@ -23,7 +23,10 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useArena } from '@/components/arena/shell/arena-provider'
-import { ArenaGate, PageContainer, PageHeader } from '@/components/arena/shell/page-frame'
+import { ArenaGate, PageContainer } from '@/components/arena/shell/page-frame'
+import Particles from '@/components/arena/reactbits/particles/Particles'
+import ShinyText from '@/components/arena/reactbits/shiny-text/ShinyText'
+import GradientText from '@/components/arena/reactbits/gradient-text/GradientText'
 import { ControlCenter } from '@/components/arena/control-center'
 import { EventFeed } from '@/components/arena/event-feed'
 
@@ -279,6 +282,74 @@ function TopOperatorsAndSpark() {
   )
 }
 
+// ─────────────────────────────────────────────────────────────
+// Héroe de la portada — banda oscura con campo de partículas
+// RED/BLUE (React Bits Particles), kicker con brillo (ShinyText)
+// y título con degradado animado (GradientText). El fondo animado
+// se omite si el usuario prefiere movimiento reducido.
+// ─────────────────────────────────────────────────────────────
+
+function HeroBand({ autopilot }: { autopilot: boolean }) {
+  const reducedMotion = useReducedMotion()
+  return (
+    <section className="relative isolate overflow-hidden border-b border-surface-200 bg-ink-900">
+      {!reducedMotion && (
+        <div className="pointer-events-none absolute inset-0 opacity-40" aria-hidden>
+          <Particles
+            particleCount={130}
+            speed={0.22}
+            particleColors={['#f97066', '#7cd4fd', '#ffffff']}
+            alphaParticles
+            particleBaseSize={1.5}
+            sizeRandomness={0.85}
+            glow={0.45}
+            twinkle={0.3}
+            connections={false}
+            moveParticlesOnHover={false}
+            particleHoverFactor={0}
+          />
+        </div>
+      )}
+      {/* Pelo inferior RED→BLUE: la marca, sin ruido */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-[#d92d20]/50 via-surface-300/30 to-[#0086c9]/50"
+      />
+      <div className="relative mx-auto w-full max-w-[1240px] px-4 pb-8 pt-9 sm:px-6 sm:pb-9 sm:pt-10 lg:px-8">
+        <p className="font-mono-tight text-[10.5px] font-bold uppercase tracking-[0.2em]">
+          <ShinyText
+            text="Laboratorio adversarial · RED vs BLUE"
+            color="#98a2b3"
+            shineColor="#7cd4fd"
+            speed={2.6}
+            glow={0.4}
+          />
+        </p>
+        <div className="mt-2.5 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+          <div className="min-w-0">
+            <GradientText
+              colors={['#f97066', '#ffffff', '#7cd4fd', '#ffffff', '#f97066']}
+              animationSpeed={9}
+              glow={0.25}
+              className="font-display block text-[24px] font-bold tracking-tight sm:text-[30px]"
+            >
+              Panel de mando
+            </GradientText>
+            <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-[#d0d5dd]">
+              Ciber range real: los agentes ejecutan comandos verificables contra servicios desplegados, archivan
+              conocimiento y evolucionan campaña tras campaña.
+            </p>
+          </div>
+          <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 font-mono-tight text-[10px] font-bold uppercase tracking-wider text-[#d0d5dd] backdrop-blur-sm">
+            <InfinityIcon className={cn('h-3.5 w-3.5', autopilot ? 'text-[#d6bbfb]' : 'text-[#98a2b3]')} />
+            {autopilot ? 'Operación continua activa' : 'Motor listo'}
+          </span>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function DashboardPage() {
   const { state, running, handleStart, toggleAutopilot } = useArena()
   if (!state) return null
@@ -288,18 +359,9 @@ function DashboardPage() {
   const totalWins = stats.redWins + stats.blueWins + stats.draws
 
   return (
-    <PageContainer>
-      <PageHeader
-        kicker="Laboratorio adversarial"
-        title="Panel de mando"
-        subtitle="Ciber range real: los agentes ejecutan comandos verificables contra servicios desplegados, archivan conocimiento y evolucionan campaña tras campaña."
-        actions={
-          <span className="flex items-center gap-1.5 rounded-full border border-surface-200 bg-white px-3 py-1.5 font-mono-tight text-[10px] font-bold uppercase tracking-wider text-ink-500 shadow-sm">
-            <InfinityIcon className={cn('h-3.5 w-3.5', state.autopilot ? 'text-[#7c3aed]' : 'text-ink-400')} />
-            {state.autopilot ? 'Operación continua activa' : 'Motor listo'}
-          </span>
-        }
-      />
+    <>
+      <HeroBand autopilot={state.autopilot} />
+      <PageContainer>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -450,7 +512,8 @@ function DashboardPage() {
         <RecentActivity />
         <TopOperatorsAndSpark />
       </div>
-    </PageContainer>
+      </PageContainer>
+    </>
   )
 }
 

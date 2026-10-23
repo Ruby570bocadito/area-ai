@@ -2,21 +2,12 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import Image from 'next/image'
 import { Play, Loader2, RadioTower, Building2, Cpu, ShieldAlert, Swords, Check, Infinity as InfinityIcon } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import type { ScenarioDTO } from '@/lib/api-types'
-
-// Ilustraciones generadas para cada infraestructura objetivo
-const SCENARIO_IMG: Record<string, string> = {
-  novaretail: '/scenario-novaretail.png',
-  'hospital-vitalis': '/scenario-hospital-vitalis.png',
-  'technova-saas': '/scenario-technova-saas.png',
-  'fincorp-bank': '/scenario-fincorp-bank.png',
-  'enermax-grid': '/scenario-enermax-grid.png',
-  'aerodefense-labs': '/scenario-aerodefense-labs.png',
-}
+import { ScenarioArt } from '@/components/arena/scenario-art'
+import GlareHover from '@/components/arena/reactbits/glare-hover/GlareHover'
 
 function DifficultyDots({ level }: { level: number }) {
   return (
@@ -182,33 +173,41 @@ export function ControlCenter({
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 />
               )}
-              {/* ilustración de la infraestructura — priority solo en la primera:
-                  es la LCP de la portada (aviso de next dev); precargar las 6 sería contraproducente */}
-              <div className="scenario-media h-24 sm:h-28">
-                <Image
-                  src={SCENARIO_IMG[s.key] ?? '/og.png'}
-                  alt=""
-                  fill
-                  sizes="(min-width:1280px) 33vw, (min-width:640px) 50vw, 100vw"
-                  className="object-cover"
-                  priority={i === 0}
-                />
-                <div className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-between gap-2 p-2.5">
-                  <span className="font-mono-tight truncate text-[11px] font-bold tracking-[0.14em] text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
-                    {s.codename}
-                  </span>
-                  <DifficultyDots level={s.difficulty} />
-                </div>
-                {isSel && (
-                  <motion.span
-                    layoutId="sel-check"
-                    initial={{ scale: 0.6, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="absolute right-2.5 top-2.5 z-10 flex items-center gap-1 rounded-full bg-ink-900 px-2 py-0.5 font-mono-tight text-[9px] font-bold text-white shadow-lg"
-                  >
-                    <Check className="h-2.5 w-2.5" /> SELECCIONADO
-                  </motion.span>
-                )}
+              {/* ilustración procedural de la red objetivo (ScenarioArt, SVG
+                  determinista por escenario — sustituye a las imágenes
+                  generadas por IA) con destello al pasar el cursor (React
+                  Bits GlareHover, respeta prefers-reduced-motion) */}
+              <div className="scenario-media relative h-24 sm:h-28">
+                <GlareHover
+                  width="100%"
+                  height="100%"
+                  background="transparent"
+                  borderRadius="0px"
+                  borderColor="transparent"
+                  glareColor="#ffffff"
+                  glareOpacity={0.28}
+                  glareSize={22}
+                  mode="follow"
+                  transitionDuration={900}
+                >
+                  <ScenarioArt seed={s.key} />
+                  <div className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-between gap-2 p-2.5">
+                    <span className="font-mono-tight truncate text-[11px] font-bold tracking-[0.14em] text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
+                      {s.codename}
+                    </span>
+                    <DifficultyDots level={s.difficulty} />
+                  </div>
+                  {isSel && (
+                    <motion.span
+                      layoutId="sel-check"
+                      initial={{ scale: 0.6, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="absolute right-2.5 top-2.5 z-10 flex items-center gap-1 rounded-full bg-ink-900 px-2 py-0.5 font-mono-tight text-[9px] font-bold text-white shadow-lg"
+                    >
+                      <Check className="h-2.5 w-2.5" /> SELECCIONADO
+                    </motion.span>
+                  )}
+                </GlareHover>
               </div>
               <div className="p-3.5">
                 <p className="flex items-center gap-1.5 text-sm font-semibold text-ink-900">
