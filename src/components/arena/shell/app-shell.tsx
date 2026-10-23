@@ -61,7 +61,10 @@ function pageMeta(pathname: string): { title: string; sub: string } {
 
 function SideNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
-  const { state, running, status } = useArena()
+  const { state, running, status, dbStatus } = useArena()
+  // Modo determinista activo: la campaña en pantalla arrancó en SIM
+  // (el LLM no estaba disponible al lanzarla; engine.ts lo persiste).
+  const deterministic = state?.liveCampaign?.engineMode === 'SIM'
 
   return (
     <div className="flex h-full flex-col">
@@ -103,11 +106,13 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
         })}
       </nav>
 
-      {/* Estado del laboratorio */}
+      {/* Estado del sistema (barra-estado-sistema): salud de BD (healthcheck
+          GET /api clasificado en use-arena-state), lab HTTP real, motor LLM y
+          modo determinista, junto al chip de conexión (H-005). */}
       <div className="mx-3 mb-5 rounded-xl border border-surface-200 bg-surface-50 p-3.5">
         <div className="flex items-center justify-between gap-2">
           <span className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.16em] text-ink-500">
-            <Cpu className="h-3 w-3" /> Motor
+            <Cpu className="h-3 w-3" /> Sistema
           </span>
           {/* El chip describe la CONEXIÓN con el motor (H-005): si el sondeo
               falla, rojo «Sin conexión» con prioridad sobre «En directo/En
@@ -135,11 +140,52 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
             {status === 'offline' ? 'Sin conexión' : running ? 'En directo' : 'En espera'}
           </span>
         </div>
-        {/* Sin estado cargado (conectando o motor caído) no se inventan cifras:
-            «—» comunica «sin dato» en lugar del engañoso «0» (H-005). */}
-        <p className="mt-2 truncate font-mono-tight text-[10.5px] text-ink-600">
-          {state?.provider ?? '—'}
-        </p>
+        {/* Filas de salud — sin estado cargado (conectando o motor caído)
+            se muestra «—», nunca un valor supuesto (H-005). */}
+        <dl className="mt-2.5 space-y-1.5 border-t border-surface-200 pt-2.5 font-mono-tight text-[9.5px]">
+          <div className="flex items-center justify-between gap-2">
+            <dt className="text-ink-500">BD</dt>
+            <dd
+              className={cn(
+                'flex items-center gap-1 font-semibold',
+                dbStatus === 'up' ? 'text-[#067647]' : dbStatus === 'down' ? 'text-[#b42318]' : 'text-ink-400'
+              )}
+            >
+              <span
+                className={cn(
+                  'h-1.5 w-1.5 rounded-full',
+                  dbStatus === 'up' ? 'bg-[#12b76a]' : dbStatus === 'down' ? 'bg-[#f04438]' : 'bg-surface-300'
+                )}
+              />
+              {dbStatus === 'up' ? 'Operativa' : dbStatus === 'down' ? 'Caída' : '—'}
+            </dd>
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <dt className="text-ink-500">Lab HTTP</dt>
+            <dd
+              className={cn(
+                'truncate font-semibold',
+                state?.lab.online ? 'text-[#067647]' : 'text-ink-400'
+              )}
+            >
+              {state ? (state.lab.online ? `En línea :${state.lab.port ?? '—'}` : 'Fuera de línea') : '—'}
+            </dd>
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <dt className="text-ink-500">Motor LLM</dt>
+            <dd className="flex min-w-0 items-center gap-1 text-ink-600">
+              {deterministic && (
+                <span
+                  title="La campaña en pantalla arrancó en simulación determinista: el LLM no estaba disponible al lanzarla"
+                  className="shrink-0 rounded-full bg-[#fffaeb] px-1.5 py-px text-[8.5px] font-bold uppercase tracking-wider text-[#b54708]"
+                >
+                  Determinista
+                </span>
+              )}
+              <span className="truncate">{state?.provider ?? '—'}</span>
+            </dd>
+          </div>
+        </dl>
         <div className="mt-2.5 flex items-center justify-between border-t border-surface-200 pt-2.5 font-mono-tight text-[9.5px] text-ink-500">
           <span>{state ? `${state.stats.totalCampaigns} campañas` : '— campañas'}</span>
           <span className="flex items-center gap-1">

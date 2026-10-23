@@ -24,10 +24,17 @@ import type { StateResponse } from '@/lib/api-types'
 // · offline    — dos o más sondeos fallidos seguidos
 export type ArenaConnectionStatus = 'connecting' | 'live' | 'offline'
 
+// Salud de la BD clasificada con el healthcheck GET /api (barra-estado-sistema):
+// · unknown — el primer sondeo todavía está en vuelo
+// · up      — el estado carga correctamente (prueba implícita de BD)…
+// · down    — …o, si falla, el healthcheck confirma si la BD es la causa
+export type DbHealth = 'up' | 'down' | 'unknown'
+
 export function useArenaState() {
   const [state, setState] = useState<StateResponse | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [failStreak, setFailStreak] = useState(0)
+  const [dbStatus, setDbStatus] = useState<DbHealth>('unknown')
   const stateRef = useRef<StateResponse | null>(null)
   const { toast } = useToast()
   const router = useRouter()
@@ -112,9 +119,20 @@ export function useArenaState() {
       stateRef.current = data
       setLoadError(false)
       setFailStreak(0)
+      setDbStatus('up') // el estado sale de la BD: prueba implícita
     } catch {
       setLoadError(true)
       setFailStreak((n) => n + 1)
+      // Clasificar el fallo con el healthcheck (barra-estado-sistema):
+      // distingue «BD caída» de «motor con errores» sin sondeo extra
+      // cuando todo va bien (solo se consulta tras un fallo).
+      try {
+        const h = await fetch('/api', { cache: 'no-store' })
+        const hj = (await h.json().catch(() => null)) as { ok?: boolean } | null
+        setDbStatus(h.ok && hj?.ok === true ? 'up' : 'down')
+      } catch {
+        setDbStatus('down') // ni el healthcheck responde
+      }
     }
   }, [announceFinished])
 
@@ -189,5 +207,5 @@ export function useArenaState() {
   const offline = loadError && failStreak >= 2
   const status: ArenaConnectionStatus = offline ? 'offline' : state ? 'live' : 'connecting'
 
-  return { state, loadError, status, running: state?.activeCampaign != null, handleStart, toggleAutopilot, refresh: load }
+  return { state, loadError, status, dbStatus, running: state?.activeCampaign != null, handleStart, toggleAutopilot, refresh: load }
 }

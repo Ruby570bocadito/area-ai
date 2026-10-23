@@ -43,6 +43,8 @@ export interface CampaignSummaryDTO {
   narrative: string | null
   startedAt: string
   endedAt: string | null
+  /** 'LLM' | 'SIM' — modo real con el que arrancó la campaña (barra-estado-sistema). Opcional: ausente en payloads antiguos. */
+  engineMode?: string
   scenario: {
     key: string
     codename: string
