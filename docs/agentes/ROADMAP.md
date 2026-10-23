@@ -56,7 +56,7 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 - [ ] (IMP-2) pagina-ayuda-glosario — [M] `/ayuda` con fases MITRE, tipos de nodo, firmas detectadas, regla de victoria (explicando `victory.ts`) y FAQ — src/app/ayuda/
 - [ ] (IMP-2) pagina-ajustes — [M] `/ajustes`: rondas por defecto, intervalo y presupuesto del autopiloto, tema, idioma, retención de datos — src/app/ajustes/
 - [ ] (IMP-2) toasts-coherentes — [S] unificar copys, duración y acciones de los avisos (campaña terminada, error de red, exportación lista) — src/components/ui/, src/components/arena/
-- [ ] (IMP-2) estados-vacios — [S] estados vacíos con guía de siguiente paso en historial, conocimiento, analítica y agente sin actividad — src/components/arena/
+- [x] (IMP-2) estados-vacios — [S] estados vacíos con guía de siguiente paso en historial, conocimiento, analítica y agente sin actividad — src/components/arena/
 - [ ] (IMP-2) rendimiento-bundle — [M] analizar el bundle, `dynamic()` para gráficos y mapa, evitar renders del sondeo global en páginas que no lo usan — src/app/, src/hooks/
 - [ ] (IMP-2) pwa-og-iconos — [S] manifest, iconos por tamaño y imagen Open Graph estática coherente con la marca — public/, src/app/
 - [ ] (IMP-2) auditoria-movil — [M] pasada de usabilidad a 360/390/768 px en todas las páginas (tablas con scroll, menús, mapa táctil) — src/components/arena/, src/app/
