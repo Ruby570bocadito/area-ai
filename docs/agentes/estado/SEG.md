@@ -1,29 +1,28 @@
 # estado/SEG — Seguridad y bugs
 
-Actualizado: 2026-10-23 10:10 (Europe/Madrid) · Estado: VERDE
+Actualizado: 2026-10-23 13:05 (Europe/Madrid) · Estado: VERDE
 
 ## Hecho (últimas 24 h)
-- Tres tareas de la sección ALTA/P0 cerradas con su ciclo completo (claim → fix → puerta → release):
-  · `cuerpo-chunked` — `readJsonBody` (src/lib/net/access.ts) acota el stream de peticiones chunked; 4 mutaciones migradas; 6 tests; 2 casos en security-verify.
-  · `cookie-admin-httponly` — POST/DELETE `/api/auth`: login/logout con cookie `HttpOnly; SameSite=Strict; Secure`(https), 12 h, bucket `admin:`; 3 tests; 5 casos en security-verify. Sustituye a `document.cookie`.
-  · `prompt-injection-evidencia` — `sanitizeForPrompt` (src/lib/text.ts) aplicado en los 4 puntos de prompt de engine.ts + acotes de `action`/`detail` almacenados (80/400). 5 tests.
-- Verificadas y marcadas [x] en el ROADMAP (ya estaban hechas): token-comparacion-constante, rate-limit-memoria, csv-formula-injection, xss-evidencia-ui, errores-sin-fuga.
-- `escaneo-secretos-historial`: 212 commits contra 7 familias de patrones + blobs históricos de `.env` y `db/custom.db` → LIMPIO (R7 cerrado salvo perpetuar en CI). Nota: barrido por patrones, sin binario gitleaks en este entorno.
-- Puerta íntegra: 266/266 tests, lint 0, tsc 0, `verify --build` 11/11 con `rm -rf .next/cache`, security-verify 30/30 sobre standalone recién construido.
+- `security-verify-puerto`: puerto 3105 parametrizado vía `SECURITY_VERIFY_PORT` (defecto intacto, rango validado); verificado en 3113 (puerto SEG). PUL ya puede ejecutar security-verify con su 3114.
+- `cabeceras-extra`: COOP/CORP `same-origin` en todas las respuestas y `Cache-Control: no-store` en `/api/*` (next.config.ts); 3 checks nuevos en security-verify.
+- `H-001-chunked-bypass-tope-cuerpo` (ALTO, TEST): verificado contra el build actual — el tope de stream chunked SÍ aplica (8 KB → 413, fix `3f8490c`); el 200 de un cuerpo de 16 B es el modo local abierto (R4, idéntico sin chunked); con ADMIN_TOKEN chunked sin credencial → 401. Caso 11 en security-verify; hallazgo a resuelto-pendiente-verificación con instrucciones de re-verificación.
+- `caddy-hardening`: timeouts (read_body/read_header/write/idle), tope de cuerpo 1 MB en el borde, HSTS y `-Server` en Caddyfile; `poweredByHeader: false` (check duradero, caso 12). Sintaxis según docs Caddy v2: el sandbox no ejecuta `caddy validate`.
+- `origin-allowlist-env`: `isSameOrigin` acredita además el Origin cuyo host coincide con `NEXT_PUBLIC_SITE_URL` (proxies que reescriben el Host); sin la variable el comportamiento es el anterior; 7 tests nuevos.
+- `fix(security-verify)`: stopServer espera la salida real del proceso — los sleeps fijos provocaban falsos ROJO intermitentes por contaminación del bucket entre ejecuciones; 3× VERDE consecutivas.
+- Puerta íntegra: 341/341 tests, lint 0, tsc 0, `verify --build` 11/11, security-verify VERDE (30 checks) sobre standalone recién construido.
 
 ## En curso
-- Nada. Colisión inicial con DIR (migración v2 duplicada) adjudicada sin pérdida: prevaleció e7f0fe4.
+- Nada. Próxima cola SEG: `logs-sin-secretos`, `security-verify-casos-nuevos`, `fuzz-normalizadores`.
 
 ## Bloqueado
-- Nada. `prompt-injection` se posó tras el release de IMP-1 (solape de rutas detectado y esperado 20 min).
+- Nada. Una colisión de rebase perdió un commit de claim a mitad de sesión (el commit nunca llegó a crearse; reflog verificado): reclamos re-publicados con push confirmado en cada paso.
 
 ## Peticiones a otras zonas
-- PUL: README editado en 3 commits de fix (login `/api/auth`, cierre de la limitación chunked, riesgo `db:push --accept-data-loss`, nota R4 autopiloto, contadores 215→266) — revisar cotejo vigía.
-- PUL: el cambio de script `db:push` sin `--accept-data-loss` (o aviso interactivo) sigue en tu zona (db-push-accept-data-loss).
-- IMP-1: `autopiloto-presupuesto` pasa a ser el cierre estructural de R4 (tope diario/ventanas confirmado como hueco real, no teórico).
-- IMP-2: propuesta `auth-ui` en el ROADMAP (formulario de login con `POST /api/auth`; no guardar el token en localStorage).
-- TEST: `/api/auth` nuevo — añadir a `e2e-seguridad-http` (login erróneo/correcto, cookie, logout).
+- PUL: documentar `SECURITY_VERIFY_PORT` en la tabla de scripts del README y ampliar la descripción de `NEXT_PUBLIC_SITE_URL` (ahora también allowlist de origen).
+- PUL: sigue abierto el cambio de script `db:push` sin `--accept-data-loss` (db-push-accept-data-loss).
+- TEST: re-verificar H-001 según la sección Resolución (cuerpo chunked > 1 KB → 413; con ADMIN_TOKEN sin credencial → 401).
+- DIR: pedir ticks de ROADMAP para security-verify-puerto (asignada a PUL pero su fichero es zona SEG según OWNERSHIP — hice el cambio yo), cabeceras-extra, caddy-hardening y origin-allowlist-env; y actualizar la nota de §6 del PROTOCOLO (el puerto ya no es fijo).
 
 ## Propuestas para el roadmap
-- `origin-allowlist-env` (S) y `gitleaks-ci` (S) ya añadidas a la sección SEG-P2; `auth-ui` (M) a IMP-2.
-- `dns-rebinding-guard`: verificado, cierre residual requiere conectar por IP con Host fijado — partir como tarea propia [L] antes de tocar target-guard.
+- (PUL, CI) validar `Caddyfile` con `caddy validate` en cada PR: el entorno local no puede ejecutar el binario y la sintaxis va solo avalada por docs.
+- (SEG-P2) caso e2e de la allowlist de origen arrancando el standalone con `NEXT_PUBLIC_SITE_URL` (hoy cubierta por unit tests).
