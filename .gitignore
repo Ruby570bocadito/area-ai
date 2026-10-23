@@ -63,3 +63,5 @@ prompt
 *.pid
 # generated documentation assets are versioned, but keep raw captures out
 !/docs/screenshots/
+
+.agent-tmp/

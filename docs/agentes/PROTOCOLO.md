@@ -1,84 +1,85 @@
-# PROTOCOLO multiagente — canon de proceso del proyecto area·ai
+# Protocolo de trabajo de los agentes (v2)
 
-> **Autoridad:** este documento es la referencia única de proceso para todos los agentes (`z_director`, `z_implementaciones`, `z_pulimiento`, `z_bugs` y cualquier rol futuro). Fue consolidado por el Director en la Ronda 4 (2026-09-25 17h25) a partir de las lecciones de las rondas 1-3 y sus 4 colisiones multiagente. **Última revisión: Ronda 11 (2026-09-25 22h00)** — D27 frescura de artefactos de verificación (§3.7), R17 (CSRF) a Cerrados, síntesis de riesgos al día. Revisiones previas: Ronda 10 21h00 (R3 cerrado reforzado D22, nota autopiloto en R4), Ronda 9 20h14 (maniobra §2.5 indivisible, marcadores §7.5, R16, numeración de colisiones D21), Ronda 8 19h31 (§8 D16 adopciones de propuestas propias), cierre de la Ronda 6 18h50 (§2.5 anuncio de ronda, §7.5 fusión con comparación explícita, registro R12-R15 sincronizado), Ronda 6 18h05 (§2.4, §3.4, §3.6, §8, §9) y Ronda 4 17h25 (consolidación inicial). En caso de discrepancia entre un informe antiguo y este documento, **prevalece este documento**. Cualquier cambio de norma lo decide y registra el Director mediante commit a este fichero.
+Este documento sustituye al protocolo por rondas anterior. Ante cualquier discrepancia con un informe antiguo, prevalece este.
 
----
+## 1. Ciclo por tarea (obligatorio)
+1. `git pull --rebase origin main`
+2. Lee `docs/agentes/ROADMAP.md`, `docs/agentes/OWNERSHIP.md`, los archivos de `docs/agentes/estado/` de los demás
+   y los hallazgos abiertos dirigidos a tu ID en `docs/agentes/hallazgos/` (los CRÍTICO/ALTO van antes que el ROADMAP;
+   usa el id del hallazgo como slug del claim; al arreglarlo, pon `Estado: resuelto-pendiente-verificación` en el archivo
+   e indica el commit; NO lo borres, lo cierra TEST).
+3. Elige UNA tarea de tu zona. Antes de empezar comprueba que no está hecha ya:
+   `git log --since="3 days ago" --oneline -- <rutas>` y busca en el código lo que vas a crear.
+   Si ya existe, no lo rehagas: pasa a otra tarea.
+4. RECLAMA la tarea (cerrojo):
+   - Crea `docs/agentes/claims/<slug-de-la-tarea>.md` con: tu ID, fecha/hora (Europe/Madrid), rutas que vas a tocar.
+   - Si ya existe un claim con ese slug o con rutas solapadas y tiene menos de 3 horas, NO lo toques: elige otra tarea.
+   - `git add` solo ese archivo, commit `chore(claim): <slug> (<ID>)`, `git push`.
+   - Si el push es rechazado: `git pull --rebase`, vuelve a mirar claims. Si alguien reclamó antes, elige otra tarea.
+5. Trabaja solo en las rutas reclamadas. Commits pequeños y atómicos, `tipo(ámbito): descripción`
+   (tipos: feat, fix, chore, docs, test, refactor). Un commit por ámbito; nunca mezcles feature + limpieza + docs.
+6. Antes de CADA push: `git pull --rebase origin main`, ejecuta la puerta de calidad (sección 3) y push.
+   - Push rechazado: repite pull --rebase y push (hasta 3 veces).
+   - Conflicto: resuélvelo conservando la intención de AMBOS cambios. Si dos variantes implementan el mismo requisito,
+     compáralas lado a lado, elige una y elimina la otra a mano; el auto-fusionado de git NO es verificación.
+     Prohibido resolver conflictos con sustituciones regex. Relee entero cada fichero en conflicto. Nunca `--force`,
+     nunca descartes el trabajo ajeno.
+7. Al terminar: borra tu claim (commit `chore(claim): release <slug>`), actualiza tu `estado/<ID>.md`, push.
+8. Repite desde el paso 1 con otra tarea mientras queden en tu zona, hasta cumplir el alcance de la sesión.
 
-## 1. Roles y alcance
+## 2. Zonas
+Solo modificas, mueves o borras archivos de tu zona (ver OWNERSHIP.md). Si necesitas un cambio fuera de ella,
+no lo hagas: anótalo en la sección "Peticiones" de tu estado para el dueño de esa zona.
+Excepción: un fallo que rompe el build para todos; arréglalo mínimo y menciónalo.
 
-| Rol | Función | NO hace |
-|-----|---------|---------|
-| `z_director` | Audita, reparte tareas, ratifica normas, adjudica colisiones, mantiene el registro de riesgos | No escribe features ni código de producto |
-| `z_implementaciones` | Features y producto, tests de comportamiento, backlog de mejoras | No toca higiene de repo ni seguridad de base |
-| `z_pulimiento` | README vivo, dependencias, limpieza de artefactos, deuda técnica de configuración | No toca la UI ni añade features |
-| `z_bugs` | Seguridad (auth, SSRF, rate limit, secretos), corrección de bugs, auditoría de APIs | No añade features |
+## 3. Puerta de calidad
+- Antes de cada push (siempre): `bun run lint` (0 errores) y `bun run test` (suite unitaria en `tests/`).
+- Antes de liberar una tarea que haya tocado código de producto: `bun run verify --build` (tipos + unidades + servidor de
+  producción + golden path; es el canon único, `bun run smoke` delega en el mismo `tests/smoke.mjs`).
+- Si la tarea toca `src/lib/net/`, `Caddyfile`, `next.config.ts` o cualquier superficie de seguridad: además
+  `bun run build && bun scripts/security-verify.mjs` sobre el standalone recién construido.
+- Si la tarea toca UI/assets de forma masiva (tokens, `globals.css`) o una cifra del canon no cuadra con lo esperado:
+  `rm -rf .next/cache` antes del build (la caché de Turbopack puede servir CSS antiguo).
+- Módulo de seguridad nuevo = test el mismo día. Funciones puras nuevas de `src/lib/` deberían llegar con su test.
+- Cambia comportamiento visible, variables de entorno o scripts: actualiza `README.md` y `.env.example` en la misma tarea
+  (si README es zona de PUL, déjale la petición en tu estado y avisa en el commit).
+- Variable de entorno nueva: se documenta en `.env.example` y en la tabla de variables del README.
 
-Ante duda de pertenencia: la tarea la ejecuta el rol cuyo ámbito la cubre; si cubre a dos, la reparte el Director en su informe de ronda.
+## 4. Higiene del repo
+- Borradores, volcados, logs y pruebas sueltas: SOLO en `.agent-tmp/` (ignorado por git). Nunca en la raíz ni en carpetas del proyecto.
+- No crees archivos nuevos de documentación salvo que el Director lo pida. Los informes viven en `estado/<ID>.md` (se sobrescriben).
+  `worklog.md` queda congelado: no se añaden entradas (el historial lo guarda git).
+- No dejes código comentado, TODOs sin resolver, mocks ni datos de ejemplo fuera de tests.
+- Autoría: nada que identifique a un asistente como autor en commits, código, comentarios o docs (sin coautorías ni firmas de
+  agente). El dominio del producto (agentes IA, LLM, proveedor OpenAI-compatible, `z-ai-web-dev-sdk`) es legítimo y se queda.
+  Identidad git: la ya configurada, no la cambies.
+- Cualquier dependencia nueva: justificarla en el commit y solo desde el registro/repo oficial; `package.json` y `bun.lock` los toca PUL.
+- Evidencia visual (capturas/GIF): solo en `docs/screenshots/`, nombre semántico en español (`panel-de-mando.png`),
+  enlazada desde el README. GIF < 5 MB (≤ 8 fps, ancho ≤ 760 px). Se genera con `scripts/generate-visuals.mjs`.
 
-## 2. Antes de actuar (protocolo anti-colisión) — OBLIGATORIO
+## 5. Seguridad por defecto
+- Lecturas `GET` abiertas (datos de simulación, sin secretos); mutaciones `POST` protegibles con `ADMIN_TOKEN` opt-in + rate limit + same-origin + tope de cuerpo.
+- Todo `fetch` a URL aportada por el usuario pasa por `src/lib/net/target-guard.ts` (SSRF). No se añaden fetches salientes sin pasar por él.
+- El laboratorio solo escucha en `127.0.0.1`. Ninguna función apunta a hosts externos ni a redes ajenas: toda campaña ocurre contra el lab local.
+- Las claves de proveedor nunca van al repo y la API solo las devuelve enmascaradas.
 
-Las 4 colisiones de la Ronda 3 demostraron que este protocolo no es opcional:
+## 6. Ejecución en paralelo en la misma máquina
+Cada agente en su propio `git worktree` (ver "Cómo lanzarlos") con su propio `bun install`, su propio `.env` y una BD propia
+(`DATABASE_URL` con ruta ABSOLUTA dentro de su worktree; `*.db` ya está ignorado). Puertos propios para no pisarse:
 
-1. **`git fetch origin`** y comparar `HEAD` local con `origin/main` **justo antes de elegir tarea**. Si hay commits nuevos, leerlos antes de decidir.
-2. **Leer el último informe del Director** en `docs/agentes/z_director/` — contiene el reparto de tareas vigente. Toma **tu tarea asignada**; si decides otra cosa, anótalo en tu informe con justificación.
-3. **Anunciar el alcance ANTES de ejecutar** (en el informe, sección "Alcance anunciado").
-4. **Re-chequear `origin/main` segundos antes del PRIMER commit** de la ronda (nueva norma, Ronda 6): las colisiones 6 y 7 de la Ronda 5 demostraron que dos sesiones pueden elegir la misma tarea en paralelo aunque ambas hayan leído el reparto. Si `origin` ya contiene tu tarea ejecutada por otra sesión, **deriva a la siguiente tarea del reparto** y registra la adjudicación en tu informe (§7) — la duplicación se adjudica, pero cuesta rebase y confusión de informes.
-5. **Anunciar la ronda en el worklog ANTES de empezar** (ratificada como NORMA en el cierre de la Ronda 6, tras las colisiones 5, 9 y 12 — tres duplicaciones intra-rol el mismo día): añadir al `worklog.md` del repo una línea `ronda en curso sobre el commit <sha> — tareas: <lista>` antes de ejecutar nada, y **una sola ronda operativa por sesión y hora**. El anuncio no elimina la carrera (dos sesiones pueden anunciarse casi a la vez) pero la estrecha a minutos en lugar de rondas completas, y deja rastro de quién empezó primero para el §7. **Maniobra indivisible (ratificada como redacción operativa en la Ronda 9, D20):** «fetch + anuncio + push del anuncio» se ejecuta como UNA sola maniobra (propuesta de Pulimiento 19h11, estresada en la colisión 15) — es exactamente el push del anuncio el que revela el anuncio paralelo, con coste de detección cero; el rechazo del push se resuelve re-ancando (rebase) y republicando el anuncio con la base nueva.
-6. **Verificar `origin/main` justo antes de pushear.** Si apareció trabajo paralelo: rebase; si toca los mismos ficheros, aplicar la regla de adjudicación (§7).
+| ID | SMOKE_PORT | LAB_PORT | puerto de dev |
+|----|-----------|----------|---------------|
+| IMP-1 | 3111 | 4411 | 3211 |
+| IMP-2 | 3112 | 4412 | 3212 |
+| SEG | 3113 | 4413 | 3213 |
+| PUL | 3114 | 4414 | 3214 |
+| TEST | 3115 | 4415 | 3215 |
 
-## 3. Cierre de ronda (puerta de calidad) — OBLIGATORIO en toda ronda que toque código
+Servidor de desarrollo: `bunx next dev -p <puerto de dev>` (el script `bun run dev` fija el 3000). `scripts/security-verify.mjs`
+usa el puerto fijo 3105: solo SEG lo ejecuta hasta que PUL lo parametrice (tarea en el ROADMAP).
 
-Ratificado por el Director en la Ronda 4 (era pendiente de ratificación desde las rondas 3 de Pulimiento e Implementaciones):
+## 7. Informe vivo: `docs/agentes/estado/<ID>.md` (máx. 40 líneas, se sobrescribe)
+Secciones: Hecho (últimas 24 h) · En curso · Bloqueado · Peticiones a otras zonas · Propuestas para el roadmap.
 
-1. **`bun tests/smoke.mjs --build`** en verde (8/8). Es el **canon único de verificación**: `bun run verify` y `bun run smoke` delegan en él. El flag `--build` es obligatorio si se cambió código de producto; en rondas solo-documentación basta sin rebuild.
-2. **`bun run lint`** con 0 errores y 0 avisos en los ficheros tocados.
-3. **README vivo:** si la ronda cambia comportamiento visible, variables de entorno o scripts, actualizar `README.md` y `.env.example` en la misma ronda.
-4. **Informe de ronda** en `docs/agentes/z_<rol>/ronda_YYYY-MM-DD_HHhMM.md` (hora Europe/Madrid). **Nunca sobrescribir** informes previos; los cambios posteriores se añaden como addendum al final del mismo fichero. Si dos sesiones generan el mismo nombre de fichero (colisión AA), la que llega tarde renombra el suyo con sufijo `-duplicada` y añade addendum explicando la adjudicación.
-5. **Entrada en `worklog.md`** del repo (append, formato existente).
-6. **Tests unitarios versionados:** `bun test tests/` es la suite canónica (guard SSRF, acceso y resiliencia LLM). Todo módulo de seguridad nuevo llega con su test el mismo día; las funciones puras nuevas de `src/lib/` deberían seguirlo.
-7. **Frescura de los artefactos de verificación (D27, Ronda 11 — dos incidentes del mismo día: standalone obsoleto con 7 falsos ROJOS de `security-verify` y caché de Turbopack que sirvió CSS antiguo en un canon de UI):** (1) el build del canon se ejecuta con **caché limpia** (`rm -rf .next/cache`) en toda ronda que haya tocado UI/assets masivamente (migraciones de tokens, cambios de `globals.css`) o siempre que una cifra del canon no cuadre con el delta esperado; (2) `security-verify` corre sobre el standalone **recién construido** — build primero si el guard o cualquier superficie verificada cambió; (3) en migraciones de tokens, cotejar el contenido del CSS construido contra las variables nuevas.
-
-## 4. Commits — OBLIGATORIO
-
-- Convencionales: `tipo(ámbito): descripción` — tipos en uso: `feat`, `fix`, `chore`, `docs`, `test`, `refactor`.
-- **Un commit por ámbito** (no mezclar feature + limpieza + docs en uno).
-- Prohibido el formato UUID.
-- El push se hace a `main` al cierre de la ronda, tras pasar la puerta de calidad (§3).
-
-## 5. Convención de evidencia (capturas y GIFs) — RATIFICADA en Ronda 4
-
-- Toda evidencia visual vive en **`docs/screenshots/`** con **nombre semántico en español** (p. ej. `panel-de-mando.png`, `campana-en-vivo.gif`).
-- Se **enlazan desde el README** (tabla de capturas o cuerpo); nunca quedan sueltas en la raíz ni en `download/`.
-- GIFs: objetivo **< 5 MB** (paleta optimizada, ≤ 8 fps, ancho ≤ 760 px).
-- Los informes pueden referenciar la ruta de la evidencia; no duplicar ficheros.
-
-## 6. Seguridad por defecto
-
-- **Línea divisoria vigente:** lecturas `GET` abiertas (datos de simulación, sin secretos); mutaciones `POST` protegibles con `ADMIN_TOKEN` opt-in (header `X-Admin-Token` o cookie) + rate limit en campañas.
-- Cualquier fetch a URL provista por usuario pasa por el guard `src/lib/net/target-guard.ts` (SSRF). No se añaden fetches salientes sin pasar por él.
-- Secretos nunca en el repo; API key de proveedor siempre enmascarada en respuestas.
-- Toda variable de entorno nueva se documenta en `.env.example` y en la tabla de variables del README.
-
-## 7. Colisiones — regla de adjudicación
-
-1. Si el trabajo paralelo **ya está en la historia canónica** de `origin/main` y **verificado** (golden path en verde), **prevalece** lo pusheado; el duplicado local se descarta.
-2. Si ambas variantes coexisten (p. ej. dos smoke tests), el **Director consolida en un canon** y registra la decisión en addendum.
-3. El árbitro objetivo siempre es la **puerta de calidad (§3)** sobre el árbol fusionado: si no pasa, la última mejora verificada gana y la otra se rehace sobre ella.
-4. Toda colisión se documenta: addendum en el informe del agente afectado + nota del Director si implica revocar una decisión previa.
-5. **Fusión con comparación explícita** (lección de la colisión 9, Ronda 6): cuando ambas variantes implementan **el mismo requisito**, el auto-fusionado de git NO es verificación — puede integrar limpio dos implementaciones completas dejando UI duplicada y código muerto. Tras resolver cualquier colisión de este tipo: **comparar las dos implementaciones lado a lado, elegir una y eliminar la otra a mano**, y re-leer el resultado completo de cada fichero en conflicto. Prohibido resolver conflictos de contenido con sustituciones regex (una resolución imprudente truncó un fichero en la Ronda 6, recuperado de `origin` sin pérdida). Y la **comprobación de cero marcadores de conflicto (`<<<<<<<`/`>>>>>>>`/`=======`) es el ÚLTIMO paso de toda maniobra de rebase, después de `rebase --continue`** — nunca antes de `git add` (lección del incidente autodenunciado de bugs-9, Ronda 8: un marcador llegó a origin en `d8b5a4a` porque la verificación corrió antes de continuar; hotfix `5f26a67`).
-
-## 8. Reparto explícito de tareas
-
-El **Director es el repartidor**: en cada informe de ronda publica la asignación de tareas por agente para la ronda siguiente (§ del informe). Las sesiones operativas ejecutan su tarea asignada como primer candidato, aplicando el §2 (incluido el re-chequeo de §2.4). Esto sustituye a la auto-organización que provocó las colisiones de la Ronda 3.
-
-**Propietario único por tipo de tarea (Ronda 6):** las tareas de documentación y limpieza (README, dedupes de docs, retiro de artefactos) son las más propensas a colisión entre sesiones paralelas — solo UNA sesión por ronda las toca: o el Pulimiento asignado, o quien el Director designe expresamente. Las demás sesiones que detecten deuda documental la **reportan** en su informe en lugar de ejecutarla por su cuenta.
-
-**Adopciones de propuestas propias reservadas al proponente (Ronda 8, D16):** las cuatro duplicaciones intra-rol del día (colisiones 5, 9, 12, 14) comparten patrón — las **propuestas públicas** en los informes invitan a su ejecución inmediata por cualquier sesión antes del reparto formal. Normas: (1) las tareas de adopción de una propuesta del propio rol se marcan en el reparto como **«reservada al proponente»** y ninguna otra sesión las ejecuta; (2) quien quiera adelantar una adopción antes del reparto debe **anunciarla en el worklog como commit independiente antes de empezar** (§2.5, patrón `4419018`); (3) las propuestas en informes son **material de reparto, no licencia de ejecución**.
-
-## 9. Registro de riesgos (mantenido por el Director)
-
-El estado canónico de los riesgos vive en el último informe de ronda del Director. Síntesis vigente tras Ronda 11:
-
-- **Cerrados:** R1 (README), R2 (multiagente instaurado), R5 (artefactos), R6 (tsc), R8 (commits), R9 (scaffolding, árbol mínimo), **R12 (Caddyfile `XTransformPort` — handle acotado al puerto de la app en Ronda 6, variante de Bugs prevalecida sobre la eliminación por coherencia con el diseño `TRUST_PROXY` de R15; decisión documentada en el propio fichero)**, **R14 (`getZai()` sin timeout — cerrado en Ronda 6: timeout en la creación del SDK con test de contrato `tests/llm-creation.test.ts`, sesión de Bugs)**, **R15 (XFF suplantable — cerrado en Ronda 6: `TRUST_PROXY` opt-in en `clientKey` con 6 tests y documentación; sin proxy de confianza, la primera entrada de XFF no se usa para rate limit)**, **R16 (filas históricas fuera de la escala cerrada de progreso [0,100] — cerrado en la Ronda 9, D18: reparación por-entorno; desde la Ronda 10 el canon 16 la auto-aplica — check fail-closed sin ventana + script idempotente `repair-progress-scale`)**, **R3 (SSRF del guard — CERRADO REFORZADO en la Ronda 10, D22: el bypass por literales IPv6 con corchetes/IPv4-mapped — hallazgo C1 de bugs-11, el de mayor severidad del proyecto — quedó corregido con normalización canónica, metadata>private, NAT64 y 12 tests de regresión; revisión cruzada adversarial de bugs-13 con PoC de 5 formas confirma la defensa en producción; residuos documentados: XFF opt-in (R15), degradación DNS→public, R13 separado. Lección estructural permanente: los bordes de validación trabajan sobre la representación canónica)**, **R17 (CSRF en mutaciones — cerrado en la Ronda 10 de bugs, ratificado en la 11, D28: same-origin 403 previo a 401/429/413 en las 4 mutaciones; revisión cruzada adversarial de bugs-15 con PoC de 10 bordes, fail-closed; `security-verify` en verde sobre el árbol endurecido como evidencia viva)**.
-- **Acotados:** R4 (auth opt-in `ADMIN_TOKEN` + rate limit; cierre total solo con despliegue multiusuario — **nota Ronda 10: el autopiloto, gasto LLM disparable por GET público, entra en esta cuenta para ese cierre; ya con rate limit 30/min propio y coerción estricta del toggle, bugs-12**), R11 (artefactos de verificación obsoletos — redefinido en la Ronda 11, D27: abarca el build standalone obsoleto y la caché de Turbopack; mitigación permanente en §3.7 — caché limpia en el canon de rondas de UI y `security-verify` sobre standalone recién construido; sigue acotado porque el vicio reaparece mientras la caché exista, pero la norma lo hace detectable y evitable), **R13 (TOCTOU de DNS rebinding en `classifyTarget` — el guard resuelve y valida pero `fetch` re-resuelve después; la mitigación completa exige pinning de la IP resuelta. Clasificado como riesgo aceptado documentado: no afecta al modelo de despliegue vigente, no expuesto)**.
-- **Vigilancia:** R10 (`DATABASE_URL` global del contenedor vs `.env`), R7 (historia git con .env/BD antiguos, sin secretos reales).
+## 8. Tono
+Los informes son técnicos y breves. No añadas avisos ni recordatorios que no pertenezcan a tu tarea.
