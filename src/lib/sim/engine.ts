@@ -46,11 +46,53 @@ import {
   type OpOutcome,
 } from '@/lib/lab/ops'
 import { SIGNATURE_LABEL, type LabCampaignState, type Signature } from '@/lib/lab/types'
-import { resolveCampaignOutcome } from '@/lib/victory'
+import { clampProgress, resolveCampaignOutcome } from '@/lib/victory'
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))
-const rand = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]
+
+// ─────────────────────────────────────────────────────────────
+// RNG sembrable y ayudantes puros del combate (contrato fijado
+// en tests/engine.test.ts).
+//
+// Sin semilla el motor se comporta exactamente igual que antes
+// (Math.random). Con setEngineSeed(n) todas las tiradas del
+// motor (elección de nodo, momentum RED, turno proactivo de
+// BLUE) pasan por un PRNG determinista: base de campañas
+// reproducibles (seed-determinista) y de esta red de seguridad
+// de tests. Los ayudantes puros se exportan para fijar su
+// contrato sin tener que arrancar una campaña completa.
+// ─────────────────────────────────────────────────────────────
+
+function mulberry32(seed: number): () => number {
+  let a = seed >>> 0
+  return () => {
+    a += 0x6d2b79f5
+    let t = a
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+let rng: () => number = Math.random
+
+/** Fija la semilla del motor (sin argumento restaura Math.random). Para tests y campañas reproducibles. */
+export function setEngineSeed(seed?: number): void {
+  rng = seed === undefined ? Math.random : mulberry32(seed)
+}
+
+/** Tirada aleatoria del motor (sembrable con setEngineSeed). */
+function engineRoll(): number {
+  return rng()
+}
+
+const rand = <T,>(arr: T[]): T => arr[Math.floor(engineRoll() * arr.length)]
+
+/** Acumulación de progreso en la escala cerrada [0, 100] (fuente única de la regla: victory.ts). */
+export function accumulateProgress(current: number, delta: number): number {
+  return clampProgress(current + delta)
+}
 
 type AgentRow = Awaited<ReturnType<typeof db.agent.findMany>>[number]
 
@@ -71,19 +113,30 @@ const BLUE_OP_AGENTS: Record<string, string[]> = {
 }
 
 /** Elige el agente de la fase, rotando entre los que comparten fase para que todos participen */
-function pickAgentForPhase<T extends { key: string }>(agents: T[], phase: Phase, round: number): T {
+export function pickAgentForPhase<T extends { key: string }>(agents: T[], phase: Phase, round: number): T {
   const matches = agents.filter((a) => (AGENT_PHASES.get(a.key) ?? []).includes(phase))
   if (matches.length === 0) return agents[0]
   return matches[(round - 1) % matches.length]
 }
 
-function pickAgentForOp<T extends { key: string }>(agents: T[], op: string, phase: Phase, round: number): T {
+export function pickAgentForOp<T extends { key: string }>(agents: T[], op: string, phase: Phase, round: number): T {
   const prefs = BLUE_OP_AGENTS[op] ?? []
   for (const key of prefs) {
     const found = agents.find((a) => a.key === key)
     if (found) return found
   }
   return pickAgentForPhase(agents, phase, round)
+}
+
+/**
+ * Momentum RED: ¿encadena una segunda acción dentro de la fase?
+ * ÉXITO encadena alto, PARCIAL moderado y FALLO nunca (constantes
+ * en pace.ts). `roll` es la tirada [0, 1): con el RNG sembrado la
+ * decisión es reproducible ronda a ronda.
+ */
+export function redShouldChain(result: string | undefined, roll: number): boolean {
+  const chainP = result === 'EXITO' ? RED_CHAIN_ON_EXITO : result === 'PARCIAL' ? RED_CHAIN_ON_PARCIAL : 0
+  return chainP > 0 && roll < chainP
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -352,7 +405,7 @@ Elige el targetNode más lógico para la fase ${PHASE_LABEL[phase]}.`, 22000)
     // blueProgress más abajo), para que el ganador, la narrativa, las lecciones
     // y la fila final compartan el mismo valor sin desbordamiento (Ronda 9 de
     // bugs: la evidencia "114/100" provenía de acumular aquí sin acotar).
-    redProgress = clamp(redProgress + impact, 0, 100)
+    redProgress = accumulateProgress(redProgress, impact)
     redScore += impact + (outcome.result === 'FALLO' ? 1 : 0)
     trackKnowledge(redTurnIds, outcome.result !== 'FALLO')
     xpDelta.set(agent.key, (xpDelta.get(agent.key) ?? 0) + 6 + Math.round(impact / 3))
@@ -379,7 +432,7 @@ Elige el targetNode más lógico para la fase ${PHASE_LABEL[phase]}.`, 22000)
 
     await db.campaign.update({
       where: { id: campaignId },
-      data: { round, phase, redProgress: clamp(redProgress, 0, 100), blueProgress: clamp(blueProgress, 0, 100), redScore, blueScore },
+      data: { round, phase, redProgress: clampProgress(redProgress), blueProgress: clampProgress(blueProgress), redScore, blueScore },
     })
     await sleep(500)
 
@@ -490,7 +543,7 @@ Contexto: fase ${PHASE_LABEL[phase]}, ronda ${round}.`,
     if (!detail) detail = fallbackBlueDetail(op, outcome, verdict)
 
     const defImpact = BLUE_GAIN_BY_VERDICT[verdict] ?? 1
-    blueProgress = clamp(blueProgress + defImpact + 2, 0, 100)
+    blueProgress = accumulateProgress(blueProgress, defImpact + 2)
     blueScore += defImpact * 2
     trackKnowledge(blueTurnIds, verdict === 'BLOQUEADO' || verdict === 'DETECTADO' || verdict === 'CONTENIDO')
     xpDelta.set(agent.key, (xpDelta.get(agent.key) ?? 0) + 5 + Math.round(defImpact / 2))
@@ -513,7 +566,7 @@ Contexto: fase ${PHASE_LABEL[phase]}, ronda ${round}.`,
 
     await db.campaign.update({
       where: { id: campaignId },
-      data: { round, phase, redProgress: clamp(redProgress, 0, 100), blueProgress: clamp(blueProgress, 0, 100), redScore, blueScore },
+      data: { round, phase, redProgress: clampProgress(redProgress), blueProgress: clampProgress(blueProgress), redScore, blueScore },
     })
     await sleep(500)
   }
@@ -583,8 +636,7 @@ Contexto: fase ${PHASE_LABEL[phase]}, ronda ${round}.`,
 
     // 2) RED encadena con el momentum vivo (ÉXITO alto, PARCIAL moderado)
     if (CHAINABLE_PHASES.includes(phase)) {
-      const chainP = lastOutcome.result === 'EXITO' ? RED_CHAIN_ON_EXITO : lastOutcome.result === 'PARCIAL' ? RED_CHAIN_ON_PARCIAL : 0
-      if (chainP > 0 && Math.random() < chainP) {
+      if (redShouldChain(lastOutcome.result, engineRoll())) {
         const second = await redAct(round, phase, redAgent, lastTarget.id)
         lastTarget = second.target
         lastOutcome = second.outcome
@@ -599,7 +651,7 @@ Contexto: fase ${PHASE_LABEL[phase]}, ronda ${round}.`,
     // monitoriza — el parche ciego ronda a ronda vaciaría la superficie
     // explotable y mataría el arco ofensivo (calibrado con campañas reales).
     if (blueActionsThisRound === 0) {
-      if (Math.random() < BLUE_HUNT_ROLL) {
+      if (engineRoll() < BLUE_HUNT_ROLL) {
         await blueAct(round, phase, 'HUNT', { hypothesis: huntHypothesis(phase), redNode: lastTarget.id })
         blueActionsThisRound++
       } else {
@@ -730,8 +782,8 @@ Extrae 3 lecciones por equipo: qué funcionó, qué falló y cómo aplicarlo la 
       narrative,
       // Defensa en profundidad: la fila final respeta la escala cerrada aunque
       // un valor en memoria llegase desbordado (recomendación del reparto 19h31).
-      redProgress: clamp(redProgress, 0, 100),
-      blueProgress: clamp(blueProgress, 0, 100),
+      redProgress: clampProgress(redProgress),
+      blueProgress: clampProgress(blueProgress),
       redScore,
       blueScore,
       endedAt: new Date(),
@@ -743,7 +795,7 @@ Extrae 3 lecciones por equipo: qué funcionó, qué falló y cómo aplicarlo la 
 // Ayudantes de decisión BLUE sobre estado real del lab
 // ─────────────────────────────────────────────────────────────
 
-function defaultSignatureFor(phase: Phase): Signature {
+export function defaultSignatureFor(phase: Phase): Signature {
   switch (phase) {
     case 'RECON': return 'PORT_SCAN'
     case 'ARMADO': return 'UNUSUAL_PATH'
@@ -754,7 +806,7 @@ function defaultSignatureFor(phase: Phase): Signature {
   }
 }
 
-function segmentForPhase(phase: Phase): string {
+export function segmentForPhase(phase: Phase): string {
   switch (phase) {
     case 'RECON': return 'DMZ'
     case 'ARMADO': return 'DMZ'
@@ -765,7 +817,7 @@ function segmentForPhase(phase: Phase): string {
   }
 }
 
-function huntHypothesis(phase: Phase): string {
+export function huntHypothesis(phase: Phase): string {
   switch (phase) {
     case 'RECON': return 'enumeración temprana de superficie'
     case 'ARMADO': return 'preparación de payload en endpoints'
@@ -777,7 +829,7 @@ function huntHypothesis(phase: Phase): string {
 }
 
 /** Busca el mejor parche real: nodo comprometido o de mayor criticidad con vuln abierta */
-function bestPatchTarget(lab: LabCampaignState, preferNodeId?: string): { nodeId?: string; vuln?: string } {
+export function bestPatchTarget(lab: LabCampaignState, preferNodeId?: string): { nodeId?: string; vuln?: string } {
   const candidates: Array<{ nodeId: string; vuln: string; crit: number }> = []
   for (const n of lab.nodes.values()) {
     for (const [vuln, st] of Object.entries(n.vulnerabilities)) {
@@ -819,7 +871,7 @@ function fallbackBlueDetail(op: string, outcome: OpOutcome, verdict: string): st
 // Modelo de combate — constantes y utilidades
 // ─────────────────────────────────────────────────────────────
 
-function pickNodeForPhase(nodes: InfraNode[], phase: Phase): InfraNode {
+export function pickNodeForPhase(nodes: InfraNode[], phase: Phase): InfraNode {
   const pool =
     phase === 'RECON' || phase === 'ARMADO'
       ? nodes.filter((n) => n.segment === 'DMZ')
