@@ -18,13 +18,18 @@
 //  11. H-001 (hallazgo TEST): Transfer-Encoding: chunked NO sortea ni el tope de
 //      stream (caso 9) ni la acreditación: sin credencial con ADMIN_TOKEN → 401.
 //  12. caddy-hardening (ROADMAP): sin X-Powered-By (huella de versión de Next).
+//  13. traversal-codificado-verify (ROADMAP, petición de IMP-1): la variante
+//      codificada `..%2f` es la que REALMENTE llega al clasificador del lab (el
+//      cliente WHATWG colapsa los `..` literales antes de enviar); cadena
+//      completa contra el laboratorio REAL con BD desechable y motor SIM.
 //
 // Uso: bun scripts/security-verify.mjs   (requiere .next/standalone ya construido)
 // Puerto: SECURITY_VERIFY_PORT (defecto 3105; tarea security-verify-puerto del
 // ROADMAP, acordada con PUL) — cada agente puede pasar su puerto de la sección 6
 // del protocolo (p. ej. SECURITY_VERIFY_PORT=3113 para SEG) sin pisar a nadie.
-import { spawn } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { request as httpRequest, Agent } from 'node:http'
+import { mkdirSync, rmSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const ROOT = resolve(import.meta.dir, '..')
@@ -356,6 +361,121 @@ for (const [url, expected, kind] of cases) {
 }
 
 await stopServer(server2)
+
+// 13 ── traversal-codificado-verify (ROADMAP, petición de IMP-1): la variante
+//      codificada `..%2f` es la que REALMENTE llega al clasificador del lab —
+//      el cliente WHATWG colapsa los `..` literales antes de enviar, pero
+//      `..%2f`/`%2e%2e%2f` viajan intactos. Cadena completa contra el
+//      laboratorio REAL: campaña determinista (SIM, sin claves de proveedor),
+//      regla SIEM, ataque traversal codificado a un nodo DMZ y correlación del
+//      SIEM. BD desechable: la campaña queda RUNNING al cortar el servidor y
+//      no debe tocar la del operador.
+const parsedLabPort = Number(process.env.SECURITY_VERIFY_LAB_PORT)
+const LAB_PORT = Number.isInteger(parsedLabPort) && parsedLabPort > 0 && parsedLabPort < 65536
+  ? parsedLabPort
+  : PORT + 1300 // convención de puertos SEG: 3113 → 4413 (§6 del protocolo)
+const DB_LAB = resolve(ROOT, '.agent-tmp/security-verify-lab.db')
+mkdirSync(resolve(ROOT, '.agent-tmp'), { recursive: true })
+rmSync(DB_LAB, { force: true })
+rmSync(`${DB_LAB}-journal`, { force: true })
+const dbPush = spawnSync('bunx', ['prisma', 'db', 'push', '--skip-generate'], {
+  cwd: ROOT,
+  env: { ...process.env, DATABASE_URL: `file:${DB_LAB}` },
+  stdio: 'pipe',
+  encoding: 'utf8',
+})
+// El sembrado corre FUERA del servidor: /api/state debe traer los escenarios
+// ANTES del primer lanzamiento (ensureSeed solo se ejecuta dentro de startCampaign).
+const dbSeed = spawnSync('bun', ['-e', `import { ensureSeed } from '${resolve(ROOT, 'src/lib/sim/seed')}'; await ensureSeed(); console.log('seeded')`], {
+  cwd: ROOT,
+  env: { ...process.env, DATABASE_URL: `file:${DB_LAB}` },
+  stdio: 'pipe',
+  encoding: 'utf8',
+})
+if (dbPush.status !== 0 || dbSeed.status !== 0) {
+  console.error('BD del caso lab no preparada:', ((dbPush.stderr || '') + (dbSeed.stderr || '')).slice(-300))
+  process.exit(1)
+}
+const labEnv = {
+  ...process.env,
+  DATABASE_URL: `file:${DB_LAB}`,
+  PORT: String(PORT),
+  LAB_PORT: String(LAB_PORT),
+  NODE_ENV: 'production',
+  ADMIN_TOKEN: TOKEN,
+}
+delete labEnv.OPENAI_API_KEY // motor determinista (SIM): la verificación no gasta LLM
+const server3 = spawn('bun', [resolve(ROOT, '.next/standalone/server.js')], {
+  cwd: ROOT,
+  env: labEnv,
+  stdio: ['ignore', 'pipe', 'pipe'],
+})
+up = false
+for (let i = 0; i < 60 && !up; i++) {
+  await new Promise((r) => setTimeout(r, 500))
+  up = await fetch(`${BASE}/api`).then((r) => r.ok).catch(() => false)
+}
+if (!up) { console.error('NO ARRANCÓ (3):\n' + log.slice(-400)); process.exit(1) }
+
+// Peticiones crudas directas al LAB (otro puerto; node:http no normaliza el path)
+const rawLab = (path, headers = {}, body, method = 'GET') =>
+  new Promise((resolveP) => {
+    const req = httpRequest(
+      { host: '127.0.0.1', port: LAB_PORT, path, method, headers },
+      (res) => {
+        let data = ''
+        res.on('data', (c) => (data += c))
+        res.on('end', () => resolveP({ status: res.statusCode, body: data }))
+      }
+    )
+    req.on('error', (e) => resolveP({ status: 0, body: String(e) }))
+    if (body !== undefined) req.write(body)
+    req.end()
+  })
+
+const state = await fetch(`${BASE}/api/state`).then((r) => r.json()).catch(() => null)
+const escenarios = Array.isArray(state?.scenarios) ? state.scenarios : []
+const fincorp = escenarios.find((s) => s.key === 'fincorp-bank') ?? escenarios[0]
+const launch = await rawPost('/api/campaigns', {
+  host: '127.0.0.1:' + PORT,
+  'content-type': 'application/json',
+  'x-admin-token': TOKEN,
+}, JSON.stringify({ scenarioId: fincorp?.id }))
+let cid
+try { cid = JSON.parse(launch.body)?.campaignId } catch { /* sin cuerpo JSON */ }
+check('campaña determinista lanzada para el caso lab (BD desechable, motor SIM)',
+  launch.status === 200 && typeof cid === 'string' && cid.length > 0, `status=${launch.status} escenario=${fincorp?.key ?? '—'}`)
+
+if (typeof cid === 'string' && fincorp) {
+  const ficha = await fetch(`${BASE}/api/campaigns/${cid}`).then((r) => r.json()).catch(() => null)
+  const nodes = Array.isArray(ficha?.infra?.nodes) ? ficha.infra.nodes : []
+  const siem = nodes.find((n) => n.type === 'SIEM')
+  const dmz = nodes.find((n) => n.segment === 'DMZ' && n.type === 'WEB')
+    ?? nodes.find((n) => n.segment === 'DMZ' && n.type !== 'SIEM')
+  check('escenario con nodo SIEM y nodo DMZ para la cadena de detección', Boolean(siem && dmz), `nodos=${nodes.length}`)
+  if (siem && dmz) {
+    const rule = await rawLab(`/lab/${cid}/${siem.id}/rules`, { 'content-type': 'application/json', 'x-lab-operator': 'soc' }, JSON.stringify({ signature: 'PATH_TRAVERSAL', nodeId: dmz.id }), 'POST')
+    check('regla SIEM desplegada: PATH_TRAVERSAL en el nodo DMZ', rule.status === 201, `status=${rule.status}`)
+    const trav = await rawLab(`/lab/${cid}/${dmz.id}/..%2fetc%2fpasswd`)
+    check('traversal codificado ..%2f llega al lab INTACTO → 404 estructurado (no 500)',
+      trav.status === 404 && trav.body.includes('..%2fetc%2fpasswd'), `status=${trav.status}`)
+    const travDouble = await rawLab(`/lab/${cid}/${dmz.id}/%2e%2e%2fetc%2fpasswd`)
+    check('variante %2e%2e%2f (sin puntos literales) también responde estructurado',
+      travDouble.status === 404, `status=${travDouble.status}`)
+    const ev = await rawLab(`/lab/${cid}/${siem.id}/events?signature=PATH_TRAVERSAL`, { 'x-lab-operator': 'soc' })
+    let evJson = null
+    try { evJson = JSON.parse(ev.body) } catch { /* sin cuerpo JSON */ }
+    const paths = (Array.isArray(evJson?.events) ? evJson.events : []).map((e) => String(e.path))
+    check('SIEM correla ..%2f con la firma PATH_TRAVERSAL (la variante que llega al clasificador)',
+      ev.status === 200 && paths.some((p) => p.includes('..%2f')), `eventos=${evJson?.count ?? 0}`)
+    check('SIEM correla %2e%2e%2f (el clasificador mira también el path decodificado)',
+      paths.some((p) => p.includes('%2e%2e')), `paths=${paths.length}`)
+  }
+} else {
+  check('caso lab completo', false, `launch=${launch.status} escenario=${fincorp?.key ?? '—'}`)
+}
+
+await stopServer(server3)
 
 console.log(failures === 0 ? '\nVERDE: verificación de seguridad completa OK' : `\nROJO: ${failures} fallos`)
 process.exit(failures === 0 ? 0 : 1)

@@ -154,7 +154,13 @@ function synthRecords(table: string, count: number): unknown[] {
 
 function classify(lab: LabCampaignState, nodeId: string, method: string, path: string, body: string, resBytes: number): Signature | undefined {
   const lowerPath = path.toLowerCase()
-  if (lowerPath.includes('..')) return 'PATH_TRAVERSAL'
+  // Variante codificada (tarea traversal-codificado-verify, petición de IMP-1):
+  // el cliente WHATWG colapsa los puntos literales antes de enviar, pero
+  // `..%2f`/`%2e%2e%2f` viajan INTACTOS hasta el clasificador — el chequeo mira
+  // también el path decodificado UNA vez (degradando al crudo si el
+  // percent-encoding es malformado; el doble encoding queda en UNUSUAL_PATH).
+  const lowerDecoded = decodeLabPart(path).toLowerCase()
+  if (lowerPath.includes('..') || lowerDecoded.includes('..')) return 'PATH_TRAVERSAL'
   if (lowerPath.includes('/ipc$') || lowerPath.includes('/smb') || lowerPath.includes('/wmi')) return 'LATERAL_SMB'
   if ((method === 'POST' && lowerPath.endsWith('/login')) && (body.includes("'") || body.includes('--'))) return 'SQLI'
   if (lowerPath.endsWith('/auth') && /[0-9a-f]{32}/i.test(body)) return 'PASS_THE_HASH'
@@ -231,6 +237,21 @@ function isSoc(req: IncomingMessage): boolean {
 // Manejador principal
 // ─────────────────────────────────────────────────────────────
 
+/**
+ * decodeURIComponent que no lanza (fuzz-normalizadores, sesión SEG 4):
+ * un segmento con percent-encoding malformado (`%zz`, `%` final) hacía
+ * que decodeURIComponent lanzara URIError y el lab respondiera 500
+ * «internal» en las posiciones campaignId/nodeId. Degradar al segmento
+ * crudo devuelve el control a los lookups normales (404 estructurado).
+ */
+function decodeLabPart(part: string): string {
+  try {
+    return decodeURIComponent(part)
+  } catch {
+    return part
+  }
+}
+
 async function handle(req: IncomingMessage, res: ServerResponse) {
   const started = Date.now()
   const url = new URL(req.url ?? '/', `http://127.0.0.1`)
@@ -275,8 +296,8 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
     return
   }
 
-  const campaignId = decodeURIComponent(parts[1])
-  const nodeId = decodeURIComponent(parts[2])
+  const campaignId = decodeLabPart(parts[1])
+  const nodeId = decodeLabPart(parts[2])
   const rest = parts.length > 3 ? '/' + parts.slice(3).join('/') : '/'
   const lab = getLab(campaignId)
 
