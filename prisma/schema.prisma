@@ -8,7 +8,7 @@ datasource db {
 }
 
 // ─────────────────────────────────────────────────────────────
-// AEGIS ARENA — Sandbox de autoevolución Red Team vs Blue Team
+// area·ai — Sandbox de autoevolución Red Team vs Blue Team
 // ─────────────────────────────────────────────────────────────
 
 // Configuración clave-valor (proveedor LLM, API keys, modelo seleccionado…)

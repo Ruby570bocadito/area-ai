@@ -96,7 +96,7 @@ export { accumulateProgress, redShouldChain, defaultSignatureFor, segmentForPhas
 // Arranque de campaña
 // ─────────────────────────────────────────────────────────────
 
-const g = globalThis as unknown as { __aegisLLMAlive?: boolean | null }
+const g = globalThis as unknown as { __areaAiLLMAlive?: boolean | null }
 
 const launchGate = createLaunchGate()
 
@@ -298,7 +298,7 @@ async function runCampaign(campaignId: string) {
     const probe = await llmJson<{ ok: boolean }>('Responde solo con JSON.', 'Confirma disponibilidad devolviendo {"ok": true}', 12000)
     llmAlive = probe?.ok === true
   }
-  g.__aegisLLMAlive = llmAlive
+  g.__areaAiLLMAlive = llmAlive
   if (!llmAlive) engineMode = 'SIM'
 
   await db.campaign.update({ where: { id: campaignId }, data: { engineMode } })

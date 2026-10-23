@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────
-// AEGIS ARENA — Tipos compartidos del motor de simulación
+// area·ai — Tipos compartidos del motor de simulación
 // ─────────────────────────────────────────────────────────────
 
 export type Team = 'RED' | 'BLUE'
