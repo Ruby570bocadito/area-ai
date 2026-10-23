@@ -28,15 +28,6 @@ export async function POST(req: NextRequest) {
         { status: 403 }
       )
     }
-    // Tope de cuerpo pre-parse (hallazgo Ronda 12): 16 KB holgados para
-    // baseUrl + apiKey. readJsonBody acota TAMBIÉN las peticiones chunked
-    // sin Content-Length (tarea cuerpo-chunked del ROADMAP), leyendo el
-    // stream con tope. JSON inválido → {} como antes (campos opcionales).
-    const parsed = await readJsonBody<{ baseUrl?: string; apiKey?: string }>(req, 16384)
-    if (!parsed.ok && parsed.reason === 'too-large') {
-      return NextResponse.json({ ok: false, error: 'Cuerpo demasiado grande' }, { status: 413 })
-    }
-    const body = parsed.ok ? parsed.body : {}
     // Rate limit antes de la verificación del token (hallazgo Ronda 11:
     // fuerza bruta de ADMIN_TOKEN sin techo en este endpoint). Mismo
     // bucket `admin:` que /api/settings — los intentos se comparten.
@@ -52,6 +43,17 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       )
     }
+    // Tope de cuerpo pre-parse (hallazgo Ronda 12), tras el 401: el orden
+    // canónico de barreras es 403→429→401→413 (tarea endurecimiento-hd, HD4)
+    // — antes el cuerpo se parseaba antes del 429/401. 16 KB holgados para
+    // baseUrl + apiKey. readJsonBody acota TAMBIÉN las peticiones chunked
+    // sin Content-Length (tarea cuerpo-chunked del ROADMAP), leyendo el
+    // stream con tope. JSON inválido → {} como antes (campos opcionales).
+    const parsed = await readJsonBody<{ baseUrl?: string; apiKey?: string }>(req, 16384)
+    if (!parsed.ok && parsed.reason === 'too-large') {
+      return NextResponse.json({ ok: false, error: 'Cuerpo demasiado grande' }, { status: 413 })
+    }
+    const body = parsed.ok ? parsed.body : {}
     let baseUrl = body.baseUrl?.replace(/\/$/, '')
     let apiKey = body.apiKey
 

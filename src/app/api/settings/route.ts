@@ -44,21 +44,6 @@ export async function POST(req: NextRequest) {
         { status: 403 }
       )
     }
-    // Tope de cuerpo pre-parse (hallazgo Ronda 12): los topes de campo
-    // (413 abajo) actúan DESPUÉS de parsear — sin este control, un cuerpo
-    // de cientos de MB se parseaba íntegro en memoria. 16 KB cubre con
-    // holgura los máximos de baseUrl+apiKey+model. readJsonBody acota
-    // TAMBIÉN las peticiones chunked sin Content-Length (tarea
-    // cuerpo-chunked del ROADMAP), leyendo el stream con tope.
-    const parsed = await readJsonBody<{ baseUrl?: string; apiKey?: string; model?: string }>(req, 16384)
-    if (!parsed.ok) {
-      const tooLarge = parsed.reason === 'too-large'
-      return NextResponse.json(
-        { ok: false, error: tooLarge ? 'Cuerpo demasiado grande' : 'Cuerpo JSON inválido' },
-        { status: tooLarge ? 413 : 400 }
-      )
-    }
-    const body = parsed.body
     // Rate limit ANTES de la verificación del token (hallazgo Ronda 11):
     // con ADMIN_TOKEN definido, este endpoint era el único de mutación sin
     // límite — un atacante podía probar tokens sin techo. 30/min es
@@ -75,6 +60,23 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       )
     }
+    // Tope de cuerpo pre-parse (hallazgo Ronda 12), tras el 401: el orden
+    // canónico de barreras es 403→429→401→413 (tarea endurecimiento-hd, HD4)
+    // — antes el cuerpo se parseaba antes del 429/401. Los topes de campo
+    // (413 abajo) actúan DESPUÉS de parsear — sin este control, un cuerpo
+    // de cientos de MB se parseaba íntegro en memoria. 16 KB cubre con
+    // holgura los máximos de baseUrl+apiKey+model. readJsonBody acota
+    // TAMBIÉN las peticiones chunked sin Content-Length (tarea
+    // cuerpo-chunked del ROADMAP), leyendo el stream con tope.
+    const parsed = await readJsonBody<{ baseUrl?: string; apiKey?: string; model?: string }>(req, 16384)
+    if (!parsed.ok) {
+      const tooLarge = parsed.reason === 'too-large'
+      return NextResponse.json(
+        { ok: false, error: tooLarge ? 'Cuerpo demasiado grande' : 'Cuerpo JSON inválido' },
+        { status: tooLarge ? 413 : 400 }
+      )
+    }
+    const body = parsed.body
     if (!body.baseUrl || !body.model) {
       return NextResponse.json(
         { ok: false, error: 'baseUrl y model son obligatorios' },

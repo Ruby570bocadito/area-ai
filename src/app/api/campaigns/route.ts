@@ -59,16 +59,16 @@ export async function POST(req: NextRequest) {
         { status: 403 }
       )
     }
-    // Tope de cuerpo pre-parse (hallazgo Ronda 12): el payload legítimo es
-    // { scenarioId } — 4 KB es un orden de magnitud holgado. readJsonBody
-    // acota TAMBIÉN las peticiones chunked sin Content-Length (tarea
-    // cuerpo-chunked del ROADMAP), leyendo el stream con tope.
-    const parsed = await readJsonBody<{ scenarioId?: string }>(req, 4096)
-    if (!parsed.ok) {
-      if (parsed.reason === 'too-large') {
-        return NextResponse.json({ ok: false, error: 'Cuerpo demasiado grande' }, { status: 413 })
-      }
-      // sin cuerpo o JSON inválido → escenario aleatorio (comportamiento previo)
+    // Rate limit ANTES de la verificación del token (tarea endurecimiento-hd
+    // del ROADMAP, HD3): este era el único endpoint de mutación que comparaba
+    // el token sin haber consumido antes el bucket `admin:` — un atacante
+    // recibía 401 infinitos sin tope (oráculo de fuerza bruta de ADMIN_TOKEN).
+    // Mismo bucket compartido que settings/models/autopilot/auth: 30/min.
+    if (!rateLimit(`admin:${clientKey(req.headers)}`, 30)) {
+      return NextResponse.json(
+        { ok: false, error: 'Demasiados intentos; espera un momento antes de reintentar' },
+        { status: 429 }
+      )
     }
     if (!isMutationAuthorized(req.headers)) {
       return NextResponse.json(
@@ -76,6 +76,21 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       )
     }
+    // Tope de cuerpo pre-parse (hallazgo Ronda 12): el payload legítimo es
+    // { scenarioId } — 4 KB es un orden de magnitud holgado. readJsonBody
+    // acota TAMBIÉN las peticiones chunked sin Content-Length (tarea
+    // cuerpo-chunked del ROADMAP), leyendo el stream con tope. Tras el 401:
+    // el orden canónico de barreras es 403→429→401→413 (HD4).
+    const parsed = await readJsonBody<{ scenarioId?: string }>(req, 4096)
+    if (!parsed.ok) {
+      if (parsed.reason === 'too-large') {
+        return NextResponse.json({ ok: false, error: 'Cuerpo demasiado grande' }, { status: 413 })
+      }
+      // sin cuerpo o JSON inválido → escenario aleatorio (comportamiento previo)
+    }
+    // Cubo propio de lanzamientos (riesgo R4): tras acreditar al cliente,
+    // acota el gasto LLM de campañas en bucle (6/min, más severo que el
+    // bucket `admin:` compartido).
     const key = clientKey(req.headers)
     if (!rateLimit(`campaigns:${key}`)) {
       return NextResponse.json(

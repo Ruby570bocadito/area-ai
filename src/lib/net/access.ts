@@ -16,6 +16,20 @@
 // Es defensa en profundidad para despliegues no locales; la
 // recomendación principal sigue siendo no exponer la app a
 // Internet (ver README, sección Seguridad).
+//
+// Orden canónico de barreras en las 5 mutaciones (tarea
+// endurecimiento-hd del ROADMAP, HD3/HD4):
+//   403 (isSameOrigin) → 429 (rateLimit admin:) → 401 (token) → 413 (tope)
+//   · same-origin PRIMERO: un cross-site ni siquiera consume cubo.
+//   · el bucket `admin:` ANTES de comparar el token: si el 401 llegara
+//     antes, un atacante probaría tokens sin techo (oráculo de fuerza
+//     bruta); así, el intento consume cubo y aparece 429 a los 30/min.
+//   · el tope de cuerpo (readJsonBody) tras el 401: parsear antes el
+//     cuerpo de un cliente no acreditado regala trabajo al anónimo.
+//   Única excepción: POST /api/auth — 413 antes del 401 por inherencia
+//   (el token viaja DENTRO del cuerpo: no hay nada que comparar sin
+//   leerlo, ya acotado). /api/campaigns añade además su cubo propio de
+//   lanzamientos (campaigns:, 6/min) tras el 401 (gasto LLM, riesgo R4).
 // ─────────────────────────────────────────────────────────────
 
 export const ADMIN_TOKEN_HEADER = 'x-admin-token'
