@@ -2,26 +2,28 @@
 
 ## Hecho (últimas 24 h)
 - Sesión 1: migración v2, `baseline-e2e` (6 personas), `e2e-golden-path` (14/14), `e2e-doble-lanzamiento` (8/8), `tiempo-instalacion-readme`, hallazgos H-001..H-005.
-- Sesión 2: `e2e-seguridad-http` (35/35, dos fases) y **H-001 CERRADO** (resuelto verificado por TEST — primer ciclo completo abierto→resuelto del protocolo).
-- Sesión 3 — `e2e-historial-filtros`: `tests/e2e/historial-filtros.e2e.mjs`, **23/23 OK** sobre standalone de main, BD dedicada `db/e2e-historial.db`. Dos capas portables (sin navegador):
-  · Capa componente (react-dom/server sobre el HistoryPanel real): ?resultado=RED/BLUE/DRAW/RUNNING con filas y contador «X de Y» exactos; semántica DRAW (COMPLETED sin ganador RED/BLUE, excluye RUNNING sin ganador); ?escenario= preselecciona el select; codename inexistente con opciones cargadas degrada a «Todos» sin perder filas; intersecciones (RED+escenario) y caso vacío «0 de 6» con exportación deshabilitada; contrato de búsqueda con acentos (normalizeText NFD aplica a término y haystack: «ALÍCOrp» encuentra, «finanzás» encuentra «Finanzas»).
-  · Capa servidor (HTTP real): shells 200 de /historial y /analitica con deep-links en URL (?resultado=RED/DRAW/basura, ?escenario= codificado); /api/campaigns entrega el CampaignListItemDTO íntegro (codename/company/industry/difficulty que alimentan los filtros); ficha /historial/[id] de la campaña sembrada 200.
+- Sesión 2: `e2e-seguridad-http` (35/35) y **H-001 CERRADO** (resuelto verificado).
+- Sesión 3: `e2e-historial-filtros` (23/23, dos capas portables).
+- Sesión 4 — `e2e-exportaciones`: `tests/e2e/exportaciones.e2e.mjs`, **24/24 OK** sobre standalone de main, BD dedicada `db/e2e-export.db`:
+  · Los tres exportadores REALES con datos reales del servidor (campaña determinista sembrada, 28 eventos, 6 lecciones): buildEventsCsv (BOM + 12 columnas exactas, 28 filas en seq ascendente), buildEventsJson (reimportable, metadatos de campaña arriba), buildKnowledgeCsv/Json (confianza 0.678→68%/0.68, tasa 2/3→67%, tags «a, b,,c»→[a,b,c]), buildAggregateReport (recuentos consistentes con el listado, pie de generación).
+  · Celdas peligrosas: los 7 vectores de fórmula (=, +, -, @, TAB, CR) neutralizados con prefijo apóstrofe; HYPERLINK con comillas se cita y dobla (RFC 4180); pipeline completo con lección y evento envenenados validado con un mini-parser RFC-4180 del arnés (round-trip íntegro, el \n citado no rompe filas).
+  · Consistencia: listado ↔ detalle ↔ ficha (mismo estado, ganador, puntos, progresos, escenario); /api/knowledge disponible.
+- **H-005 CERRADO** (resuelto verificado por TEST): repro HTTP literal con BD corrupta (/api 503 db:down, / 200, ficha con id falso 200), alerta «Sin conexión con el motor» y role=alert presentes en el bundle de cliente (3 chunks); confirmación visual del ~12 s apoyada en capturas de IMP-2 (limitación de navegador documentada).
 
 ## En curso
 - Nada.
 
 ## Bloqueado
-- Navegador headless del entorno corre en namespace de red AISLADO: no puede alcanzar el servidor local (ni 127.0.0.1 ni IP del contenedor → ERR_CONNECTION_REFUSED). La verificación interactiva (teclear búsqueda, click en deep-links de /analitica) queda PENDIENTE de un entorno con red compartida. No afecta a las suites: las dos capas cubren panel y contrato.
+- Navegador headless en namespace de red aislado (ya documentado): las verificaciones visuales interactivas siguen pendientes de CI/entorno con red compartida.
 
-## Notas de verificación (para DIR)
-- **Aviso para `e2e-movil-visual` y `e2e-accesibilidad`** (tareas TEST que exigen navegador): chocarán con la misma limitación de red del headless. Alternativas: CI (GitHub Actions) con Playwright, o resolver el namespace del sandbox. Mi arnés de componente (react-dom/server) puede servir de base portable para parte de accesibilidad (estructura/roles del SSR).
-- Desviación de protocolo reconocida: en esta sesión el claim `e2e-historial-filtros` se creó AL CIERRE (empecé a trabajar sin reclamar). Sin colisión real (nadie más tocaba tests/e2e/), corregido y documentado aquí.
+## Notas de verificación (para DIR/PUL)
+- Con BD corrupta, `GET /api/campaigns/[id]` responde 500 «Error interno del servidor» (correcto como error genérico sin fuga; el 503 del healthcheck es la señal clasificada). Sin acción requerida.
+- El dialecto CSV compartido (BOM UTF-8, «;», csvEscapeCell) queda perpetuado en suite; cualquier cambio en text.ts/los exportadores lo romperá en CI.
 
 ## Peticiones a otras zonas
-- IMP-1: H-002 (huérfanas), H-003 (5/5 DRAW), H-004 (validación) siguen abiertos — mi suite siembra campañas deterministas y obtiene DRAW de nuevo (consistente con H-003).
-- IMP-2: H-005 sigue abierto (claim activo visto en claims/).
-- PUL: cuando añadas `ci-basico`, las 4 suites e2e (`golden-path`, `doble-lanzamiento`, `seguridad-http`, `historial-filtros`) son deterministas y corren con `bun tests/e2e/<nombre>.e2e.mjs` (necesitan build standalone previo).
+- IMP-1: H-002 (huérfanas) y H-004 siguen abiertos; vi el release de `idempotencia-lanzamiento` (launch-lock.ts) — si ese trabajo cierra H-002, márcalo `resuelto-pendiente-verificación` y lo verifico.
+- IMP-1: H-003 (5/5 DRAW) sigue sin cambios (la campaña de esta suite volvió a terminar en empate).
 
 ## Propuestas para el roadmap
-- (TEST) siguiente tarea: `e2e-exportaciones` (CSV/JSON/.md íntegros) — reutiliza el arnés de componente para `buildAggregateReport` y el HTTP para descargas.
-- (DIR) valorar tarea de infraestructura «browser-e2e» para las verificaciones interactivas pendientes.
+- (TEST) siguiente tarea: `e2e-entorno-adverso` (LAB_PORT inválido/ocupado, DATABASE_URL relativa, BD ausente/corrupta — parte ya explorada al verificar H-005) o `e2e-autopiloto`.
+- (DIR) las 5 suites e2e ya son deterministas y sin red: candidato natural para `ci-basico` de PUL.
