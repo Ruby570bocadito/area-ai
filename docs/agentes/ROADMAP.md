@@ -7,12 +7,22 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 
 > **Revisión DIR 2026-10-23 (2ª pasada):** sincronizados 11 commits nuevos de SEG y TEST. Ratificados los 4 ticks que TEST escribió directamente aquí (331477f; los cuatro con commit y suite detrás — recordar que el único escritor de este archivo es DIR). Ticks con evidencia: `cabeceras-extra` y `caddy-hardening` (este último con `caddy validate` pendiente del despliegue). Entran 6 tareas nuevas nacidas de propuestas (`page-transitions`, `deep-links-historial`, `estados-vacios-e2e`, `traversal-codificado-verify`, `ssrf-ip-pinning` y los casos de `/api/auth` citados en `e2e-seguridad-http`), anotaciones de coordinación en 5 tareas existentes y 2 ideas P3 nuevas del Director. Durante el propio rebase de esta revisión quedan ratificados los cierres que llegaron en paralelo: `e2e-seguridad-http` (TEST, 35/35, cierra H-001 con SEG — a74c276 lo pasa a «resuelto verificado»), `origin-allowlist-env` (SEG, 407c7aa) y el fix del arranque en security-verify (6bfcaf4). Claims nuevos al cierre: `H-005-portada-sin-aviso-si-bd-rota` (IMP-2), `balance-datos-archivo` (IMP-1).
 
+> **Revisión DIR 2026-10-23 (3ª pasada):** ratificado el tick directo de `balance-datos-archivo` de IMP-1 (36240a6: módulo puro + script SOLO LECTURA + 19 tests de frontera; DIR verificó `bun scripts/balance-drift.mjs --json` sobre BD local: veredicto SIN_DATOS limpio y salida 0 — el veredicto de H-003 lo emitirá el script al alcanzar 15+ archivadas en D30). `idempotencia-lanzamiento` en curso (claim 0341dc4). Cerrada la tarea DIR `definicion-de-hecho`: bloque «Qué significa [x]» tras la leyenda — desde esta revisión, un tick sin evidencia no se ratifica. Nueva idea P3: panel de gobernanza en vivo.
+
 **Leyenda**
 - Talla: `[S]` ≤ 1 tarea corta · `[M]` una tarea completa con tests · `[L]` partir en piezas funcionales por sí solas (cada pieza = su propio slug).
 - Prioridad por sección: **P0** bloquea a todos o es riesgo real · **P1** siguiente fase · **P2** valor alto, sin urgencia · **P3** ideas grandes / exploratorias.
 - `[verificar]` = hipótesis sacada de leer el repo, sin comprobar. El dueño la confirma (con test o prueba reproducible) antes de implementar; si no se confirma, borra la tarea y lo anota en su estado.
 - Estado de partida (v0.2.1): 6 escenarios, 10 agentes (5 RED / 5 BLUE), laboratorio HTTP real en 127.0.0.1, 215 tests unitarios, smoke de 17 comprobaciones, sin CI, sin `loading.tsx` / `error.tsx` / `not-found.tsx`, sin tema claro ni i18n, sin tests unitarios dedicados para `engine.ts`, `lab/runtime.ts`, `lab/ops.ts`, `progression.ts`, `knowledge-score.ts`, `provider-config.ts`.
 - Regla que nunca se rompe: todo ataque/defensa ocurre contra el laboratorio local (127.0.0.1). Ninguna idea de este documento autoriza apuntar a hosts externos.
+
+**Qué significa `[x]`** (definición de hecho, DIR 2026-10-23; DIR la comprueba en cada revisión y no ratifica ticks sin evidencia)
+- **feature** — código + tests propios + puerta íntegra (lint, suite, `verify --build` en producto) + claim released.
+- **fix** — lo anterior + el caso de regresión perpetuado (test o caso de `security-verify`), no solo el parche.
+- **refactor** — comportamiento idéntico: suite verde antes y después, sin cambios de API visible.
+- **UI** — incluye estados vacío/error/carga coherentes y `verify --build` con caché limpia si tocó mucho CSS (D27).
+- **seguridad** — además, caso duradero en `security-verify` o test que perpetúe la corrección.
+- **docs / análisis** — evidencia citada (commit, script ejecutado o informe) y ratificación de DIR en la siguiente pasada.
 
 **Fases y versiones**
 | Fase | Objetivo | Versión |
@@ -131,8 +141,8 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 ## IMP-1 — Motor, laboratorio, API y datos
 
 ### Motor de campañas (P1-P2)
-- [x] (IMP-1) balance-datos-archivo — [S] veredicto de deriva del balance (D30, coste cero en LLM — no lanzar campañas nuevas) con las campañas ya archivadas: distribución de ganadores y progresos finales; solo una deriva persistente (≥70 % del mismo ganador en 15+ campañas) abre recalibración formal de pace.ts — scripts/, src/lib/sim/ (reparto de la Ronda 12 sin ejecutar, rescatado por DIR)
-- [ ] (IMP-1) idempotencia-lanzamiento — [S] [verificar] dedupe en servidor de POST /api/campaigns repetidos (ventana corta con el mismo cuerpo o Idempotency-Key): cierre de servidor del doble clic — el cerrojo de confirmacion-lanzamiento es solo cliente — src/app/api/campaigns/route.ts
+- [x] (IMP-1) balance-datos-archivo — [S] veredicto de deriva del balance (D30, coste cero en LLM — no lanzar campañas nuevas) con las campañas ya archivadas: distribución de ganadores y progresos finales; solo una deriva persistente (≥70 % del mismo ganador en 15+ campañas) abre recalibración formal de pace.ts — scripts/, src/lib/sim/ (reparto de la Ronda 12 sin ejecutar, rescatado por DIR) · hecho 2026-10-23: módulo puro `balance-drift.ts` + script SOLO LECTURA `scripts/balance-drift.mjs` (--json/--dias) + 19 tests de frontera (21/30 = 70 % exacto); e2e de IMP-1 con datos efímeros detecta DERIVA_RED 94,4 %; DIR replicó sobre BD local: SIN_DATOS limpio — 36240a6, release eb575c3 · tick directo de IMP-1 ratificado por DIR (3ª desviación del convenio: sin nota de evidencia)
+- [ ] (IMP-1) idempotencia-lanzamiento — [S] [verificar] dedupe en servidor de POST /api/campaigns repetidos (ventana corta con el mismo cuerpo o Idempotency-Key): cierre de servidor del doble clic — el cerrojo de confirmacion-lanzamiento es solo cliente — src/app/api/campaigns/route.ts · en curso: claim activo de IMP-1 (0341dc4)
 - [ ] (IMP-1) seed-determinista — [M] semilla por campaña guardada en BD para reproducir una campaña idéntica en modo determinista — src/lib/sim/engine.ts, prisma/schema.prisma
 - [ ] (IMP-1) refactor-engine-fases — [L] partir `engine.ts` (936 líneas) en módulos (selección, rondas, combate, cierre) sin cambiar comportamiento; solo tras `tests-engine` — src/lib/sim/ · nota IMP-1: `redShouldChain` y `accumulateProgress` (ya extraídos y testados) son la frontera natural del módulo «combate»
 - [ ] (IMP-1) dificultad-adaptativa — [M] ajustar fuerza de la defensa según el historial de victorias del escenario, con tope y desactivable — src/lib/sim/pace.ts, src/lib/sim/engine.ts · nota IMP-1: calibrar el +10 hardcodeado de bestPatchTarget (prioriza comprometidos y criticidad)
@@ -287,7 +297,7 @@ Cada sesión rota al menos 4 personas. Suites e2e a construir en `tests/e2e/` (`
 
 ## DIR — Gobierno
 
-- [ ] (DIR) definicion-de-hecho — [S] criterio único por tipo de tarea (feature, fix, refactor, UI, seguridad) y comprobarlo en cada revisión — docs/agentes/ROADMAP.md
+- [x] (DIR) definicion-de-hecho — [S] criterio único por tipo de tarea (feature, fix, refactor, UI, seguridad) y comprobarlo en cada revisión — docs/agentes/ROADMAP.md · hecho 2026-10-23 (3ª pasada): bloque «Qué significa [x]» tras la leyenda; aplica desde esta revisión
 - [ ] (DIR) metricas-semanales — [S] resumen en `estado/DIR.md`: duración del verify, nº de tests, hallazgos abiertos por destinatario, tareas cerradas — docs/agentes/estado/DIR.md
 - [ ] (DIR) hitos-versiones — [S] fijar qué entra en v0.3, v0.4 y v1.0 y recortar tareas que no caben — docs/agentes/ROADMAP.md
 - [ ] (DIR) revisar-zonas — [S] cada ~3 sesiones comprobar que OWNERSHIP sigue encajando con `src/` (tras refactors y nuevas carpetas) — docs/agentes/OWNERSHIP.md
@@ -306,6 +316,7 @@ Cada sesión rota al menos 4 personas. Suites e2e a construir en `tests/e2e/` (`
 - **Modo espectador:** enlace de solo lectura a una campaña en curso o finalizada (streaming de eventos sin mutaciones ni datos sensibles), predecesor ligero de la galería mientras la exportación estática no existe.
 - **Sello de origen del conocimiento (antiveneno):** cada lección conserva trazabilidad a la campaña y a la evidencia que la generó; detección de lecciones «envenenadas» (derivadas de evidencia manipulada o ruido) con cuarentena revisable — complementa prompt-injection-evidencia, que sanea la entrada pero no audita lo ya aprendido.
 - **Modo cooperativo humano+agente:** un operador inserta o veta acciones en RED o BLUE junto a los agentes, con la misma trazabilidad de eventos; convierte la arena en herramienta de entrenamiento real (evoluciona desde el modo espectador).
+- **Panel de gobernanza en vivo:** página (o `GET /api/gobernanza`) que sirve el estado del sistema multiagente: ticks del ROADMAP, claims activos y su edad, hallazgos abiertos por destinatario y resultado de la última puerta — para el propietario, sin abrir el repo; el mismo JSON alimenta las métricas semanales de DIR.
 - **Modo multiusuario:** cuentas, roles y espacios separados (cierra el riesgo R4 de forma estructural; exige rediseñar el modelo de acceso).
 - **Extensiones:** puntos de enganche para nuevos agentes, firmas y escenarios sin tocar el núcleo.
 
