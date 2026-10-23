@@ -1,9 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
+  Bookmark,
+  BookmarkPlus,
   Check,
   ChevronRight,
   ClipboardCopy,
@@ -16,7 +18,16 @@ import {
   Search,
   ShieldCheck,
   Swords,
+  X,
 } from 'lucide-react'
+import {
+  buildSuggestedName,
+  sanitizeName,
+  sanitizeQuery,
+  SAVED_FILTERS_NAME_MAX,
+  useSavedFilters,
+  type SavedFilter,
+} from '@/hooks/use-saved-filters'
 import { normalizeText, csvEscapeCell, exportFilename } from '@/lib/text'
 import { useToast } from '@/hooks/use-toast'
 import { EmptyState } from './empty-state'
@@ -35,6 +46,8 @@ import type { CampaignListItemDTO } from '@/lib/api-types'
 // por escenario, Ronda 12) e initialQuery (?q=); y con
 // onFiltersChange refleja cada cambio de filtro en la URL
 // (deep-links-historial) para que la vista filtrada sea compartible.
+// Además guarda y nombra combinaciones de filtros (filtros-guardados):
+// la tienda localStorage vive en src/hooks/use-saved-filters.ts.
 // ─────────────────────────────────────────────────────────────
 
 type ResultFilter = 'ALL' | 'RED' | 'BLUE' | 'DRAW' | 'RUNNING'
@@ -191,6 +204,11 @@ export function HistoryPanel({
   const [result, setResult] = useState<ResultFilter>(initialResult)
   const [scenario, setScenario] = useState(initialScenario)
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle')
+  // filtros-guardados: presets con nombre (persistencia local) y el
+  // formulario inline para guardar la combinación activa.
+  const { saved, saveSavedFilter, removeSavedFilter } = useSavedFilters()
+  const [saveOpen, setSaveOpen] = useState(false)
+  const [saveName, setSaveName] = useState('')
   const { toast } = useToast()
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -255,6 +273,39 @@ export function HistoryPanel({
     return parts.length > 0 ? parts.join(' · ') : 'none (full archive)'
   }, [query, result, effectiveScenario])
 
+  // filtros-guardados: aplicar un preset recorre las vías normales de
+  // estado (setQuery/setResult/setScenario), así que la URL se reescribe
+  // sola vía onFiltersChange (deep-links-historial). El escenario de un
+  // preset caducado degrada a «All scenarios» con el mismo patrón
+  // anti-enlace-caducado del deep-link. Definidos tras los useMemo de los
+  // que dependen para preservar la memoización del compilador de React.
+  const applySavedFilter = (f: SavedFilter) => {
+    setQuery(f.query)
+    setResult(f.result)
+    setScenario(
+      scenarioOptions.length === 0 || scenarioOptions.includes(f.scenario) ? f.scenario : 'ALL'
+    )
+    setSaveOpen(false)
+  }
+
+  const openSaveForm = () => {
+    const resultLabel = RESULT_FILTERS.find((f) => f.key === result)?.label ?? 'All'
+    setSaveName(buildSuggestedName(resultLabel, effectiveScenario, query))
+    setSaveOpen(true)
+  }
+
+  const handleSaveSubmit = (e: FormEvent) => {
+    e.preventDefault()
+    const resultLabel = RESULT_FILTERS.find((f) => f.key === result)?.label ?? 'All'
+    saveSavedFilter({
+      name: sanitizeName(saveName) || buildSuggestedName(resultLabel, effectiveScenario, query),
+      result,
+      scenario: effectiveScenario,
+      query: sanitizeQuery(query),
+    })
+    setSaveOpen(false)
+  }
+
   // Copia el informe de la selección filtrada al portapapeles (mismo texto
   // que la descarga). Definido tras los useMemo de los que depende para
   // preservar la memoización del compilador de React.
@@ -294,7 +345,9 @@ export function HistoryPanel({
     )
   }
 
-  const hasFilters = query.trim() !== '' || result !== 'ALL' || scenario !== 'ALL'
+  // El escenario EFECTIVO (no el crudo) decide hasFilters: con un deep-link
+  // caducado degradado a «All» la barra no queda marcada como filtrada.
+  const hasFilters = query.trim() !== '' || result !== 'ALL' || effectiveScenario !== 'ALL'
 
   return (
     <div className="space-y-3.5">
@@ -335,6 +388,16 @@ export function HistoryPanel({
             <option key={s} value={s}>{s}</option>
           ))}
         </select>
+
+        <button
+          type="button"
+          onClick={openSaveForm}
+          disabled={!hasFilters}
+          title="Save the current filter combination with a name (stored in this browser)"
+          className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-ink-900 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <BookmarkPlus className="h-3 w-3" /> Save
+        </button>
 
         <div className="ml-auto flex items-center gap-2">
           <span className="font-mono-tight text-[10px] text-ink-400">
@@ -381,6 +444,73 @@ export function HistoryPanel({
           </button>
         </div>
       </div>
+
+      {saveOpen && (
+        <form
+          onSubmit={handleSaveSubmit}
+          className="panel flex flex-wrap items-center gap-2 rounded-xl p-2.5"
+        >
+          <Bookmark className="h-3.5 w-3.5 shrink-0 text-ink-400" />
+          <input
+            value={saveName}
+            onChange={(e) => setSaveName(e.target.value)}
+            maxLength={SAVED_FILTERS_NAME_MAX}
+            placeholder="Name for this filter combination…"
+            aria-label="Name for the saved filter"
+            autoFocus
+            className="min-w-[180px] flex-1 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 text-[12px] text-ink-900 placeholder:text-ink-400 focus:border-[#d0d5dd] focus:outline-none focus:ring-2 focus:ring-[#eaecf0] sm:max-w-[320px]"
+          />
+          <span className="font-mono-tight text-[10px] text-ink-400" aria-hidden>
+            {saveName.length}/{SAVED_FILTERS_NAME_MAX}
+          </span>
+          <button
+            type="submit"
+            className="rounded-lg border border-ink-900 bg-ink-900 px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-white transition-colors hover:border-[#344054] hover:bg-[#344054]"
+          >
+            Save
+          </button>
+          <button
+            type="button"
+            onClick={() => setSaveOpen(false)}
+            className="rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 transition-colors hover:border-[#d0d5dd] hover:text-ink-900"
+          >
+            Cancel
+          </button>
+        </form>
+      )}
+
+      {saved.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Saved filters">
+          <span className="font-mono-tight text-[10px] font-bold uppercase tracking-wider text-ink-400">
+            Saved
+          </span>
+          {saved.map((f) => (
+            <span
+              key={f.id}
+              className="flex items-center gap-0.5 rounded-full border border-[#e4e7ec] bg-white py-1 pl-2.5 pr-1"
+            >
+              <button
+                type="button"
+                onClick={() => applySavedFilter(f)}
+                title={`Apply filters: ${f.name}`}
+                className="flex items-center gap-1 font-mono-tight text-[10px] font-bold text-ink-600 transition-colors hover:text-ink-900"
+              >
+                <Bookmark className="h-2.5 w-2.5 text-[#175cd3]" />
+                {f.name}
+              </button>
+              <button
+                type="button"
+                onClick={() => removeSavedFilter(f.id)}
+                aria-label={`Delete saved filter ${f.name}`}
+                title="Delete saved filter"
+                className="rounded-full p-0.5 text-ink-300 transition-colors hover:bg-[#f2f4f7] hover:text-ink-500"
+              >
+                <X className="h-2.5 w-2.5" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
 
       {hasFilters && filtered.length === 0 ? (
         <EmptyState
