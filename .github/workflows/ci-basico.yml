@@ -1,0 +1,102 @@
+# ci-basico — workflow de CI básico (tarea del ROADMAP, autorizada cross-zone a TEST por DIR en la 12ª pasada)
+#
+# Diseño (notas verificadas en este repo, citadas en la tarea y en el claim):
+#  · DATABASE_URL FIJA a nivel de job (nota TEST sesión 5: la global del
+#    contenedor envenena `bun run test` sin override — en CI se elimina la
+#    ambigüedad fijando la ruta absoluta del workspace).
+#  · BUILD FRESCO OBLIGATORIO antes de e2e (nota TEST sesión 9, adoptada por
+#    DIR en la 13ª: las suites reutilizan .next/standalone si existe — un
+#    standalone stale hace que las suites verifiquen código viejo en silencio).
+#  · Las 11 suites e2e (tests/e2e/*.e2e.mjs) son deterministas y sin red: cada
+#    una auto-bootstrapea su BD dedicada (prisma db push --skip-generate) y
+#    arranca su propio standalone. Corren en BUCLE SECUENCIAL — corrida
+#    estable (nota sesión 10: flake de timing bajo paralelismo de bun test).
+#  · typecheck autosuficiente con `bunx tsc --noEmit` (typescript ^5 en
+#    devDependencies). El script `typecheck` en package.json es la tarea
+#    script-typecheck (zona ajena): cuando aterrice, migrar aquí en una línea.
+
+name: ci-basico
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-basico-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DATABASE_URL: file:${{ github.workspace }}/db/ci.db
+
+jobs:
+  ci:
+    name: install · lint · typecheck · test · build fresco · e2e (11)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Historial completo: la suite e2e-actualizacion-bd hace arqueología
+          # de git (extrae el schema.prisma anterior al último commit que añadió
+          # columnas a Campaign) y con el checkout shallow por defecto no tiene
+          # historial que recorrer.
+          fetch-depth: 0
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache bun
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Prisma generate
+        run: bun run db:generate
+
+      # En un checkout limpio db/ NO existe (todo *.db está gitignoreado):
+      # prisma necesita el directorio para crear el fichero SQLite.
+      - name: Prepare DB (fresca, esquema actual)
+        run: mkdir -p db && bun run db:push
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Typecheck
+        run: bunx tsc --noEmit
+
+      # --parallel=1 (ficheros en serie, --isolate implícito): en paralelo,
+      # los 29 ficheros comparten UNA BD SQLite y las precondiciones globales
+      # (semilla visible, sin RUNNING) no están garantizadas — flake
+      # reproducido 3 corridas seguidas en los tests H-004 caso 2 (hallazgo
+      # H-007; observación previa de TEST en su sesión 10). En serie:
+      # 499/499 ×2 al mismo coste (~23 s). Fix de fondo (BD por fichero):
+      # hallazgo H-007, dirigido a IMP-1.
+      - name: Unit tests (serializados por fichero — ver H-007)
+        run: bun test tests/ --parallel=1
+
+      - name: Build fresco (sin standalone stale — lección sesión 9)
+        run: rm -rf .next && bun run build
+
+      # Bucle secuencial: si una suite falla, `set -e` aborta con su log
+      # visible bajo el ::group:: correspondiente.
+      - name: E2E suites (11, deterministas y sin red)
+        run: |
+          set -e
+          for suite in tests/e2e/*.e2e.mjs; do
+            echo "::group::e2e · $suite"
+            bun "$suite"
+            echo "::endgroup::"
+          done
