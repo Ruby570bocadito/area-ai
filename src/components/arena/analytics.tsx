@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ChevronRight, Trophy, TrendingUp, BrainCircuit, Crown, Target, Sparkles, Map } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { EmptyState } from './empty-state'
 import { ARENA_BLUE as BLUE, ARENA_RED as RED } from '@/lib/arena-colors'
 import { AgentAvatar } from './agent-avatar'
 import { buildScenarioStats } from '@/lib/scenario-stats'
@@ -145,9 +146,13 @@ function EvolutionChart({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
 
   if (data.length === 0) {
     return (
-      <div className="flex h-[130px] items-center justify-center text-[12px] text-ink-400">
-        Lanza campañas para ver la curva de evolución.
-      </div>
+      <EmptyState
+        compact
+        icon={TrendingUp}
+        title="Sin datos de evolución todavía"
+        description="La curva RED vs BLUE se dibuja cuando termine la primera campaña."
+        action={{ label: 'Lanzar campaña', href: '/' }}
+      />
     )
   }
 
@@ -302,9 +307,12 @@ function KnowledgeEffectiveness({ items, team }: { items: KnowledgeDTO[]; team: 
   )
   if (top.length === 0) {
     return (
-      <p className="flex h-full min-h-[80px] items-center justify-center px-4 text-center text-[11.5px] text-ink-400">
-        Sin usos registrados todavía — se activará cuando los agentes apliquen estas lecciones en combate.
-      </p>
+      <EmptyState
+        compact
+        icon={Sparkles}
+        title="Sin usos registrados todavía"
+        description="Se activará cuando los agentes apliquen estas lecciones en combate."
+      />
     )
   }
   return (
@@ -358,9 +366,13 @@ function ScenarioMatrix({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
 
   if (rows.length === 0) {
     return (
-      <div className="flex h-[100px] items-center justify-center text-[12px] text-ink-400">
-        Lanza campañas para ver el balance por escenario.
-      </div>
+      <EmptyState
+        compact
+        icon={Map}
+        title="Sin balance por escenario todavía"
+        description="El balance RED/BLUE por escenario aparecerá al completar campañas."
+        action={{ label: 'Lanzar campaña', href: '/' }}
+      />
     )
   }
 

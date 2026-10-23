@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Trophy, Swords, GraduationCap, Quote, History, Bug, ShieldCheck, Loader2, Activity } from 'lucide-react'
+import { EmptyState } from './empty-state'
 import { cn } from '@/lib/utils'
 import { AgentAvatar } from './agent-avatar'
 import { RED_AGENTS, BLUE_AGENTS } from '@/lib/sim/roster'
@@ -310,10 +311,13 @@ export function AgentDetailDialog({
             </>
           ) : (
             !loading && (
-              <p className="mt-2 flex items-center gap-1.5 rounded-lg border border-surface-100 bg-surface-50 p-2.5 text-[11px] text-ink-500">
-                <Activity className="h-3.5 w-3.5" />
-                Sin acciones registradas todavía — entrará en combate en las campañas próximas.
-              </p>
+              <EmptyState
+                compact
+                icon={Activity}
+                title="Sin acciones registradas todavía"
+                description="Este agente entrará en combate en las próximas campañas."
+                action={{ label: 'Lanzar campaña', href: '/' }}
+              />
             )
           )}
         </div>

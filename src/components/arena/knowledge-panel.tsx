@@ -10,10 +10,13 @@ import {
   FileSpreadsheet,
   Flame,
   Search,
+  ShieldCheck,
   Sparkles,
+  Swords,
   TrendingUp,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { EmptyState } from './empty-state'
 import { normalizeText, exportFilename } from '@/lib/text'
 import { downloadBlob } from '@/lib/download'
 import { knowledgeScore } from '@/lib/sim/knowledge-score'
@@ -311,11 +314,17 @@ export function KnowledgePanel({
             </div>
           </AnimatePresence>
           {redFiltered.length === 0 && (
-            <p className="text-sm text-ink-500">
-              {red.length === 0
-                ? 'Sin conocimiento ofensivo registrado todavía.'
-                : 'Ninguna lección RED coincide con la búsqueda o los filtros.'}
-            </p>
+            <EmptyState
+              compact
+              icon={Swords}
+              title={red.length === 0 ? 'Sin conocimiento ofensivo todavía' : 'Ninguna lección RED coincide'}
+              description={
+                red.length === 0
+                  ? 'Las lecciones RED se archivan al terminar cada campaña y se inyectan en las siguientes para afinar el ataque.'
+                  : 'Ajusta la búsqueda o los filtros para encontrar lecciones de este equipo.'
+              }
+              action={red.length === 0 ? { label: 'Lanzar una campaña', href: '/' } : undefined}
+            />
           )}
         </TabsContent>
         <TabsContent value="blue" className="mt-4">
@@ -327,11 +336,17 @@ export function KnowledgePanel({
             </div>
           </AnimatePresence>
           {blueFiltered.length === 0 && (
-            <p className="text-sm text-ink-500">
-              {blue.length === 0
-                ? 'Sin conocimiento defensivo registrado todavía.'
-                : 'Ninguna lección BLUE coincide con la búsqueda o los filtros.'}
-            </p>
+            <EmptyState
+              compact
+              icon={ShieldCheck}
+              title={blue.length === 0 ? 'Sin conocimiento defensivo todavía' : 'Ninguna lección BLUE coincide'}
+              description={
+                blue.length === 0
+                  ? 'Las lecciones BLUE se archivan al terminar cada campaña y endurecen las próximas defensas.'
+                  : 'Ajusta la búsqueda o los filtros para encontrar lecciones de este equipo.'
+              }
+              action={blue.length === 0 ? { label: 'Lanzar una campaña', href: '/' } : undefined}
+            />
           )}
         </TabsContent>
       </Tabs>

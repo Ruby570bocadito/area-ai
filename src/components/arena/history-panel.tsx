@@ -18,6 +18,7 @@ import {
   Swords,
 } from 'lucide-react'
 import { normalizeText, csvEscapeCell, exportFilename } from '@/lib/text'
+import { EmptyState } from './empty-state'
 import { downloadBlob } from '@/lib/download'
 import { buildAggregateReport } from '@/lib/aggregate-report'
 import { decisiveProgressLabel, VICTORY_RULE_DETAIL, VICTORY_RULE_SHORT } from '@/lib/victory'
@@ -253,10 +254,12 @@ export function HistoryPanel({
 
   if (campaigns.length === 0) {
     return (
-      <div className="panel flex flex-col items-center gap-2 rounded-xl p-8 text-center text-ink-500">
-        <History className="h-5 w-5" />
-        <p className="text-sm">Aún no hay campañas finalizadas. Lanza la primera desde el panel de mando.</p>
-      </div>
+      <EmptyState
+        icon={History}
+        title="El archivo de campañas está vacío"
+        description="Cada campaña que finalice quedará registrada aquí con su ficha completa, eventos y lecciones archivadas."
+        action={{ label: 'Ir al panel de mando', href: '/' }}
+      />
     )
   }
 
@@ -349,10 +352,19 @@ export function HistoryPanel({
       </div>
 
       {hasFilters && filtered.length === 0 ? (
-        <div className="panel flex flex-col items-center gap-2 rounded-xl p-8 text-center text-ink-500">
-          <Search className="h-5 w-5" />
-          <p className="text-sm">Ninguna campaña coincide con los filtros aplicados.</p>
-        </div>
+        <EmptyState
+          icon={Search}
+          title="Ninguna campaña coincide con los filtros"
+          description="Prueba con otro término de búsqueda o restablece los filtros para ver todo el archivo."
+          action={{
+            label: 'Ver todo el archivo',
+            onClick: () => {
+              setQuery('')
+              setResult('ALL')
+              setScenario('ALL')
+            },
+          }}
+        />
       ) : (
         <div className="nice-scroll max-h-[640px] space-y-2.5 overflow-y-auto pr-1">
           {filtered.map((c, i) => (
