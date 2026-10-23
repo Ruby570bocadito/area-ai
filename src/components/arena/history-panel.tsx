@@ -32,7 +32,9 @@ import type { CampaignListItemDTO } from '@/lib/api-types'
 // ficha completa de cada campaña (/historial/[id]).
 // Acepta deep-links prefiltrados: initialResult (query ?resultado=
 // de /analitica) e initialScenario (query ?escenario= del balance
-// por escenario, Ronda 12).
+// por escenario, Ronda 12) e initialQuery (?q=); y con
+// onFiltersChange refleja cada cambio de filtro en la URL
+// (deep-links-historial) para que la vista filtrada sea compartible.
 // ─────────────────────────────────────────────────────────────
 
 type ResultFilter = 'ALL' | 'RED' | 'BLUE' | 'DRAW' | 'RUNNING'
@@ -172,13 +174,20 @@ export function HistoryPanel({
   campaigns,
   initialResult = 'ALL',
   initialScenario = 'ALL',
+  initialQuery = '',
+  onFiltersChange,
 }: {
   campaigns: CampaignListItemDTO[]
   initialResult?: ResultFilter
   /** Escenario preseleccionado por deep-link (?escenario=CODENAME). */
   initialScenario?: string
+  /** Búsqueda preseleccionada por deep-link (?q=TEXTO). */
+  initialQuery?: string
+  /** deep-links-historial: notifica cada cambio de filtro para que la
+   *  página reescriba la URL (replaceState, sin navegación). */
+  onFiltersChange?: (f: { result: ResultFilter; scenario: string; query: string }) => void
 }) {
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(initialQuery)
   const [result, setResult] = useState<ResultFilter>(initialResult)
   const [scenario, setScenario] = useState(initialScenario)
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle')
@@ -207,6 +216,19 @@ export function HistoryPanel({
     scenarioOptions.length === 0 ||
     scenarioOptions.includes(initialScenario)
   const effectiveScenario = scenarioLinkValid ? scenario : 'ALL'
+
+  // deep-links-historial: los filtros vivos se reflejan en la URL. El primer
+  // render no escribe (la URL ya trae los valores del deep-link con los que
+  // el panel se inicializó) y el escenario notificado es el EFECTIVO — si el
+  // enlace traía un codename caducado (degradado a «Todos»), no se revive.
+  const syncedRef = useRef(false)
+  useEffect(() => {
+    if (!syncedRef.current) {
+      syncedRef.current = true
+      return
+    }
+    onFiltersChange?.({ result, scenario: effectiveScenario, query })
+  }, [result, effectiveScenario, query, onFiltersChange])
 
   const filtered = useMemo(() => {
     const q = normalizeText(query.trim())

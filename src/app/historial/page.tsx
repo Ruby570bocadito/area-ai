@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Swords } from 'lucide-react'
 import { useArena } from '@/components/arena/shell/arena-provider'
@@ -15,9 +15,31 @@ import type { CampaignListItemDTO } from '@/lib/api-types'
 // exportación CSV. Acepta deep-links prefiltrados:
 //   · ?resultado=RED|BLUE|DRAW|RUNNING (desde /analitica)
 //   · ?escenario=CODENAME (desde el balance por escenario, R12)
+//   · ?q=TEXTO (búsqueda libre)
+// y con onFiltersChange los filtros vivos se reescriben en la
+// URL (deep-links-historial): la vista filtrada es compartible
+// y sobrevive a recargas.
 // ─────────────────────────────────────────────────────────────
 
 const VALID_RESULT: ResultFilter[] = ['ALL', 'RED', 'BLUE', 'DRAW', 'RUNNING']
+
+// Tope defensivo del texto de búsqueda en la URL (por peticiones
+// construidas a mano; la UI no genera cadenas largas).
+const MAX_QUERY_LEN = 120
+
+// deep-links-historial: reescribe los filtros vivos en la URL SIN navegación
+// (window.history.replaceState es soportado nativamente por el App Router:
+// no dispara recarga ni round-trip de router). Solo se escriben los
+// parámetros que difieren del estado neutro; sin filtros → URL limpia.
+function syncFiltersToUrl(f: { result: ResultFilter; scenario: string; query: string }) {
+  const params = new URLSearchParams()
+  if (f.result !== 'ALL') params.set('resultado', f.result)
+  if (f.scenario !== 'ALL') params.set('escenario', f.scenario)
+  const q = f.query.trim().slice(0, MAX_QUERY_LEN)
+  if (q !== '') params.set('q', q)
+  const qs = params.toString()
+  window.history.replaceState(null, '', qs !== '' ? `${window.location.pathname}?${qs}` : window.location.pathname)
+}
 
 function FilteredHistoryPanel({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
   const searchParams = useSearchParams()
@@ -25,7 +47,19 @@ function FilteredHistoryPanel({ campaigns }: { campaigns: CampaignListItemDTO[] 
   const initialResult = VALID_RESULT.includes(raw as ResultFilter) ? (raw as ResultFilter) : 'ALL'
   const rawScenario = searchParams.get('escenario')?.trim() ?? ''
   const initialScenario = rawScenario !== '' ? rawScenario : 'ALL'
-  return <HistoryPanel campaigns={campaigns} initialResult={initialResult} initialScenario={initialScenario} />
+  const initialQuery = searchParams.get('q')?.trim().slice(0, MAX_QUERY_LEN) ?? ''
+  const onFiltersChange = useCallback((f: { result: ResultFilter; scenario: string; query: string }) => {
+    syncFiltersToUrl(f)
+  }, [])
+  return (
+    <HistoryPanel
+      campaigns={campaigns}
+      initialResult={initialResult}
+      initialScenario={initialScenario}
+      initialQuery={initialQuery}
+      onFiltersChange={onFiltersChange}
+    />
+  )
 }
 
 function HistorialPage() {
