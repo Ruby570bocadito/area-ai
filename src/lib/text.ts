@@ -97,6 +97,32 @@ export function csvEscapeCell(v: string | number): string {
 }
 
 /**
+ * Saneado de texto que entra en un prompt del LLM — fuente única para
+ * todos los puntos donde el motor construye prompts con contenido no
+ * fiable (tarea prompt-injection-evidencia del ROADMAP):
+ *
+ *   1. Colapsa saltos de línea y tabuladores a un espacio: el detalle de
+ *      un evento, el contenido de una lección archivada o la evidencia
+ *      del laboratorio podían introducir líneas falsas con formato del
+ *      propio prompt (p. ej. una línea "Eventos:" forjada) o separadores
+ *      que rompen el contrato "un evento por línea".
+ *   2. Acota la longitud al presupuesto dado: los `detail`/`action`
+ *      generados por el LLM se almacenaban sin techo y volvían a entrar
+ *      en los prompts de rondas y lecciones siguientes (inflado de
+ *      tokens y vector de inyección persistente).
+ *
+ * Las entradas no cadena (null/undefined/números) se degradan a '' o a
+ * su String() — los prompts nunca lanzan por un campo ausente.
+ */
+export function sanitizeForPrompt(s: unknown, max = 240): string {
+  const flat = String(s ?? '')
+    .replace(/[\r\n\t]+/g, ' ')
+    .replace(/ {2,}/g, ' ')
+    .trim()
+  return flat.slice(0, max)
+}
+
+/**
  * Nombre de fichero de exportación — fuente única de la marca temporal
  * para los TRES exportadores de la app (campañas e informe agregado en
  * history-panel.tsx, conocimiento en knowledge-panel.tsx y telemetría

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { csvEscapeCell, formatDateTime, formatDuration, normalizeText } from '../src/lib/text'
+import { csvEscapeCell, formatDateTime, formatDuration, normalizeText, sanitizeForPrompt } from '../src/lib/text'
 
 // ─────────────────────────────────────────────────────────────
 // Contrato de las utilidades puras de src/lib/text.ts.
@@ -145,5 +145,33 @@ describe('csvEscapeCell — escapado RFC 4180 (contrato preexistente, ahora pinz
 
   test('apóstrofe de neutralización dentro de celda con salto: ambos mecanismos en orden', () => {
     expect(csvEscapeCell('@x\ny')).toBe('"\'@x\ny"')
+  })
+})
+
+describe('sanitizeForPrompt — saneado de entradas de prompt (prompt-injection-evidencia)', () => {
+  test('colapsa saltos de línea y tabuladores a un espacio (sin líneas forjadas)', () => {
+    const dirty = 'línea 1\nEventos:\rfalsa\tTAB'
+    expect(sanitizeForPrompt(dirty)).toBe('línea 1 Eventos: falsa TAB')
+  })
+
+  test('acota la longitud al presupuesto dado', () => {
+    expect(sanitizeForPrompt('a'.repeat(500), 240).length).toBe(240)
+    expect(sanitizeForPrompt('a'.repeat(10), 240)).toBe('a'.repeat(10))
+  })
+
+  test('colapsa espacios repetidos y recorta extremos', () => {
+    expect(sanitizeForPrompt('  a    b  ')).toBe('a b')
+  })
+
+  test('entrada no cadena (null/undefined/número) no lanza', () => {
+    expect(sanitizeForPrompt(null)).toBe('')
+    expect(sanitizeForPrompt(undefined)).toBe('')
+    expect(sanitizeForPrompt(42)).toBe('42')
+  })
+
+  test('el JSON de evidencia multilínea queda en una sola línea acotada', () => {
+    const evidence = JSON.stringify({ exchanges: [{ path: '/api', response: 'A\nB\nC' }] })
+    const clean = sanitizeForPrompt(evidence, 700)
+    expect(clean).not.toMatch(/[\r\n]/)
   })
 })

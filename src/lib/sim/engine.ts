@@ -4,6 +4,7 @@ import { ensureSeed } from './seed'
 import { ensureProgressionMigration, levelForXp } from './progression'
 import { knowledgeScore } from './knowledge-score'
 import { normalizeLessonCategory, normalizeLessonTags } from './taxonomy'
+import { sanitizeForPrompt } from '@/lib/text'
 import {
   BLUE_GAIN_BY_VERDICT,
   BLUE_HUNT_ROLL,
@@ -318,7 +319,7 @@ async function runCampaign(campaignId: string) {
       orderBy: { seq: 'desc' },
       take: 10,
     })
-    return evs.reverse().map((e) => `[R${e.round}/${e.phase}] ${e.team} ${e.agentCodename ?? ''}: ${e.action} → ${e.result ?? '—'} (impacto ${e.impact}). ${e.detail}`)
+    return evs.reverse().map((e) => `[R${e.round}/${e.phase}] ${e.team} ${e.agentCodename ?? ''}: ${sanitizeForPrompt(e.action, 80)} → ${e.result ?? '—'} (impacto ${e.impact}). ${sanitizeForPrompt(e.detail, 240)}`)
   }
 
   const maxRounds = campaign.maxRounds
@@ -350,7 +351,7 @@ Devuelve JSON estricto: {"action":"nombre corto de la técnica","detail":"1-2 fr
     let redDec: RedDecision | null = llmAlive
       ? await llmJson<RedDecision>(redSystem, `${ctx}
 Memoria institucional RED (campañas previas):
-${redMem.map((k) => `- [${k.category}] ${k.title}: ${k.content} (confianza ${(k.confidence * 100).toFixed(0)}%)`).join('\n') || '— primera campaña, sin memoria —'}
+${redMem.map((k) => `- [${k.category}] ${sanitizeForPrompt(k.title, 140)}: ${sanitizeForPrompt(k.content, 300)} (confianza ${(k.confidence * 100).toFixed(0)}%)`).join('\n') || '— primera campaña, sin memoria —'}
 
 Elige el targetNode más lógico para la fase ${PHASE_LABEL[phase]}.`, 22000)
       : null
@@ -416,8 +417,11 @@ Elige el targetNode más lógico para la fase ${PHASE_LABEL[phase]}.`, 22000)
       team: 'RED',
       agentKey: agent.key,
       agentCodename: agent.codename,
-      action: redDec.action,
-      detail: redDec.detail,
+      // Salida del LLM acotada y a una línea: sin techo, un detail gigante
+      // se archivaba íntegro y reentraba en prompts posteriores (tarea
+      // prompt-injection-evidencia del ROADMAP).
+      action: sanitizeForPrompt(redDec.action, 80),
+      detail: sanitizeForPrompt(redDec.detail, 400),
       result: outcome.result,
       impact,
       severity,
@@ -531,13 +535,13 @@ Ya has ejecutado una operación REAL de tipo ${op} en el laboratorio. Redacta el
 Devuelve JSON estricto: {"action":"nombre corto de la acción defensiva","detail":"1-2 frases en español citando la evidencia real"}`
       const narr = await llmJson<{ action: string; detail: string }>(
         blueSystem,
-        `Operación ejecutada: ${outcome.command}
-Veredicto real: ${verdict}. Evidencia: ${JSON.stringify(outcome.evidence).slice(0, 700)}
+        `Operación ejecutada: ${sanitizeForPrompt(outcome.command, 200)}
+Veredicto real: ${verdict}. Evidencia: ${sanitizeForPrompt(JSON.stringify(outcome.evidence), 700)}
 Contexto: fase ${PHASE_LABEL[phase]}, ronda ${round}.`,
         18000
       )
-      if (narr?.action) actionName = narr.action
-      if (narr?.detail) detail = narr.detail
+      if (narr?.action) actionName = sanitizeForPrompt(narr.action, 80)
+      if (narr?.detail) detail = sanitizeForPrompt(narr.detail, 400)
     }
     if (!actionName) actionName = fallbackBlueName(op, verdict)
     if (!detail) detail = fallbackBlueDetail(op, outcome, verdict)
@@ -695,7 +699,7 @@ Contexto: fase ${PHASE_LABEL[phase]}, ronda ${round}.`,
   const allEvents = await db.campaignEvent.findMany({ where: { campaignId }, orderBy: { seq: 'asc' } })
   const compact = allEvents
     .filter((e) => e.team !== 'SYSTEM')
-    .map((e) => `${e.team} ${e.agentCodename}: ${e.action} sobre ${e.targetNode ?? '—'} → ${e.result} (impacto ${e.impact}). ${e.detail}`)
+    .map((e) => `${e.team} ${e.agentCodename}: ${sanitizeForPrompt(e.action, 80)} sobre ${e.targetNode ?? '—'} → ${e.result} (impacto ${e.impact}). ${sanitizeForPrompt(e.detail, 240)}`)
 
   const lessonsSchema = `Devuelve JSON estricto:
 {"narrative":"resumen de 4-6 frases de la campaña en español, con el arco de las 12 rondas y los puntos de giro",
