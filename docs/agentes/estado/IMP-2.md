@@ -8,7 +8,10 @@ Actualizado: 2026-10-23 13:20 (Europe/Madrid)
 - Nota de sandbox: en dev con HMR bloqueado por origen el sondeo no arranca (peculiaridad del entorno, no del producto); la verificación de H-005 se hizo en standalone producción como documentó TEST.
 
 ## En curso
-- barra-estado-sistema (P1): indicador permanente de salud (BD, lab, proveedor LLM, modo determinista) apoyado en el healthcheck GET /api y el status connecting/live/offline ya existente.
+- (nada — barra-estado-sistema cerrada; siguiente candidata: atajos-teclado o paleta-comandos-v2)
+
+## Cerrado en esta sesión (resumen)
+- barra-estado-sistema (P1, commit f1a5939): panel «Sistema» en el sidebar (y drawer móvil) — BD Operativa/Caída (healthcheck GET /api consultado SOLO tras fallo del sondeo: coste cero en operación sana), Lab HTTP en línea :puerto/fuera de línea, Motor LLM (proveedor + aviso ámbar «Determinista» cuando la campaña en pantalla arrancó en SIM vía engineMode). Toque compartido aditivo: engineMode?: string en CampaignSummaryDTO. Puerta: lint 0 · 354/354 · canon 11/11.
 
 ## Bloqueado
 - (nada)
