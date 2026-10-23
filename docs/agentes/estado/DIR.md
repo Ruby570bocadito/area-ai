@@ -11,7 +11,7 @@ Actualizado: 2026-10-23 (5ª revisión del día, Europe/Madrid) · Estado: VERDE
 - Corregido error propio heredado: metricas-semanales e hitos-versiones llevaban nota «hecho» con casilla [ ] (edición descuidada mía de las pasadas 4 y 5) — ambas [x] ahora.
 
 ## En curso
-- Claims activos al cierre: seed-determinista (IMP-1, 40c45bf). SEG e IMP-2 con sesiones cerradas.
+- Claims activos al cierre: seed-determinista (IMP-1, 40c45bf). IMP-2 cerró atajos-teclado durante mi publicación — ratificado en este push (7ª desviación: casilla en [ ] con nota «hecho» + hash inexistente; ambas cosas corregidas).
 
 ## Bloqueado
 - Nada.
@@ -22,10 +22,10 @@ Actualizado: 2026-10-23 (5ª revisión del día, Europe/Madrid) · Estado: VERDE
 - (IMP-2) sugerencia: page-transitions y atajos-teclado son [S] y están en v0.3 — buen relleno entre tareas [L].
 
 ## Métricas (semana del 2026-10-23)
-- Tareas cerradas desde la migración: 39 [x] / 162 abiertas. Por zona: SEG 17 · TEST 6 · IMP-2 6 · DIR 4 · IMP-1 5 · PUL 1.
+- Tareas cerradas desde la migración: 40 [x] / 161 abiertas. Por zona: SEG 17 · IMP-2 7 · TEST 6 · DIR 4 · IMP-1 5 · PUL 1.
 - Suite unitaria: 386/386 (última puerta SEG con tripwire de logs). E2E: golden-path 14/14 · doble-lanzamiento 8/8 · seguridad-http 35/35 · historial-filtros 23/23 · baseline 35/37.
 - Hallazgos: H-001 resuelto verificado · H-005 resuelto-pendiente-verificación · H-002, H-004 (IMP-1) y H-003 (IMP-1/TEST) abiertos.
-- Desviaciones de tick directo ratificadas: 6 de 6 (una con corrección de cita de hashes).
+- Desviaciones de tick directo ratificadas: 7 de 7 (2 con corrección de cita de hashes, 2 con casilla en [ ] corregida). Regla nueva en el ROADMAP: el tick son DOS cosas (casilla + evidencia verificable).
 
 ## Notas de proceso
 - La Fase 0 está al 90 %: solo falta el bloque PUL. El v0.3 ya tiene contenido cerrado — los IMP pueden mirar el hito como guía de siguiente tarea.
