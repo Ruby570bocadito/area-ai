@@ -1,29 +1,36 @@
 # area·ai — Laboratorio Adversarial de Agentes IA
 
+![area·ai — Laboratorio adversarial de agentes IA](docs/banner.svg)
+
+![Next.js 16](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs&logoColor=white)
+![React 19](https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=black)
+![Bun ≥1.1](https://img.shields.io/badge/Bun-%E2%89%A51.1-f47f1b?logo=bun&logoColor=white)
+![Prisma + SQLite](https://img.shields.io/badge/Prisma-SQLite-2d3748?logo=prisma&logoColor=white)
+![tests 386 en verde](https://img.shields.io/badge/tests-386_en_verde-12b76a)
+![desarrollo multiagente v2](https://img.shields.io/badge/desarrollo-multiagente_v2-8b5cf6)
+
 Sandbox de autoevolución **Red Team vs Blue Team**: agentes de IA ejecutan campañas de ciberseguridad contra un **laboratorio real** (servicios HTTP desplegados en localhost), archivan el conocimiento aprendido y evolucionan campaña tras campaña. Nada está simulado con dados: los compromisos son sesiones verificables, las detecciones son correlaciones de tráfico real y la evidencia (método, ruta, status, respuesta) se guarda en cada evento.
 
 | Panel de mando | Operaciones en vivo |
 |---|---|
 | ![Panel de mando](docs/screenshots/panel-de-mando.png) | ![Operaciones en vivo](docs/screenshots/operaciones-mapa.png) |
 
-**Campaña en vivo** — RED exfiltra datos con comandos reales mientras BLUE parchea y detecta (eventos, comandos y marcador actualizándose en tiempo real):
+**Campaña en vivo (vídeo)** — RED exfiltra datos con comandos reales mientras BLUE parchea y detecta; mapa, feed de eventos, marcador y laboratorio actualizándose en tiempo real durante una campaña auténtica de 12 rondas:
 
 ![Campaña en vivo](docs/screenshots/campana-en-vivo.gif)
-
-**Lanzamiento de una campaña** — del Panel de mando a la arena en vivo: con un clic la campaña arranca y la telemetría empieza a actualizarse en directo:
-
-![Lanzamiento de una campaña](docs/screenshots/lanzamiento-campana.gif)
 
 ## Galería
 
 | | |
 |---|---|
-| ![Telemetría real del laboratorio](docs/screenshots/nodo-laboratorio.png) | ![Archivo con objetivos](docs/screenshots/round11-historial-objetivos.png) |
-| **Telemetría del laboratorio** — servicio HTTP real por nodo: sesiones, parches aplicados, tráfico con status codes (200/403) | **Archivo de campañas** — búsqueda tolerante a acentos, filtros, CSV, informe agregado en Markdown y regla de victoria transparente (progreso de objetivos) |
-| ![Memoria de conocimiento](docs/screenshots/round10-conocimiento.png) | ![Model Studio](docs/screenshots/modelos.png) |
-| **Memoria del sistema** — lecciones archivadas por RED/BLUE con confianza dinámica y usos | **Model Studio** — conexión a cualquier proveedor compatible OpenAI con descarga real del catálogo |
-| ![Ficha de detalle](docs/screenshots/round11-detalle-regla.png) | ![Responsive en móvil](docs/screenshots/round10-historial-movil.png) |
-| **Ficha de detalle** — telemetría íntegra, comandos reales, resolución explicada e informe `.md` | **Responsive** — la app completa es usable en móvil (vista del archivo) |
+| ![Ficha de detalle](docs/screenshots/ficha-detalle.png) | ![Archivo de campañas](docs/screenshots/historial-archivo.png) |
+| **Ficha de detalle** — telemetría íntegra, comandos reales con evidencia HTTP, evolución ronda a ronda e informe `.md` | **Archivo de campañas** — búsqueda tolerante a acentos, filtros con deep-links, exportación CSV e informe agregado en Markdown |
+| ![Memoria de conocimiento](docs/screenshots/memoria-conocimiento.png) | ![Analítica](docs/screenshots/analitica-balance.png) |
+| **Memoria del sistema** — lecciones archivadas por RED/BLUE con confianza dinámica, uso y exportación CSV/JSON | **Analítica** — balance por escenario, evolución del conocimiento y ranking XP con deep-links al archivo |
+| ![Roster de agentes](docs/screenshots/roster-agentes.png) | ![Model Studio](docs/screenshots/model-studio.png) |
+| **Roster de agentes** — fichas con XP, niveles y actividad real por operador | **Model Studio** — conexión a cualquier proveedor compatible OpenAI con descarga real del catálogo |
+| ![Atajos de teclado](docs/screenshots/atajos-teclado.png) | ![Responsive en móvil](docs/screenshots/vista-movil.png) |
+| **Atajos de teclado** — ayuda con `?`, salto de sección con `g`+tecla y paleta de comandos `⌘K` | **Responsive** — la app completa es usable en móvil (el panel Sistema incluido) |
 
 ## Características
 
@@ -33,11 +40,26 @@ Sandbox de autoevolución **Red Team vs Blue Team**: agentes de IA ejecutan camp
 - **Histórico completo**: ficha de detalle por campaña (`/historial/[id]`) con telemetría íntegra, comandos reales, **evolución ronda a ronda** (acciones, impacto, aciertos y liderato agregados por fase, con puntos de giro) y **comparativa con las otras campañas del mismo escenario** (medias del escenario y hermanas enlazadas), más informe `.md` y **exportación de la telemetría en CSV/JSON** (comandos y evidencia íntegros; el JSON conserva el detalle completo para análisis post-campaña); archivo con búsqueda tolerante a acentos, filtros por resultado/escenario (deep-links `?resultado=…` / `?escenario=…`), exportación **CSV**, **informe agregado `.md`** de la selección filtrada (resumen ejecutivo + una sección por campaña), copiable al portapapeles con un clic, y accesos directos desde la analítica (la curva de evolución y las filas del balance enlazan al archivo con el filtro aplicado, más un **balance por escenario** en `/analitica` con deep-links a `/historial?escenario=…`); memoria de conocimiento completa con búsqueda, categorías y ordenación por fuerza, con **exportación CSV/JSON** de la selección filtrada de ambos equipos.
 - **Bucle de evolución**: las lecciones generadas por LLM se archivan como `Knowledge` con confianza dinámica, categoría y tags normalizados contra la taxonomía del esquema, y se reinyectan en campañas siguientes; los agentes ganan XP/niveles con curva rebalanceada. La chispa de conocimiento del panel consulta solo la ventana de 14 días, de modo que su coste no crece con el archivo.
 - **Operación continua (autopiloto)**: con un interruptor, el motor encadena campañas reales en segundo plano mientras el motor está ocioso.
-- **UI profesional multi-página**: panel de mando, operaciones con mapa de red interactivo y clicables, fichas de agente con actividad real, conocimiento, historial, analítica y gestión de modelos LLM. Paleta de comandos con `⌘K`, exportación de informes `.md` y aviso (toast) al terminar una campaña, con el resultado y acceso directo a la ficha.
+- **UI profesional multi-página**: panel de mando, operaciones con mapa de red interactivo y clicables, fichas de agente con actividad real, conocimiento, historial, analítica y gestión de modelos LLM. Héroe con **campo de partículas RED/BLUE y textos animados** (componentes React Bits integrados sin dependencias nuevas), **arte procedural SVG** por escenario (cada uno con una red distinta y determinista), panel **Sistema** permanente (BD, laboratorio, motor LLM y aviso de modo determinista), paleta de comandos con `⌘K`, **atajos de teclado** (`?` para la ayuda, `g`+tecla para saltar de sección), estados de carga/error/vacío cuidados, exportación de informes `.md` y aviso (toast) al terminar una campaña, con el resultado y acceso directo a la ficha.
 - **Motor LLM configurable**: por defecto usa `z-ai-web-dev-sdk`; se puede conectar cualquier proveedor compatible OpenAI (DeepSeek, Ollama, OpenRouter…) desde `/modelos`, con descarga real del catálogo `/v1/models`. Si el proveedor no responde o falla, el motor **degrada a modo determinista** y la campaña continúa en lugar de abortarse.
 - **SEO mínimo**: sitemap dinámico (`/sitemap.xml` con rutas estáticas y fichas de campañas completadas) y `robots.txt` servidos por la propia app, con degradación sin base de datos.
 
 ## Arquitectura
+
+**Flujo de una campaña** (todo ocurre en local, con evidencia verificable):
+
+```mermaid
+flowchart LR
+    U["Usuario / Autopiloto"] -->|"POST /api/campaigns"| M["Motor de campañas<br/>src/lib/sim/engine.ts"]
+    M -->|"elige agentes y fases<br/>según alcanzabilidad"| L["Laboratorio HTTP real<br/>src/lib/lab/runtime.ts<br/>127.0.0.1"]
+    L -->|"resultado real + evidencia<br/>método · ruta · status"| M
+    M -->|"diario del laboratorio"| S["SOC BLUE<br/>correlación y respuesta"]
+    S -->|"bloqueo · parche · aislamiento · caza"| L
+    M -->|"eventos + comandos"| D[("SQLite · Prisma")]
+    D --> K["Conocimiento archivado<br/>confianza dinámica"]
+    K -->|"reinyección en campañas<br/>siguientes"| M
+    D --> V["UI multi-página<br/>panel · arena · historial · analítica"]
+```
 
 ```
 src/
@@ -51,13 +73,13 @@ src/
 │   ├── modelos/            # Gestión del proveedor LLM
 │   ├── sitemap.ts/robots.ts # SEO mínimo: sitemap dinámico + robots servidos por la app
 │   └── api/                # state, campaigns (GET/POST + [id]), knowledge, autopilot, settings, models, agents/[key]/activity
-├── components/arena/       # UI del producto (mapa, feed, roster, analítica; campaign-analysis.tsx: evolución y comparativa de la ficha)
+├── components/arena/       # UI del producto (mapa, feed, roster, analítica; campaign-analysis.tsx: evolución y comparativa de la ficha; reactbits/: componentes de React Bits integrados con atribución)
 ├── lib/
 │   ├── sim/                # engine.ts (motor), roster.ts, seed.ts, llm.ts, progression.ts, pace.ts (ritmo e intensidad: impactos por ronda, cadencia y encadenamiento RED), autopilot.ts, knowledge-score.ts (fuerza del conocimiento), taxonomy.ts (normalización de categorías/tags de lecciones), provider-config.ts (configuración del proveedor LLM), types.ts (tipos compartidos del motor)
 │   ├── lab/                # runtime.ts (servidor HTTP del lab), ops.ts (acciones RED/BLUE), store.ts, types.ts (tipos del lab)
 │   ├── net/                # target-guard.ts (SSRF), access.ts (token opcional, rate limits, same-origin de mutaciones y topes de cuerpo)
 │   └── *.ts                # módulos de raíz de lib/: victory.ts (regla de victoria, fuente única), round-progression.ts (evolución por rondas), aggregate-report.ts (informe agregado), text.ts (texto, duraciones y fechas), knowledge-export.ts (exportación CSV/JSON de la memoria), event-export.ts (exportación CSV/JSON de la telemetría de una campaña), scenario-stats.ts (balance por escenario), arena-colors.ts (tokens de color RED/BLUE), api-types.ts (contratos API), download.ts (descarga de ficheros al navegador), db.ts (cliente Prisma), utils.ts (helper de clases)
-└── hooks/use-arena-state.tsx  # Sondeo único de /api/state compartido por toda la app
+└── hooks/use-arena-state.tsx  # Sondeo único de /api/state compartido por toda la app (más salud de BD clasificada con el healthcheck)
 ```
 
 **Esquema de datos (Prisma + SQLite)**: `Agent`, `Scenario`, `Campaign`, `CampaignEvent`, `Knowledge`, `Setting`.
@@ -100,7 +122,7 @@ bun run dev                   # http://localhost:3000
 | `bun run build` | Build de producción (standalone) |
 | `bun run start` | Servir el build de producción |
 | `bun run lint` | ESLint |
-| `bun run test` | Tests unitarios en `tests/` (runner nativo de bun): guard de destinos SSRF (`target-guard`), control de acceso/rate limit (`access`), resiliencia del motor LLM (`llm-resilience`, `llm-creation`), contrato del informe agregado (`aggregate-report`), utilidades de texto/duraciones/fechas (`text`), evolución por rondas de la ficha (`round-progression`), exportación de la memoria (`knowledge-export`), exportación de la telemetría de eventos (`event-export`), balance por escenario (`scenario-stats`), regla de victoria acotada (`victory`), taxonomía de lecciones (`taxonomy`), ritmo/intensidad de campaña (`sim/pace`) y límites del puerto del laboratorio (`lab-port`) — 266 tests |
+| `bun run test` | Tests unitarios en `tests/` (runner nativo de bun): guard de destinos SSRF (`target-guard`), control de acceso/rate limit (`access`), resiliencia del motor LLM (`llm-resilience`, `llm-creation`), contrato del informe agregado (`aggregate-report`), utilidades de texto/duraciones/fechas (`text`), evolución por rondas de la ficha (`round-progression`), exportación de la memoria (`knowledge-export`), exportación de la telemetría de eventos (`event-export`), balance por escenario (`scenario-stats`), regla de victoria acotada (`victory`), taxonomía de lecciones (`taxonomy`), ritmo/intensidad de campaña (`sim/pace`) y límites del puerto del laboratorio (`lab-port`) — 386 tests |
 | `bun run verify` | **Verificación de cierre de ronda**: tipos (`tsc`) → unidades → entorno → servidor de producción → golden path (healthcheck `/api`, `/api/state` con seed, `/api/campaigns`, `/api/knowledge`, página principal, `sitemap.xml` y `robots.txt`). Delega en `tests/smoke.mjs` (canon único, 17 comprobaciones) y usa una BD de verificación dedicada, no toca tus datos. El canon verifica SIEMPRE, sin necesidad de campaña, que el progreso del archivo completo esté dentro de la escala cerrada [0,100] (Fase 4). `--build` fuerza rebuild; flags opt-in: `SMOKE_START_CAMPAIGN=1` lanza una campaña real end-to-end (la Fase 5 valida la estructura de las lecciones archivadas, las cruza con la ficha, comprueba su taxonomía/tags contra el esquema y coteja el progreso de la campaña en la escala cerrada en ficha — el lado del archivo lo re-verifica reutilizando el ayudante siempre-on de la Fase 4), `SMOKE_CAMPAIGN_TIMEOUT=<seg>` fija el techo de espera de esa campaña (defecto 600 para las campañas largas de 12 rondas; mínimo 30; valores inferiores o no numéricos caen al defecto), `SMOKE_SKIP_UNIT=1` y `SMOKE_SKIP_TSC=1` omiten fases |
 | `bun run smoke` | Alias directo del test de humo: `bun tests/smoke.mjs` (mismo canon que `verify`, sin envoltorio de shell) |
 | `bun run db:push` | Sincronizar el esquema Prisma con SQLite |
@@ -108,7 +130,6 @@ bun run dev                   # http://localhost:3000
 | `bun run db:migrate` | Migraciones en desarrollo |
 | `bun run db:reset` | Resetear la base de datos |
 | `bun scripts/checkdb.mjs` | Utilidad de diagnóstico: conteo de registros por modelo (agentes, campañas, lecciones…) |
-| `bun scripts/generate-visuals.mjs` | Generador de capturas y GIF de la galería (dev; `SKIP_EXISTING=1` para regenerar solo los que faltan) |
 | `bun scripts/security-verify.mjs` | Verificación de seguridad end-to-end sobre el build standalone (cabeceras, 401/429/413, guard SSRF con literales IPv6): requiere `bun run build` antes |
 | `bun scripts/repair-progress-scale.mjs` | Reparación idempotente de filas históricas de progreso fuera de la escala [0,100] (dry-run por defecto; decisión D18) |
 
@@ -152,15 +173,17 @@ También es posible configurarlo por variables de entorno — o directamente en 
 - El `Caddyfile` incluido **solo proxifica al puerto de la app** (el antiguo handle `XTransformPort`, que permitía alcanzar cualquier puerto local bypasando el guard y el token, fue eliminado en la Ronda 6 — decisión documentada en el propio fichero).
 - Las claves del proveedor se guardan en la BD local y la API solo las devuelve enmascaradas.
 - La base de datos debe apuntarse con una **ruta absoluta** en `DATABASE_URL` (las relativas se resuelven distinto entre la CLI de Prisma y el runtime).
-- **Tests versionados**: 266 tests en `tests/` (`bun run test`) cubren el guard SSRF (`target-guard`), el token/rate limit (`access`), la resiliencia del motor LLM (degradación ante proveedor caído y creación colgada), el contrato del informe agregado, las utilidades de texto/duraciones/fechas, la evolución por rondas (`round-progression`), la exportación de la memoria (`knowledge-export`), la exportación de la telemetría de eventos (`event-export`), el balance por escenario (`scenario-stats`), la regla de victoria acotada (`victory`), la taxonomía de lecciones (`taxonomy`), el ritmo/intensidad de campaña (`sim/pace`) y los límites del puerto del laboratorio (`lab-port`).
+- **Tests versionados**: 386 tests en `tests/` (`bun run test`) cubren el guard SSRF (`target-guard`), el token/rate limit (`access`), la resiliencia del motor LLM (degradación ante proveedor caído y creación colgada), el contrato del informe agregado, las utilidades de texto/duraciones/fechas, la evolución por rondas (`round-progression`), la exportación de la memoria (`knowledge-export`), la exportación de la telemetría de eventos (`event-export`), el balance por escenario (`scenario-stats`), la regla de victoria acotada (`victory`), la taxonomía de lecciones (`taxonomy`), el ritmo/intensidad de campaña (`sim/pace`) y los límites del puerto del laboratorio (`lab-port`).
 
 ## Agentes del proyecto
 
-Este repositorio se desarrolla con un flujo multiagente. Cada rol deja su informe de ronda en `docs/agentes/`:
+Este repositorio se desarrolla con un **sistema multiagente v2** (protocolo completo en [`docs/agentes/PROTOCOLO.md`](docs/agentes/PROTOCOLO.md)): trabajo sin rondas mediante claims como bloqueo real, zonas de código por rol (`docs/agentes/OWNERSHIP.md`), puerta de calidad antes de cada push, hallazgos dirigidos y estados vivos por agente (`docs/agentes/estado/`), con el roadmap de tareas en [`docs/agentes/ROADMAP.md`](docs/agentes/ROADMAP.md).
 
-| Rol | Carpeta | Función |
+| Rol | Informe vivo | Función |
 |---|---|---|
-| Director | `docs/agentes/z_director/` | Supervisa, audita y coordina |
-| Implementaciones | `docs/agentes/z_implementaciones/` | Features del motor y la UI |
-| Pulimiento | `docs/agentes/z_pulimiento/` | README vivo, dependencias, limpieza de artefactos, deuda técnica de configuración |
-| Bugs/Seguridad | `docs/agentes/z_bugs/` | Correcciones y riesgos de seguridad |
+| DIR — Director | `docs/agentes/estado/DIR.md` | Roadmap, ratificación, gobierno y prioridades |
+| IMP-1 — Motor y API | `docs/agentes/estado/IMP-1.md` | Motor de campañas, laboratorio, API y datos |
+| IMP-2 — Frontend/UX | `docs/agentes/estado/IMP-2.md` | UI, diseño, accesibilidad y experiencia |
+| PUL — Pulimiento | *(informe por crear)* | README, dependencias, CI, limpieza y deuda técnica |
+| SEG — Seguridad | `docs/agentes/estado/SEG.md` | Seguridad por defecto, headers, red y bugs de seguridad |
+| TEST — Calidad | `docs/agentes/estado/TEST.md` | E2E por personas, hallazgos reproducibles y verificación |
