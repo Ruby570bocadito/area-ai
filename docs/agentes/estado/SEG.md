@@ -1,26 +1,25 @@
 # estado/SEG — Seguridad y bugs
 
-Actualizado: 2026-10-23 15:20 (Europe/Madrid) · Estado: VERDE
+Actualizado: 2026-10-23 18:05 (Europe/Madrid) · Estado: VERDE
 
 ## Hecho (últimas 24 h)
-- `endurecimiento-hd` (HD3/HD4, rescatada por DIR): orden canónico de barreras 403→429→401→413 aplicado y documentado en access.ts. En /api/campaigns el token se comparaba SIN haber consumido antes el bucket `admin:` — 401 infinitos sin tope (oráculo de fuerza bruta de ADMIN_TOKEN): añadido el cubo admin: antes del token (el cubo campaigns: 6/min queda tras el 401 para el gasto R4). settings y models parseaban el cuerpo antes del 429/401: parseo tras el 401. autopilot ya era canónico; auth conserva 413 antes del 401 por inherencia (token en el cuerpo).
-- `test-superficie-mutaciones`: test estructural que DESCUBRE por directorio los handlers POST/PUT/PATCH de src/app/api/ y exige contra el handler real los tres controles (403 primero · ráfaga 401→429 al 31º · 429 con token válido); DELETE solo en la exención documentada (logout). Una mutación futura sin controles rompe la suite sin tocar el test. 18 tests.
-- `logs-sin-secretos`: barrido de los 19 console.* de src/ y de aggregate/event/knowledge-export — LIMPIO (solo objetos de error y mensajes de negocio; la API key viaja siempre enmascarada por maskKey). Tripwire perpetuado en tests/logs-sin-secretos.test.ts.
-- `fix(security-verify)`: agente HTTP de un solo uso en las peticiones chunked — el cuerpo chunked puede quedar sin leer en el servidor (401 antes de readJsonBody) y la reutilización del socket desincronizaba la petición siguiente (400 vacío intermitente en el login, ~20% de las pasadas de hoy); 8/8 VERDE tras el fix. Diagnóstico del login mejorado (cuerpo en el extra).
-- Puerta íntegra: 386/386 tests, lint 0, tsc 0, `verify --build` 11/11, security-verify VERDE.
+- `traversal-codificado-verify` (petición de IMP-1): caso 13 en security-verify — cadena completa contra el laboratorio REAL: campaña determinista (BD desechable en .agent-tmp, motor SIM sin claves), regla SIEM PATH_TRAVERSAL, ataque `..%2f` a un nodo DMZ y correlación en el SIEM. La variante `%2e%2e%2f` (sin puntos literales) ESCAPABA a la firma: el clasificador mira ahora también el path decodificado una vez; `decodeLabPart` degrada percent-encoding malformado en campaignId/nodeId a 404 estructurado (antes 500).
+- `security-verify-casos-nuevos`: caso 14 — fuerza bruta DIRECTA de token contra /api/campaigns (petición de DIR tras endurecimiento-hd): 401×30 → 429 con cliente XFF aislado (TRUST_PROXY=1 en el tercer arranque). Caso 15 — errores-sin-fuga: 404 genérico sin trazas internas, incluido id con traversal codificado. Cinturón lab-health antes de la cadena del caso 13 (un arranque lento se diagnostica en un check, no en cascada).
+- `fuzz-normalizadores`: 15 tests de fuzzing determinista (PRNG sembrado, alfabeto hostil) — normalizeText idempotente/sin diacríticos; sanitizeForPrompt sin saltos y ≤ presupuesto; csvEscapeCell neutraliza SIEMPRE los disparadores de fórmula (directo o dentro de la envoltura RFC 4180); normalizeLessonCategory SIEMPRE en la whitelist; normalizeLessonTags ≤200/sin duplicados/degrada a general; parseo de URL del lab sobre HTTP real (jamás 500, lab vivo).
+- Puerta íntegra: 411/411 tests, lint 0, tsc 0, `verify --build` 11/11, security-verify VERDE (41 checks, 3× VERDE consecutivas).
 
 ## En curso
-- Nada. Cola SEG restante: `fuzz-normalizadores`, `security-verify-casos-nuevos`, `csp-estricta` (necesita navegador real), `dns-rebinding-guard` (partir como [L]), `validacion-esquemas-api` ([L], solapa IMP-1 — H-004 abierto), CI con PUL (gitleaks-ci, sbom-y-lockfile, auditoria-dependencias-ci).
+- Nada. Cola SEG restante: `csp-estricta` (necesita navegador real), `ssrf-ip-pinning` ([L], residual TOCTOU de dns-rebinding-guard), `validacion-esquemas-api` ([L], solapa IMP-1 — H-004 abierto), `allowlist-e2e-standalone` (SEG-P2), CI con PUL (gitleaks-ci, sbom-y-lockfile, auditoria-dependencias-ci, caddy-validate-ci).
 
 ## Bloqueado
 - Nada.
 
 ## Peticiones a otras zonas
-- PUL: pendientes de README — `SECURITY_VERIFY_PORT` en la tabla de scripts, descripción de `NEXT_PUBLIC_SITE_URL` (allowlist de origen) y el orden canónico de barreras en la sección Seguridad (403→429→401→413).
-- DIR: pedir ticks de ROADMAP para security-verify-puerto, cabeceras-extra, caddy-hardening, origin-allowlist-env (cerradas en la sesión anterior) y endurecimiento-hd, test-superficie-mutaciones, logs-sin-secretos (esta); y actualizar la nota de §6 del PROTOCOLO (puerto ya parametrizado).
-- IMP-1: el test de superficie incluye campaigns — el cubo admin: compartido consume ahora también los lanzamientos (30/min); el e2e de TEST que haga ráfagas de lanzamientos debe contar con ello.
-- TEST: H-001 verificado y cerrado — gracias; los casos 9/11 de security-verify y la suite e2e lo perpetúan.
+- DIR: ticks de ROADMAP para las 6 tareas SEG de las sesiones 3-4 (endurecimiento-hd, test-superficie-mutaciones, logs-sin-secretos, traversal-codificado-verify, security-verify-casos-nuevos, fuzz-normalizadores).
+- IMP-1: el journal del lab sigue guardando el path CRUDO (sin cambios de formato); lo nuevo es que la FIRMA también considera el path decodificado. El fuzz de URL quedó en tests/fuzz-normalizadores.test.ts — si tocáis el parseo de segmentos del lab, ese fichero es el reglamento.
+- TEST (e2e-entorno-adverso en curso): si hacéis ráfagas de lanzamientos, recordad que el bucket admin: 30/min es compartido y que security-verify ya agota su propio cliente XFF en el caso 14 (puertos SEG 3113/4413 libres para vuestro e2e).
+- PUL: pendientes de README — `SECURITY_VERIFY_PORT`/`SECURITY_VERIFY_LAB_PORT`, `NEXT_PUBLIC_SITE_URL` y el orden canónico 403→429→401→413 en la sección Seguridad.
 
 ## Propuestas para el roadmap
-- (PUL, CI) validar `Caddyfile` con `caddy validate` en cada PR (el sandbox local no ejecuta el binario).
-- (SEG-P2) e2e de la allowlist de origen con `NEXT_PUBLIC_SITE_URL` arrancando el standalone.
+- (IMP-2) el parseo de filtros de URL del historial vive inline en page.tsx: extraerlo a función pura permitiría fuzzearlo como el resto (hoy solo lo cubre el e2e de TEST a nivel de props).
+- (PUL, CI) `caddy validate` en cada PR; (SEG-P2) e2e de la allowlist de origen con standalone.
