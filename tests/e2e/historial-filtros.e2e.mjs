@@ -72,26 +72,26 @@ async function capaComponente() {
     )
 
   const read = (html) => ({
-    counter: html.match(/>(\d+) de (\d+)</)?.slice(1).join('/') ?? '—',
+    counter: html.match(/>(\d+) of (\d+)</)?.slice(1).join('/') ?? '—',
     active: [...html.matchAll(/data-active="true"[^>]*>\s*([^<]+)</g)].map((m) => m[1].trim()),
     select: html.match(/<option[^>]*value="([^"]*)"[^>]*selected/s)?.[1] ?? 'ALL',
     rows: [...html.matchAll(/href="\/historial\/([^"]+)"/g)].map((m) => m[1]),
   })
 
   let r = read(render())
-  record('componente · ALL/ALL → 6 de 6 y 6 fichas enlazadas', r.counter === '6/6' && r.rows.length === 6, `contador=${r.counter} filas=${r.rows.length}`)
+  record('componente · ALL/ALL → 6 of 6 y 6 fichas enlazadas', r.counter === '6/6' && r.rows.length === 6, `contador=${r.counter} filas=${r.rows.length}`)
 
   r = read(render('RED'))
-  record('componente · ?resultado=RED → solo c-red, botón «Gana RED» activo', r.counter === '1/6' && r.rows.join(',') === 'c-red' && r.active[0] === 'Gana RED', `contador=${r.counter} filas=[${r.rows}] activo=${r.active[0]}`)
+  record('componente · ?resultado=RED → solo c-red, botón «RED wins» activo', r.counter === '1/6' && r.rows.join(',') === 'c-red' && r.active[0] === 'RED wins', `contador=${r.counter} filas=[${r.rows}] activo=${r.active[0]}`)
 
   r = read(render('BLUE'))
-  record('componente · ?resultado=BLUE → c-blue y c-blue2', r.counter === '2/6' && r.rows.join(',') === 'c-blue,c-blue2' && r.active[0] === 'Gana BLUE', `contador=${r.counter} filas=[${r.rows}]`)
+  record('componente · ?resultado=BLUE → c-blue y c-blue2', r.counter === '2/6' && r.rows.join(',') === 'c-blue,c-blue2' && r.active[0] === 'BLUE wins', `contador=${r.counter} filas=[${r.rows}]`)
 
   r = read(render('DRAW'))
   record('componente · ?resultado=DRAW → COMPLETED sin ganador RED/BLUE (c-draw, c-draw2) y EXCLUYE RUNNING sin ganador', r.counter === '2/6' && r.rows.join(',') === 'c-draw,c-draw2', `contador=${r.counter} filas=[${r.rows}]`)
 
   r = read(render('RUNNING'))
-  record('componente · ?resultado=RUNNING → solo c-running, botón «En curso» activo', r.counter === '1/6' && r.rows.join(',') === 'c-running' && r.active[0] === 'En curso', `contador=${r.counter} filas=[${r.rows}]`)
+  record('componente · ?resultado=RUNNING → solo c-running, botón «In progress» activo', r.counter === '1/6' && r.rows.join(',') === 'c-running' && r.active[0] === 'In progress', `contador=${r.counter} filas=[${r.rows}]`)
 
   r = read(render('ALL', 'INYECCION'))
   record('componente · ?escenario=INYECCION → c-red y c-running, select preseleccionado', r.counter === '2/6' && r.rows.join(',') === 'c-red,c-running' && r.select === 'INYECCION', `contador=${r.counter} filas=[${r.rows}] select=${r.select}`)
@@ -100,11 +100,11 @@ async function capaComponente() {
   record('componente · ?escenario= inexistente con opciones cargadas → degrada a «Todos» sin perder filas', r.counter === '6/6' && r.rows.length === 6 && r.select === 'ALL', `contador=${r.counter} select=${r.select}`)
 
   r = read(render('RED', 'INYECCION'))
-  record('componente · deep-links combinados ?resultado=RED&escenario=INYECCION → intersección (c-red)', r.counter === '1/6' && r.rows.join(',') === 'c-red' && r.select === 'INYECCION' && r.active[0] === 'Gana RED', `contador=${r.counter} filas=[${r.rows}] select=${r.select} activo=${r.active[0]}`)
+  record('componente · deep-links combinados ?resultado=RED&escenario=INYECCION → intersección (c-red)', r.counter === '1/6' && r.rows.join(',') === 'c-red' && r.select === 'INYECCION' && r.active[0] === 'RED wins', `contador=${r.counter} filas=[${r.rows}] select=${r.select} activo=${r.active[0]}`)
 
   const htmlVacio = render('BLUE', 'INYECCION') // c-blue/c-blue2 son PHISHING/BOLA; INYECCION solo tiene RED y RUNNING
   r = read(htmlVacio)
-  record('componente · intersección sin resultados → «0 de 6», sin filas y exportación deshabilitada', r.counter === '0/6' && r.rows.length === 0 && /disabled=""/.test(htmlVacio), `contador=${r.counter} filas=${r.rows.length} disabled=${/disabled=""/.test(htmlVacio)}`)
+  record('componente · intersección sin resultados → «0 of 6», sin filas y exportación deshabilitada', r.counter === '0/6' && r.rows.length === 0 && /disabled=""/.test(htmlVacio), `contador=${r.counter} filas=${r.rows.length} disabled=${/disabled=""/.test(htmlVacio)}`)
 
   // Contrato de búsqueda con acentos: el panel normaliza término y
   // haystack con LA MISMA función (normalizeText) y compara inclusiones.
@@ -206,7 +206,7 @@ async function capaServidor() {
     // Shells SSR de historial y analítica con deep-links en la URL
     const historialRes = await fetch(`${BASE}/historial`)
     const historial = { status: historialRes.status, html: await historialRes.text() }
-    record('servidor · GET /historial → 200 con cabecera de página', historial.status === 200 && historial.html.includes('Historial de campañas'), `status=${historial.status}`)
+    record('servidor · GET /historial → 200 con cabecera de página', historial.status === 200 && historial.html.includes('Campaign history'), `status=${historial.status}`)
 
     for (const [nombre, url] of [
       ['?resultado=RED', `${BASE}/historial?resultado=RED`],

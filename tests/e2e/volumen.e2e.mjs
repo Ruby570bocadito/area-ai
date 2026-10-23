@@ -21,7 +21,8 @@
 //        valores medidos se registran como evidencia, no como roca.
 //   C2 · render + búsqueda — HistoryPanel REAL vía react-dom/server
 //        (patrón de historial-filtros) con las 500 campañas que
-//        entrega el servidor: contador «500 de 500», fichas
+//        entrega el servidor: contador «500 of 500» (UI EN desde
+//        la orden del propietario), fichas
 //        enlazadas, deep-link ?resultado=RED y ?escenario= aplicados
 //        a volumen con conteo esperado calculado desde el propio DTO,
 //        y el pipeline de búsqueda real (normalizeText) cronometrado
@@ -314,7 +315,7 @@ async function faseHistorial() {
 // ═════════════════════════════════════════════════════════════
 
 const read = (html) => ({
-  contador: html.match(/>(\d+) de (\d+)</)?.slice(1).join('/') ?? '—',
+  contador: html.match(/>(\d+) of (\d+)</)?.slice(1).join('/') ?? '—',
   filas: [...html.matchAll(/href="\/historial\/([^"]+)"/g)].map((m) => m[1]),
   activo: [...html.matchAll(/data-active="true"[^>]*>\s*([^<]+)</g)].map((m) => m[1].trim()),
 })
@@ -339,7 +340,7 @@ async function faseComponente(items) {
   // Deep-link ?resultado=RED a volumen — esperado desde el propio DTO
   const esperadoRed = items.filter((c) => c.status === 'COMPLETED' && c.winner === 'RED').length
   const rRed = read(render('RED'))
-  record('render · deep-link ?resultado=RED a volumen: contador = filtrado del DTO (siembra 400/400/200 → 200 visibles)', rRed.contador === `${esperadoRed}/500` && rRed.filas.length === esperadoRed && rRed.activo[0] === 'Gana RED', `contador=${rRed.contador} esperado=${esperadoRed} fichas=${rRed.filas.length}`)
+  record('render · deep-link ?resultado=RED a volumen: contador = filtrado del DTO (siembra 400/400/200 → 200 visibles, botón «RED wins» activo)', rRed.contador === `${esperadoRed}/500` && rRed.filas.length === esperadoRed && rRed.activo[0] === 'RED wins', `contador=${rRed.contador} esperado=${esperadoRed} fichas=${rRed.filas.length}`)
 
   // Deep-link ?escenario= a volumen
   const codename = items[0]?.scenario?.codename
