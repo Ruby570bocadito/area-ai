@@ -42,7 +42,6 @@ import {
   type EventDraft,
   type RedDecision,
   type KnowledgeRef,
-  type Infrastructure,
   type InfraNode,
 } from './types'
 import { bootLab, cleanupLab, setLabRound } from '@/lib/lab/store'
@@ -67,7 +66,7 @@ import {
 import { SIGNATURE_LABEL, type LabCampaignState, type Signature } from '@/lib/lab/types'
 import { clampProgress } from '@/lib/victory'
 import { setEngineSeed, engineRoll, rand, newCampaignSeed } from './engine-rng'
-import { pickAgentForPhase, pickAgentForOp, pickNodeForPhase, resolverEscenario, type AgentRow } from './engine-select'
+import { pickAgentForPhase, pickAgentForOp, pickNodeForPhase, resolverEscenario, elegirEscenarioLanzable, parsearInfraestructura, type AgentRow } from './engine-select'
 import {
   accumulateProgress,
   bestPatchTarget,
@@ -89,7 +88,7 @@ import { finalizeCampaign } from './engine-cierre'
 // importan de aquí; las implementaciones viven en los módulos.
 
 export { setEngineSeed, engineRollProbe, SEED_MAX, newCampaignSeed, acceptSeed, acceptDeterminista, acceptAdaptativa } from './engine-rng'
-export { pickAgentForPhase, pickAgentForOp, pickNodeForPhase, resolverEscenario } from './engine-select'
+export { pickAgentForPhase, pickAgentForOp, pickNodeForPhase, resolverEscenario, elegirEscenarioLanzable, parsearInfraestructura } from './engine-select'
 export { accumulateProgress, redShouldChain, defaultSignatureFor, segmentForPhase, huntHypothesis, bestPatchTarget } from './engine-combate'
 
 // ─────────────────────────────────────────────────────────────
@@ -136,7 +135,13 @@ export async function startCampaign(scenarioId?: string, seed?: number, determin
     // encontrado YA NO degrada a aleatorio en silencio —
     // resolverEscenario lanza SCENARIO_NOT_FOUND y la ruta responde
     // 400. El azar queda explícito (sin id, '' o 'random').
-    const scenario = resolverEscenario(scenarios, scenarioId)
+    // H-006: el escenario elegido debe ser LANZABLE — uno con
+    // `infrastructure` sin nodos utilizables (BD importada de otra
+    // versión o editada a mano) sostenía el 200 y luego moría ABORTED
+    // en silencio (nodes[…].id sobre undefined). La validación es
+    // ANTES del create: rechazo clasificado (400/503) y sin side
+    // effects; el azar solo recae sobre escenarios sostenibles.
+    const scenario = elegirEscenarioLanzable(scenarios, scenarioId)
 
     // ── Dificultad adaptativa (dificultad-adaptativa) ──────
     // Ajuste de la fuerza defensiva según el historial de victorias
@@ -248,7 +253,15 @@ async function runCampaign(campaignId: string) {
   setEngineSeed(campaign.seed ?? undefined)
 
   const scenario = campaign.scenario
-  const infra = JSON.parse(scenario.infrastructure) as Infrastructure
+  // H-006 (capa defensiva): startCampaign ya garantiza el escenario
+  // lanzable; si la BD cambia ENTRE el create y el bucle (edición manual
+  // o import concurrente), el fallo se registra CLASIFICADO en vez de un
+  // TypeError anónimo — la fila queda ABORTED con causa legible en el log
+  // y nunca un 200 que parece correcto y muere sin explicación.
+  const infra = parsearInfraestructura(scenario.infrastructure)
+  if (!infra) {
+    throw new Error(`Infraestructura inválida en el escenario ${scenario.key}: nodes ausentes, vacíos o malformados — campaña abortada de forma controlada`)
+  }
   const nodes: InfraNode[] = infra.nodes
   const redAgents = await db.agent.findMany({ where: { team: 'RED' } })
   const blueAgents = await db.agent.findMany({ where: { team: 'BLUE' } })

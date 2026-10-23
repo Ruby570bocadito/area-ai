@@ -219,6 +219,18 @@ export async function POST(req: NextRequest) {
     if (err.code === 'SCENARIO_NOT_FOUND') {
       return NextResponse.json({ ok: false, error: err.message }, { status: 400 })
     }
+    // H-006 (2 casos de infraestructura no lanzable, ambos ANTES del
+    // create — sin fila ni bucle en segundo plano):
+    //   · el id pedido EXISTE pero su infraestructura no sirve → 400
+    //     con la causa (el cliente eligió; el dato de BD es el problema).
+    //   · azar pedido y NINGÚN escenario es lanzable → 503 (problema
+    //     de datos del servidor, no de la petición).
+    if (err.code === 'ESCENARIO_INVALIDO') {
+      return NextResponse.json({ ok: false, error: err.message }, { status: 400 })
+    }
+    if (err.code === 'SIN_ESCENARIOS_VALIDOS') {
+      return NextResponse.json({ ok: false, error: err.message }, { status: 503 })
+    }
     console.error('[api/campaigns] error:', err)
     return NextResponse.json({ ok: false, error: 'No se pudo iniciar la campaña' }, { status: 500 })
   }

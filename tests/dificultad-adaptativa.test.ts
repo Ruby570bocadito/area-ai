@@ -71,6 +71,12 @@ import { bestPatchTarget } from '../src/lib/sim/engine-combate'
 import { db } from '../src/lib/db'
 import { cleanupLab } from '../src/lib/lab/store'
 
+// Nodo mínimo con el contrato COMPLETO que bootLab desreferencia
+// (H-006: la infraestructura de los escenarios de lanzamiento real
+// debe ser utilizable — la vacía ya no pasa la validación).
+const INFRA_VALIDA =
+  '{"nodes":[{"id":"n1","name":"Servicio test","type":"WEB","ip":"10.0.0.10","segment":"DMZ","criticality":3,"vulnerabilities":["CVE-TEST-1"],"controls":[]}]}'
+
 // ── 1. ajusteDefensivo: banda, muestra y empates ────────────
 
 describe('dificultad-adaptativa · cálculo del ajuste (pace.ts)', () => {
@@ -316,6 +322,11 @@ describe('dificultad-adaptativa · congelado en la fila (startCampaign)', () => 
     for (const id of creadas) {
       try { cleanupLab(id) } catch { /* el lab pudo no arrancar */ }
     }
+    // Las campañas de este fichero corren su ciclo completo (H-006:
+    // la infraestructura vacía ya no es lanzable) — las COMPLETED
+    // escriben lecciones enlazadas a la fila; se retiran antes de
+    // borrar las campañas para no dejar basura en el archivo.
+    await db.knowledge.deleteMany({ where: { campaignId: { in: creadas } } })
     await db.campaign.deleteMany({ where: { scenarioId: { in: [escenarioA, escenarioB] } } })
     await db.scenario.deleteMany({ where: { key: { in: [MARCA_A, MARCA_B] } } })
     await db.$disconnect()
@@ -331,9 +342,13 @@ describe('dificultad-adaptativa · congelado en la fila (startCampaign)', () => 
           industry: 'test',
           difficulty: 1,
           description: key,
-          // infraestructura vacía: el bucle aborta rápido tras el arranque
-          // (sin superficie explotable) y libera el cerrojo de lanzamiento
-          infrastructure: '{"nodes":[]}',
+          // H-006: la infraestructura DEBE ser lanzable — la vacía
+          // ('{"nodes":[]}') ya no supera la validación del arranque
+          // (era el fallo que el hallazgo corrige; el bucle "abortaba
+          // rápido" explotando ese crash). Nodo mínimo con el contrato
+          // completo que bootLab desreferencia; el bucle corre el
+          // ciclo SIM completo y la limpieza retira fila y lecciones.
+          infrastructure: INFRA_VALIDA,
           redObjective: 'test',
           blueObjective: 'test',
         },
