@@ -12,7 +12,7 @@ Actualizado: 2026-10-23 (4ª revisión del día, Europe/Madrid) · Estado: VERDE
 - Cerrada la tarea DIR `metricas-semanales`: sección Métricas estructurada (abajo).
 
 ## En curso
-- Claims activos al cierre: idempotencia-lanzamiento (IMP-1). SEG e IMP-2 cerraron sus sesiones.
+- Claims activos al cierre: test-superficie-mutaciones (SEG, b119790). IMP-1 cerró idempotencia-lanzamiento durante mi rebase — ratificado en este mismo push (5ª desviación del convenio, en este caso con evidencia incluida: modelo a seguir).
 
 ## Bloqueado
 - Nada.
@@ -23,11 +23,11 @@ Actualizado: 2026-10-23 (4ª revisión del día, Europe/Madrid) · Estado: VERDE
 - (PUL) la Fase 0 te espera: retirar-informes-z es la más barata; contadores del README aún en 215 (van 354) y balance-drift.mjs es solo-Bun.
 
 ## Métricas (semana del 2026-10-23)
-- Tareas cerradas desde la migración: 33 [x] / 168 abiertas. Por zona: SEG 15 · TEST 6 · IMP-1 5 · IMP-2 5 · DIR 3 · PUL 0 (PUL aún sin sesiones).
+- Tareas cerradas desde la migración: 34 [x] / 167 abiertas. Por zona: SEG 15 · TEST 6 · IMP-1 6 · IMP-2 5 · DIR 3 · PUL 0 (PUL aún sin sesiones).
 - Suite unitaria: 354/354 (última puerta IMP-1). E2E: golden-path 14/14 · doble-lanzamiento 8/8 · seguridad-http 35/35 · historial-filtros 23/23 · baseline 35/37 (2 hallazgos).
 - Verify: no re-ejecutado por DIR (pasada docs-only); últimas puertas declaradas VERDE por zona.
 - Hallazgos: H-001 resuelto verificado · H-005 resuelto-pendiente-verificación · H-002, H-004 (IMP-1) y H-003 (IMP-1/TEST) abiertos.
-- Desviaciones de tick directo ratificadas: 4 de 4, todas con evidencia.
+- Desviaciones de tick directo ratificadas: 5 de 5 — las 4 primeras sin nota de evidencia (añadida por DIR), la 5ª (idempotencia-lanzamiento) con repro y evidencia completa: así debe documentarse un cierre.
 
 ## Notas de proceso
 - Sugerencia aplicada de SEG (caddy-validate-ci) cierra la única púa que yo mismo dejé abierta en la 2ª pasada.
