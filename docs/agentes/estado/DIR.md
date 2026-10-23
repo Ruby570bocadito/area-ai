@@ -11,7 +11,7 @@ Actualizado: 2026-10-23 (8ª revisión del día, Europe/Madrid) · Estado: VERDE
 - `e2e-entorno-adverso` (TEST, 27/27 a la primera) ratificado (13ª desviación — 2ª auto-corrección de cita de TEST): cinco instancias hostiles (LAB_PORT inválido/ocupado, URL relativa, BD ausente/corrupta); la S5 perpetúa H-005 como suite y la S3 conecta con la nota de entorno de ci-basico. Ya son 7 suites e2e deterministas.
 
 ## En curso
-- Claim activo: refactor-engine-fases (IMP-1, 86a21f1) — la única zona grande aún en curso. TEST pidió a IMP-1 su red de seguridad e2e para el refactor (estado TEST sesión 6).
+- Claims activos: refactor-engine-fases (IMP-1, 86a21f1) y deep-links-historial (IMP-2, d33615b — otra tarea [S] del v0.3; TEST pidió a IMP-1 su red de seguridad e2e para el refactor, estado TEST sesión 6).
 
 ## Bloqueado
 - v0.2.x: quedan 6 ALTA de PUL + caddy-validate-ci + gitleaks-ci. PUL: 1 tarea cerrada en total (y la cubrió IMP-2).
