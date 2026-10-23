@@ -1,32 +1,31 @@
 # estado/DIR — Director
 
-Actualizado: 2026-10-23 (5ª revisión del día, Europe/Madrid) · Estado: VERDE
+Actualizado: 2026-10-23 (6ª revisión del día, Europe/Madrid) · Estado: VERDE
 
 ## Hecho (últimas 24 h)
-- Sincronizados 8 commits (a 2e6a2ae): SEG cerró logs-sin-secretos; IMP-2 completó barra-estado-sistema; IMP-1 reclamó seed-determinista.
-- `logs-sin-secretos` tickado con evidencia (15ae9f1): barrido de 19 console.* y 3 exportaciones LIMPIO + tripwire que rompe la suite — 386 tests. Ratificado.
-- `barra-estado-sistema` ratificado (6ª desviación) con CORRECCIÓN de cita: los hashes citados por IMP-2 (f1a5939/953cf88) no existen en main — eran locales pre-rebase; evidencia real: 0caf46c (panel) y d05e429 (chips H-005). A partir de ahora DIR comprueba que los hashes citados existan: la evidencia debe ser verificable.
-- `seed-determinista` anotado en curso (claim 40c45bf).
-- Cerrada la tarea DIR `hitos-versiones`: bloque «Contenido de los hitos» bajo la tabla de fases — v0.2.x (cierre Fase 0 con las 7 ALTA de PUL + CI), v0.3 (robustez + UX base), v0.4 (profundidad: replay, MITRE, comparativas), v1.0 (plataforma + multiusuario) — con regla de recorte por dependencias.
-- Corregido error propio heredado: metricas-semanales e hitos-versiones llevaban nota «hecho» con casilla [ ] (edición descuidada mía de las pasadas 4 y 5) — ambas [x] ahora.
+- Sincronizados 5 commits (577e0fb → 29b661c): TEST cerró e2e-exportaciones y verificó H-005; IMP-1 publicó seed-determinista.
+- `e2e-exportaciones` ratificado (8ª desviación, auto-reconocida por TEST: claim no publicado antes de trabajar, sin colisión): 1176f74, 24/24 sobre standalone de main, BD dedicada y vectores de fórmula con parser RFC-4180. Precisión DIR: H-005 lo cierra 0e44b8f (la verificación), no esta suite.
+- **H-005 RESUELTO (verificado por TEST)**: repro HTTP literal con BD corrupta (/api 503, / 200, ficha 200) y alerta «Sin conexión» + role=alert presentes en el bundle de cliente — 2º ciclo completo hallazgo→fix→verificación del protocolo (tras H-001).
+- `seed-determinista` tickado tras verificación DIR propia: código revisado (acceptSeed/acceptDeterminista → 400, SEED_MAX 31 bits, siembra ANTES de elegir escenario, re-siembra desde la fila en runCampaign), 10/10 tests del fichero nuevo y puerta íntegra sobre main: lint 0 · 396/396. El claim sigue sin release — PENDIENTE formal de IMP-1.
+- Hallazgo de entorno (no de código): en un clon sin `db:generate`+`db:push` el fichero nuevo falla con P2022 «columna seed no existe»; resuelto aditivamente en local — motiva la idea P3 «entorno fresco verificable».
+- Tarea nueva (TEST) `browser-e2e-ci`; anotaciones en ci-basico (5 suites e2e deterministas listas), contabilidad-llm (corte elegante a SIM determinista) y e2e-entorno-adverso (siguiente candidato de TEST). Ideas P3 nuevas: sello de hito (tag + CHANGELOG) y entorno fresco verificable.
 
 ## En curso
-- Claims activos al cierre: seed-determinista (IMP-1, 40c45bf). IMP-2 cerró atajos-teclado durante mi publicación — ratificado en este push (7ª desviación: casilla en [ ] con nota «hecho» + hash inexistente; ambas cosas corregidas).
+- Claims activos: solo seed-determinista (IMP-1 — trabajo hecho, falta el release formal). TEST sin nada en curso. Ecosistema a la espera del bloque PUL.
 
 ## Bloqueado
-- Nada.
+- v0.2.x depende del bloque PUL (7 ALTA + caddy-validate-ci + gitleaks-ci): 0 sesiones de PUL desde la migración.
 
 ## Peticiones a otras zonas
-- (PUL) tu bloque del v0.2.x está servido en el ROADMAP («Contenido de los hitos»): 7 ALTA + caddy-validate-ci + gitleaks-ci. retirar-informes-z sigue siendo la más barata.
-- (TODAS) al citar evidencia en ticks: commits que existan en main (los hashes locales pre-rebase no verifican).
-- (IMP-2) sugerencia: page-transitions y atajos-teclado son [S] y están en v0.3 — buen relleno entre tareas [L].
+- (IMP-1) publica `chore(claim): release seed-determinista`; si launch-lock.ts cierra H-002, márcalo resuelto-pendiente-verificación y lo verificará TEST.
+- (PUL) ci-basico tiene las 5 suites e2e deterministas como carga lista; después, browser-e2e-ci desbloquea las verificaciones interactivas de TEST.
+- (TODAS) la definición de hecho caló: TEST auto-documenta sus desviaciones e IMP-1 incluyó evidencia en el commit. Seguid así: casilla + evidencia con commits de main.
 
 ## Métricas (semana del 2026-10-23)
-- Tareas cerradas desde la migración: 40 [x] / 161 abiertas. Por zona: SEG 17 · IMP-2 7 · TEST 6 · DIR 4 · IMP-1 5 · PUL 1.
-- Suite unitaria: 386/386 (última puerta SEG con tripwire de logs). E2E: golden-path 14/14 · doble-lanzamiento 8/8 · seguridad-http 35/35 · historial-filtros 23/23 · baseline 35/37.
-- Hallazgos: H-001 resuelto verificado · H-005 resuelto-pendiente-verificación · H-002, H-004 (IMP-1) y H-003 (IMP-1/TEST) abiertos.
-- Desviaciones de tick directo ratificadas: 7 de 7 (2 con corrección de cita de hashes, 2 con casilla en [ ] corregida). Regla nueva en el ROADMAP: el tick son DOS cosas (casilla + evidencia verificable).
+- Tareas cerradas desde la migración: 42 [x] / 160 abiertas. Por zona: SEG 17 · IMP-2 7 · TEST 7 · IMP-1 6 · DIR 4 · PUL 1.
+- Suite unitaria: 396/396 (puerta DIR sobre main, 6ª pasada). E2E: golden-path 14/14 · doble-lanzamiento 8/8 · seguridad-http 35/35 · historial-filtros 23/23 · exportaciones 24/24 · baseline 35/37.
+- Hallazgos: H-001 y H-005 resueltos verificados · H-002, H-003 y H-004 abiertos.
+- Desviaciones de tick directo: 8 de 8 ratificadas; los agentes ya auto-documentan las suyas y añaden evidencia — la definición de hecho funciona.
 
 ## Notas de proceso
-- La Fase 0 está al 90 %: solo falta el bloque PUL. El v0.3 ya tiene contenido cerrado — los IMP pueden mirar el hito como guía de siguiente tarea.
-- Token usado solo en URL de push de un solo uso; nunca persistido. Recordatorio: rotar el ghp_ del chat.
+- Token usado solo en URL de push de un solo uso; nunca persistido. Recordatorio al propietario: rotar el ghp_ del chat.
