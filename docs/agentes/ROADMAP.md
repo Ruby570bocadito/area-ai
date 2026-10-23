@@ -131,7 +131,7 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 ## IMP-1 — Motor, laboratorio, API y datos
 
 ### Motor de campañas (P1-P2)
-- [ ] (IMP-1) balance-datos-archivo — [S] veredicto de deriva del balance (D30, coste cero en LLM — no lanzar campañas nuevas) con las campañas ya archivadas: distribución de ganadores y progresos finales; solo una deriva persistente (≥70 % del mismo ganador en 15+ campañas) abre recalibración formal de pace.ts — scripts/, src/lib/sim/ (reparto de la Ronda 12 sin ejecutar, rescatado por DIR)
+- [x] (IMP-1) balance-datos-archivo — [S] veredicto de deriva del balance (D30, coste cero en LLM — no lanzar campañas nuevas) con las campañas ya archivadas: distribución de ganadores y progresos finales; solo una deriva persistente (≥70 % del mismo ganador en 15+ campañas) abre recalibración formal de pace.ts — scripts/, src/lib/sim/ (reparto de la Ronda 12 sin ejecutar, rescatado por DIR)
 - [ ] (IMP-1) idempotencia-lanzamiento — [S] [verificar] dedupe en servidor de POST /api/campaigns repetidos (ventana corta con el mismo cuerpo o Idempotency-Key): cierre de servidor del doble clic — el cerrojo de confirmacion-lanzamiento es solo cliente — src/app/api/campaigns/route.ts
 - [ ] (IMP-1) seed-determinista — [M] semilla por campaña guardada en BD para reproducir una campaña idéntica en modo determinista — src/lib/sim/engine.ts, prisma/schema.prisma
 - [ ] (IMP-1) refactor-engine-fases — [L] partir `engine.ts` (936 líneas) en módulos (selección, rondas, combate, cierre) sin cambiar comportamiento; solo tras `tests-engine` — src/lib/sim/ · nota IMP-1: `redShouldChain` y `accumulateProgress` (ya extraídos y testados) son la frontera natural del módulo «combate»
