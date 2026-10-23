@@ -15,9 +15,9 @@ function ModelosPage() {
   return (
     <PageContainer>
       <PageHeader
-        kicker="Motor LLM"
+        kicker="LLM engine"
         title="Model Studio"
-        subtitle="Conecta tu proveedor LLM compatible OpenAI, descarga el catálogo de modelos y elige el cerebro de los agentes. La configuración se guarda en la base de datos de la arena y la próxima campaña usará el modelo activado."
+        subtitle="Connect your OpenAI-compatible LLM provider, download the model catalog and pick the agents' brain. The configuration is saved to the arena's database and the next campaign will use the activated model."
       />
       <ModelStudioPanel onSaved={refresh} />
     </PageContainer>

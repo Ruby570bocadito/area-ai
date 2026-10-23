@@ -26,9 +26,9 @@ function OutcomeDonut({ red, blue, draws }: { red: number; blue: number; draws: 
   const segs = useMemo(() => {
     if (total === 0) return []
     const vals = [
-      { v: red, color: RED, label: 'Victorias RED' },
-      { v: blue, color: BLUE, label: 'Victorias BLUE' },
-      { v: draws, color: AMBER, label: 'Empates' },
+      { v: red, color: RED, label: 'RED victories' },
+      { v: blue, color: BLUE, label: 'BLUE victories' },
+      { v: draws, color: AMBER, label: 'Draws' },
     ]
     let acc = 0
     return vals.map((s) => {
@@ -75,15 +75,15 @@ function OutcomeDonut({ red, blue, draws }: { red: number; blue: number; draws: 
             {total}
           </motion.span>
           <span className="font-mono-tight text-[8.5px] uppercase tracking-[0.22em] text-ink-400">
-            campañas
+            campaigns
           </span>
         </div>
       </div>
       <div className="min-w-0 flex-1 space-y-2.5">
         {[
-          { color: RED, label: 'Victorias RED', v: red, filter: 'RED' },
-          { color: BLUE, label: 'Victorias BLUE', v: blue, filter: 'BLUE' },
-          { color: AMBER, label: 'Empates', v: draws, filter: 'DRAW' },
+          { color: RED, label: 'RED victories', v: red, filter: 'RED' },
+          { color: BLUE, label: 'BLUE victories', v: blue, filter: 'BLUE' },
+          { color: AMBER, label: 'Draws', v: draws, filter: 'DRAW' },
         ].map((row, i) => (
           <motion.div
             key={row.label}
@@ -95,8 +95,8 @@ function OutcomeDonut({ red, blue, draws }: { red: number; blue: number; draws: 
             <Link
               href={`/historial?resultado=${row.filter}`}
               className="group flex items-center gap-2.5 rounded-md px-1 py-0.5 transition-colors hover:bg-surface-50"
-              aria-label={`Ver en el historial las campañas filtradas por ${row.label}`}
-              title={`Abrir el historial filtrado: ${row.label}`}
+              aria-label={`View the campaigns filtered by ${row.label} in the history`}
+              title={`Open the filtered history: ${row.label}`}
             >
               <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: row.color }} />
               <span className="flex-1 truncate font-mono-tight text-[11px] text-ink-500 group-hover:text-ink-900 group-hover:underline group-hover:underline-offset-2">
@@ -149,9 +149,9 @@ function EvolutionChart({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
       <EmptyState
         compact
         icon={TrendingUp}
-        title="Sin datos de evolución todavía"
-        description="La curva RED vs BLUE se dibuja cuando termine la primera campaña."
-        action={{ label: 'Lanzar campaña', href: '/' }}
+        title="No evolution data yet"
+        description="The RED vs BLUE curve is drawn once the first campaign finishes."
+        action={{ label: 'Launch campaign', href: '/' }}
       />
     )
   }
@@ -168,11 +168,11 @@ function EvolutionChart({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
           </span>
         </div>
         <span className="font-mono-tight text-[9.5px] uppercase tracking-wider text-ink-400">
-          últimas {data.length} · máx {max}
+          last {data.length} · max {max}
         </span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="h-[150px] w-full overflow-visible">
-        <title>Haz clic en un punto para abrir la ficha de esa campaña</title>
+        <title>Click a point to open that campaign's record</title>
         <defs>
           <linearGradient id="evol-red" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={RED} stopOpacity="0.18" />
@@ -207,9 +207,9 @@ function EvolutionChart({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
             className="cursor-pointer"
             onClick={() => router.push(`/historial/${p.c.id}`)}
             role="link"
-            aria-label={`Abrir ficha de la campaña ${p.c.scenario.codename}`}
+            aria-label={`Open the record of campaign ${p.c.scenario.codename}`}
           >
-            <title>{`${p.c.scenario.codename} — RED ${p.c.redScore} pts · clic para abrir la ficha`}</title>
+            <title>{`${p.c.scenario.codename} — RED ${p.c.redScore} pts · click to open the record`}</title>
           </motion.circle>
         ))}
         {bluePts.map((p, i) => (
@@ -229,14 +229,14 @@ function EvolutionChart({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
             className="cursor-pointer"
             onClick={() => router.push(`/historial/${p.c.id}`)}
             role="link"
-            aria-label={`Abrir ficha de la campaña ${p.c.scenario.codename}`}
+            aria-label={`Open the record of campaign ${p.c.scenario.codename}`}
           >
-            <title>{`${p.c.scenario.codename} — BLUE ${p.c.blueScore} pts · clic para abrir la ficha`}</title>
+            <title>{`${p.c.scenario.codename} — BLUE ${p.c.blueScore} pts · click to open the record`}</title>
           </motion.circle>
         ))}
       </svg>
       <p className="mt-1 text-right font-mono-tight text-[9px] text-surface-300">
-        clic en un punto → ficha de la campaña
+        click a point → campaign record
       </p>
     </div>
   )
@@ -273,7 +273,7 @@ function Leaderboard({ agents }: { agents: AgentDTO[] }) {
               <div className="shrink-0 text-right">
                 <p className="font-mono-tight text-[11px] font-bold text-ink-900">{a.xp} XP</p>
                 <p className="font-mono-tight text-[9px] text-ink-400">
-                  {a.victories}🏆 · Nv{a.level}
+                  {a.victories}🏆 · Lv{a.level}
                 </p>
               </div>
             </div>
@@ -310,8 +310,8 @@ function KnowledgeEffectiveness({ items, team }: { items: KnowledgeDTO[]; team: 
       <EmptyState
         compact
         icon={Sparkles}
-        title="Sin usos registrados todavía"
-        description="Se activará cuando los agentes apliquen estas lecciones en combate."
+        title="No usage recorded yet"
+        description="It activates when the agents apply these lessons in combat."
       />
     )
   }
@@ -345,7 +345,7 @@ function KnowledgeEffectiveness({ items, team }: { items: KnowledgeDTO[]; team: 
                 />
               </div>
               <span className="shrink-0 font-mono-tight text-[9px] text-ink-500">
-                {k.timesWorked}/{k.timesUsed} usos · conf {Math.round(k.confidence * 100)}%
+                {k.timesWorked}/{k.timesUsed} uses · conf {Math.round(k.confidence * 100)}%
               </span>
             </div>
           </motion.div>
@@ -369,9 +369,9 @@ function ScenarioMatrix({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
       <EmptyState
         compact
         icon={Map}
-        title="Sin balance por escenario todavía"
-        description="El balance RED/BLUE por escenario aparecerá al completar campañas."
-        action={{ label: 'Lanzar campaña', href: '/' }}
+        title="No per-scenario balance yet"
+        description="The RED/BLUE balance per scenario will appear once campaigns complete."
+        action={{ label: 'Launch campaign', href: '/' }}
       />
     )
   }
@@ -391,8 +391,8 @@ function ScenarioMatrix({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
             <Link
               href={`/historial?escenario=${encodeURIComponent(s.codename)}`}
               className="group flex h-full flex-col gap-2.5 rounded-xl border border-surface-100 bg-surface-50 p-3 transition-colors hover:border-surface-200 hover:bg-white"
-              aria-label={`Abrir el historial filtrado por el escenario ${s.codename}`}
-              title={`Abrir el historial prefiltrado: ${s.codename}`}
+              aria-label={`Open the history filtered by scenario ${s.codename}`}
+              title={`Open the prefiltered history: ${s.codename}`}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
@@ -400,11 +400,11 @@ function ScenarioMatrix({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
                     {s.codename}
                   </p>
                   <p className="truncate text-[10px] text-ink-500">
-                    {s.company} · dificultad {s.difficulty}/5
+                    {s.company} · difficulty {s.difficulty}/5
                   </p>
                 </div>
                 <span className="shrink-0 font-mono-tight text-[9.5px] text-ink-400">
-                  {s.total} campaña{s.total === 1 ? '' : 's'}
+                  {s.total} campaign{s.total === 1 ? '' : 's'}
                 </span>
               </div>
 
@@ -417,15 +417,15 @@ function ScenarioMatrix({ campaigns }: { campaigns: CampaignListItemDTO[] }) {
 
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2.5 font-mono-tight text-[10px]">
-                  <span className="font-bold text-[#b42318]" title="Victorias RED">R {s.red}</span>
-                  <span className="font-bold text-[#026aa2]" title="Victorias BLUE">B {s.blue}</span>
-                  <span className="font-bold text-[#b54708]" title="Empates">E {s.draws}</span>
+                  <span className="font-bold text-[#b42318]" title="RED victories">R {s.red}</span>
+                  <span className="font-bold text-[#026aa2]" title="BLUE victories">B {s.blue}</span>
+                  <span className="font-bold text-[#b54708]" title="Draws">D {s.draws}</span>
                   {s.running > 0 && (
-                    <span className="text-ink-400" title="En curso">· {s.running} en curso</span>
+                    <span className="text-ink-400" title="In progress">· {s.running} in progress</span>
                   )}
                 </div>
                 <span className="flex shrink-0 items-center font-mono-tight text-[9px] text-ink-400">
-                  {s.completed > 0 ? `${s.redPct}% RED` : 'sin datos'}
+                  {s.completed > 0 ? `${s.redPct}% RED` : 'no data'}
                   <ChevronRight className="h-3 w-3 text-surface-300 transition-all group-hover:translate-x-0.5 group-hover:text-ink-400" />
                 </span>
               </div>
@@ -465,7 +465,7 @@ export function Analytics({
         <div className="mb-4 flex items-center gap-2">
           <Trophy className="h-3.5 w-3.5 text-[#b54708]" />
           <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-ink-600">
-            Balance de victorias
+            Victory balance
           </h3>
         </div>
         <OutcomeDonut red={stats.redWins} blue={stats.blueWins} draws={stats.draws} />
@@ -473,7 +473,7 @@ export function Analytics({
           <div className="mt-4 flex items-center gap-2.5 rounded-lg border border-[#fedf89] bg-[#fffaeb] p-2.5">
             <Crown className="h-4 w-4 shrink-0 text-[#b54708]" />
             <div className="min-w-0 flex-1">
-              <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Agente MVP</p>
+              <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">MVP agent</p>
               <p className={cn('truncate font-mono-tight text-[11.5px] font-bold', mvp.team === 'RED' ? 'text-[#b42318]' : 'text-[#026aa2]')}>
                 {mvp.codename} · {mvp.xp} XP
               </p>
@@ -494,18 +494,18 @@ export function Analytics({
         <div className="mb-4 flex items-center gap-2">
           <TrendingUp className="h-3.5 w-3.5 text-ink-500" />
           <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-ink-600">
-            Evolución de puntuaciones
+            Score evolution
           </h3>
         </div>
         <EvolutionChart campaigns={campaigns} />
         <div className="mt-3 flex items-center justify-between border-t border-surface-100 pt-3">
           <span className="flex items-center gap-1.5 font-mono-tight text-[10px] text-ink-500">
-            <Target className="h-3 w-3 text-[#b42318]" /> RED gana {redWinRate}% de las campañas
+            <Target className="h-3 w-3 text-[#b42318]" /> RED wins {redWinRate}% of the campaigns
           </span>
           <span className="font-mono-tight text-[10px] text-ink-500">
             {stats.blueWins + stats.redWins + stats.draws > 0
-              ? `ventaja ${stats.redWins > stats.blueWins ? 'RED' : stats.blueWins > stats.redWins ? 'BLUE' : '—'}`
-              : 'sin datos'}
+              ? `edge ${stats.redWins > stats.blueWins ? 'RED' : stats.blueWins > stats.redWins ? 'BLUE' : '—'}`
+              : 'no data'}
           </span>
         </div>
       </motion.div>
@@ -521,7 +521,7 @@ export function Analytics({
         <div className="mb-4 flex items-center gap-2">
           <Sparkles className="h-3.5 w-3.5 text-[#b54708]" />
           <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-ink-600">
-            Ranking de agentes
+            Agent leaderboard
           </h3>
         </div>
         <Leaderboard agents={agents} />
@@ -538,10 +538,10 @@ export function Analytics({
         <div className="mb-4 flex items-center gap-2">
           <Map className="h-3.5 w-3.5 text-ink-500" />
           <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-ink-600">
-            Balance por escenario
+            Per-scenario balance
           </h3>
           <span className="font-mono-tight text-[9.5px] normal-case tracking-normal text-ink-400">
-            — clic en un escenario para abrir el historial prefiltrado
+            — click a scenario to open the prefiltered history
           </span>
         </div>
         <ScenarioMatrix campaigns={campaigns} />
@@ -558,22 +558,22 @@ export function Analytics({
         <div className="mb-4 flex items-center gap-2">
           <BrainCircuit className="h-3.5 w-3.5 text-ink-500" />
           <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.18em] text-ink-600">
-            Conocimiento más efectivo
+            Most effective knowledge
           </h3>
           <span className="font-mono-tight text-[9.5px] normal-case tracking-normal text-ink-400">
-            — lecciones con mayor tasa de éxito al aplicarse en combate
+            — lessons with the highest success rate when applied in combat
           </span>
         </div>
         <div className="grid gap-5 md:grid-cols-2">
           <div>
             <p className="mb-2.5 flex items-center gap-1.5 font-mono-tight text-[10px] font-bold uppercase tracking-[0.2em] text-[#b42318]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#d92d20] pulse-dot" /> Equipo RED
+              <span className="h-1.5 w-1.5 rounded-full bg-[#d92d20] pulse-dot" /> RED team
             </p>
             <KnowledgeEffectiveness items={knowledge.red} team="RED" />
           </div>
           <div>
             <p className="mb-2.5 flex items-center gap-1.5 font-mono-tight text-[10px] font-bold uppercase tracking-[0.2em] text-[#026aa2]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#0086c9] pulse-dot" /> Equipo BLUE
+              <span className="h-1.5 w-1.5 rounded-full bg-[#0086c9] pulse-dot" /> BLUE team
             </p>
             <KnowledgeEffectiveness items={knowledge.blue} team="BLUE" />
           </div>

@@ -60,11 +60,11 @@ export function useArenaState() {
 
       if (!finished) {
         toast({
-          title: 'La campaña ha finalizado',
-          description: 'Consulta el resultado en el historial de campañas.',
+          title: 'The campaign has finished',
+          description: 'Check the outcome in the campaign history.',
           action: (
-            <ToastAction altText="Abrir el historial de campañas" onClick={() => router.push('/historial')}>
-              Ver historial
+            <ToastAction altText="Open the campaign history" onClick={() => router.push('/historial')}>
+              View history
             </ToastAction>
           ),
           duration: RESULTADO_MS,
@@ -76,11 +76,11 @@ export function useArenaState() {
 
       if (finished.status === 'ABORTED') {
         toast({
-          title: `${codename} abortada`,
-          description: 'La campaña se detuvo antes de completarse. Queda registrada en el archivo.',
+          title: `${codename} aborted`,
+          description: 'The campaign was stopped before completing. It remains recorded in the archive.',
           action: (
-            <ToastAction altText={`Abrir la ficha de la campaña ${codename}`} onClick={() => router.push(`/historial/${finished.id}`)}>
-              Ver ficha
+            <ToastAction altText={`Open the record of campaign ${codename}`} onClick={() => router.push(`/historial/${finished.id}`)}>
+              View record
             </ToastAction>
           ),
           duration: RESULTADO_MS,
@@ -88,14 +88,14 @@ export function useArenaState() {
         return
       }
 
-      const winnerLabel = finished.winner === 'RED' ? 'gana RED' : finished.winner === 'BLUE' ? 'gana BLUE' : 'empate táctico'
-      const autopilotNote = data.autopilot ? ' Operación continua encadena la siguiente campaña.' : ''
+      const winnerLabel = finished.winner === 'RED' ? 'RED wins' : finished.winner === 'BLUE' ? 'BLUE wins' : 'tactical draw'
+      const autopilotNote = data.autopilot ? ' Continuous operation chains the next campaign.' : ''
       toast({
         title: `${codename} — ${winnerLabel}`,
-        description: `${explainWinner(finished.winner, finished.redProgress, finished.blueProgress)} Puntuación ${finished.redScore}–${finished.blueScore}.${autopilotNote}`,
+        description: `${explainWinner(finished.winner, finished.redProgress, finished.blueProgress)} Score ${finished.redScore}–${finished.blueScore}.${autopilotNote}`,
         action: (
-          <ToastAction altText={`Abrir la ficha de la campaña ${codename}`} onClick={() => router.push(`/historial/${finished.id}`)}>
-            Ver ficha
+          <ToastAction altText={`Open the record of campaign ${codename}`} onClick={() => router.push(`/historial/${finished.id}`)}>
+            View record
           </ToastAction>
         ),
         duration: RESULTADO_MS,
@@ -158,15 +158,15 @@ export function useArenaState() {
           body: JSON.stringify({ scenarioId }),
         })
         const data = (await res.json()) as { ok: boolean; error?: string }
-        if (!res.ok || !data.ok) throw new Error(data.error || 'Error al iniciar la campaña')
+        if (!res.ok || !data.ok) throw new Error(data.error || 'Failed to start the campaign')
         toast({
-          title: 'Campaña iniciada',
-          description: 'Los agentes IA están entrando en combate. Sigue la acción en la arena.',
+          title: 'Campaign started',
+          description: 'The AI agents are entering combat. Follow the action in the arena.',
         })
         await load()
         router.push('/arena')
       } catch (e) {
-        toastError('No se pudo iniciar la campaña', e)
+        toastError('Could not start the campaign', e)
       }
     },
     [load, toast, router]
@@ -183,14 +183,14 @@ export function useArenaState() {
         const data = (await res.json()) as { ok: boolean; error?: string }
         if (!res.ok || !data.ok) throw new Error(data.error || 'Error')
         toast({
-          title: enabled ? 'Operación continua activada' : 'Operación continua detenida',
+          title: enabled ? 'Continuous operation enabled' : 'Continuous operation stopped',
           description: enabled
-            ? 'El motor lanzará campañas reales en segundo plano sin parar. Avisaremos al completar cada una.'
-            : 'El motor terminará la campaña en curso y quedará en espera.',
+            ? 'The engine will keep launching real campaigns in the background without stopping. We will notify you when each one completes.'
+            : 'The engine will finish the ongoing campaign and then stand by.',
         })
         await load()
       } catch (e) {
-        toastError('No se pudo cambiar el modo', e)
+        toastError('Could not change the mode', e)
       }
     },
     [load, toast]

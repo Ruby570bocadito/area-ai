@@ -19,9 +19,9 @@ const BLUE = '#0086c9'
 
 const SEG_ORDER = ['DMZ', 'CORE', 'AD', 'CLOUD', 'OT'] as const
 const SEG_LABEL: Record<string, string> = {
-  DMZ: 'Perímetro',
-  CORE: 'Núcleo',
-  AD: 'Identidad',
+  DMZ: 'Perimeter',
+  CORE: 'Core',
+  AD: 'Identity',
   CLOUD: 'Cloud',
   OT: 'Industrial',
 }
@@ -166,7 +166,7 @@ export function NetworkMap({
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
         className="relative z-10 h-auto w-full"
         role="img"
-        aria-label="Mapa de red de la campaña con infraestructura real del escenario"
+        aria-label="Campaign network map with the scenario's real infrastructure"
       >
         <defs>
           <radialGradient id="nm-red-glow" cx="50%" cy="50%" r="50%">
@@ -341,18 +341,18 @@ export function NetworkMap({
       {/* leyenda + contadores */}
       <div className="relative z-10 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-surface-100 px-3.5 py-2.5 font-mono-tight text-[10px] text-ink-500">
         <span className="flex items-center gap-1.5">
-          <Skull className="h-3 w-3 text-[#d92d20]" /> Comprometido
+          <Skull className="h-3 w-3 text-[#d92d20]" /> Compromised
         </span>
         <span className="flex items-center gap-1.5">
-          <Shield className="h-3 w-3 text-[#0086c9]" /> Endurecido
+          <Shield className="h-3 w-3 text-[#0086c9]" /> Hardened
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full border border-dashed border-[#d97706]/70" /> Objetivo previsto de fase
+          <span className="h-2.5 w-2.5 rounded-full border border-dashed border-[#d97706]/70" /> Planned phase objective
         </span>
         <span className="ml-auto flex items-center gap-3">
-          <span>{nodes.length} activos</span>
-          <span className="text-[#b42318]">{positions.filter((p) => compromised.has(p.id)).length} comprometidos</span>
-          <span className="text-[#026aa2]">{positions.filter((p) => hardened.has(p.id)).length} endurecidos</span>
+          <span>{nodes.length} assets</span>
+          <span className="text-[#b42318]">{positions.filter((p) => compromised.has(p.id)).length} compromised</span>
+          <span className="text-[#026aa2]">{positions.filter((p) => hardened.has(p.id)).length} hardened</span>
         </span>
       </div>
 
@@ -379,7 +379,7 @@ export function NetworkMap({
                   <button
                     type="button"
                     onClick={() => setSelectedId(null)}
-                    aria-label="Cerrar detalle"
+                    aria-label="Close detail"
                     className="rounded p-1 text-ink-400 transition-colors hover:bg-surface-100 hover:text-ink-900"
                   >
                     <X className="h-3.5 w-3.5" />
@@ -418,20 +418,20 @@ export function NetworkMap({
                 {labNode && (
                   <div className="mt-2.5 rounded-lg border border-surface-200 bg-white p-2.5">
                     <p className="flex items-center gap-1.5 font-mono-tight text-[9px] font-bold uppercase tracking-[0.16em] text-ink-500">
-                      <Server className="h-3 w-3" /> Servicio real del lab
+                      <Server className="h-3 w-3" /> Real lab service
                     </p>
                     <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                       <span className="rounded border border-surface-200 bg-surface-50 px-1.5 py-px font-mono-tight text-[9px] text-ink-600">
-                        {labNode.compromised ? `${labNode.sessions} sesión(es) RED` : 'sin sesiones RED'}
+                        {labNode.compromised ? `${labNode.sessions} RED session(s)` : 'no RED sessions'}
                       </span>
                       {labNode.isolated && (
                         <span className="flex items-center gap-1 rounded border border-[#fecdca] bg-[#fef3f2] px-1.5 py-px font-mono-tight text-[9px] font-bold text-[#b42318]">
-                          <ShieldAlert className="h-2.5 w-2.5" /> AISLADO POR SOC
+                          <ShieldAlert className="h-2.5 w-2.5" /> ISOLATED BY SOC
                         </span>
                       )}
                       {(labNode.vulnerabilities.filter((v) => v.status === 'PATCHED').length > 0) && (
                         <span className="rounded border border-[#a6f4c5] bg-[#ecfdf3] px-1.5 py-px font-mono-tight text-[9px] font-bold text-[#067647]">
-                          {labNode.vulnerabilities.filter((v) => v.status === 'PATCHED').length} parche(s) aplicado(s)
+                          {labNode.vulnerabilities.filter((v) => v.status === 'PATCHED').length} patch(es) applied
                         </span>
                       )}
                     </div>
@@ -460,7 +460,7 @@ export function NetworkMap({
               </div>
               <div className="min-w-0">
                 <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-[#b42318]">
-                  <Bug className="h-3 w-3" /> Vulnerabilidades
+                  <Bug className="h-3 w-3" /> Vulnerabilities
                 </p>
                 <ul className="mt-1.5 space-y-1">
                   {selected.vulnerabilities.length > 0 ? (
@@ -470,19 +470,19 @@ export function NetworkMap({
                         <li key={v} className="flex items-center gap-1.5 text-[11.5px] leading-snug text-ink-700">
                           <span>{v}</span>
                           {st === 'PATCHED' && (
-                            <span className="shrink-0 rounded border border-[#a6f4c5] bg-[#ecfdf3] px-1 font-mono-tight text-[8.5px] font-bold text-[#067647]">PARCHEADA</span>
+                            <span className="shrink-0 rounded border border-[#a6f4c5] bg-[#ecfdf3] px-1 font-mono-tight text-[8.5px] font-bold text-[#067647]">PATCHED</span>
                           )}
                         </li>
                       )
                     })
                   ) : (
-                    <li className="text-[11.5px] text-ink-500">Sin vulnerabilidades conocidas.</li>
+                    <li className="text-[11.5px] text-ink-500">No known vulnerabilities.</li>
                   )}
                 </ul>
               </div>
               <div className="min-w-0">
                 <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-[#026aa2]">
-                  <Lock className="h-3 w-3" /> Controles
+                  <Lock className="h-3 w-3" /> Controls
                 </p>
                 <ul className="mt-1.5 space-y-1">
                   {selected.controls.length > 0 ? (
@@ -492,7 +492,7 @@ export function NetworkMap({
                       </li>
                     ))
                   ) : (
-                    <li className="text-[11.5px] text-ink-500">Solo controles básicos.</li>
+                    <li className="text-[11.5px] text-ink-500">Basic controls only.</li>
                   )}
                 </ul>
               </div>
@@ -505,7 +505,7 @@ export function NetworkMap({
       {!selected && (
         <div className="relative z-10 flex items-center justify-center gap-1.5 border-t border-surface-100 px-3.5 py-1.5 text-[10px] text-ink-400">
           <MousePointerClick className="h-3 w-3" />
-          Selecciona un activo del mapa para ver sus vulnerabilidades y controles reales.
+          Select an asset on the map to see its real vulnerabilities and controls.
         </div>
       )}
     </div>

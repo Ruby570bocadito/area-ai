@@ -13,8 +13,8 @@ export function Footer() {
           <Wordmark sub={false} />
           <span className="hidden h-4 w-px bg-surface-200 sm:block" />
           <p className="max-w-lg text-[11.5px] leading-relaxed text-ink-500">
-            Laboratorio adversarial de agentes IA. Todo el combate ocurre en un entorno simulado y
-            autorizado: las campañas, el conocimiento y la evolución son reales del motor.
+            Adversarial laboratory of AI agents. All combat happens in a simulated,
+            authorized environment: campaigns, knowledge and evolution are real engine output.
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -24,7 +24,7 @@ export function Footer() {
             <Crosshair className="h-3 w-3 text-[#0086c9]" /> Blue
           </span>
           <span className="font-mono-tight text-[10px] text-ink-500">
-            RED {state?.stats.evolutionRed ?? '—'}% · BLUE {state?.stats.evolutionBlue ?? '—'}% evolución
+            RED {state?.stats.evolutionRed ?? '—'}% · BLUE {state?.stats.evolutionBlue ?? '—'}% evolution
           </span>
         </div>
       </div>

@@ -69,10 +69,10 @@ export function ArenaGate({ children }: { children: React.ReactNode }) {
               <WifiOff className="h-5 w-5 text-[#b42318]" />
             </span>
             <div>
-              <h2 className="font-display text-base font-bold text-ink-900">Sin conexión con el motor</h2>
+              <h2 className="font-display text-base font-bold text-ink-900">Disconnected from the engine</h2>
               <p className="mx-auto mt-1 max-w-md text-[12.5px] leading-relaxed text-ink-500">
-                No hay respuesta del servidor. Seguimos reintentando automáticamente cada pocos segundos;
-                también puedes probar de nuevo de forma manual.
+                The server is not responding. We keep retrying automatically every few seconds;
+                you can also try again manually.
               </p>
             </div>
             <button
@@ -81,7 +81,7 @@ export function ArenaGate({ children }: { children: React.ReactNode }) {
               className="flex items-center gap-2 rounded-lg bg-ink-900 px-4 py-2 text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-[#182230]"
             >
               <RefreshCw className="h-3.5 w-3.5" />
-              Reintentar ahora
+              Retry now
             </button>
           </div>
         </PageContainer>
@@ -92,7 +92,7 @@ export function ArenaGate({ children }: { children: React.ReactNode }) {
     return (
       <PageContainer>
         <div role="status" aria-live="polite">
-          <p className="sr-only">Conectando con el motor…</p>
+          <p className="sr-only">Connecting to the engine…</p>
           <PageSkeleton />
         </div>
       </PageContainer>

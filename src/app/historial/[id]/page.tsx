@@ -34,12 +34,12 @@ import type { CampaignDetailResponse } from '@/lib/api-types'
 // ─────────────────────────────────────────────────────────────
 
 const CATEGORY_LABEL: Record<string, string> = {
-  TACTICA: 'Táctica',
-  TECNICA: 'Técnica',
-  DEFENSA: 'Defensa',
-  VULNERABILIDAD: 'Vulnerabilidad',
-  LECCION: 'Lección',
-  INTELIGENCIA: 'Inteligencia',
+  TACTICA: 'Tactics',
+  TECNICA: 'Technique',
+  DEFENSA: 'Defense',
+  VULNERABILIDAD: 'Vulnerability',
+  LECCION: 'Lesson',
+  INTELIGENCIA: 'Intelligence',
 }
 
 function DetailPage() {
@@ -55,11 +55,11 @@ function DetailPage() {
     try {
       const res = await fetch(`/api/campaigns/${id}`, { cache: 'no-store' })
       const data = (await res.json()) as CampaignDetailResponse
-      if (!res.ok || !data.ok) throw new Error(data.error || 'Campaña no encontrada')
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Campaign not found')
       setDetail(data)
       setError(null)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error desconocido')
+      setError(e instanceof Error ? e.message : 'Unknown error')
     }
   }, [id])
 
@@ -75,17 +75,17 @@ function DetailPage() {
             <FileWarning className="h-5 w-5 text-ink-500" />
           </span>
           <div>
-            <h2 className="font-display text-base font-bold text-ink-900">Campaña no encontrada</h2>
+            <h2 className="font-display text-base font-bold text-ink-900">Campaign not found</h2>
             <p className="mx-auto mt-1 max-w-md text-[12.5px] leading-relaxed text-ink-500">
-              No se pudo cargar la ficha de esta campaña ({error}). Puede que el identificador sea
-              incorrecto o que la campaña se haya eliminado del archivo.
+              This campaign's record could not be loaded ({error}). The identifier may be
+              incorrect or the campaign may have been removed from the archive.
             </p>
           </div>
           <Link
             href="/historial"
             className="flex items-center gap-1.5 rounded-lg bg-ink-900 px-4 py-2 text-[12.5px] font-semibold text-white shadow-sm transition-colors hover:bg-[#182230]"
           >
-            <ArrowLeft className="h-3.5 w-3.5" /> Volver al historial
+            <ArrowLeft className="h-3.5 w-3.5" /> Back to history
           </Link>
         </div>
       </PageContainer>
@@ -153,11 +153,11 @@ function DetailPage() {
             href="/historial"
             className="flex items-center gap-1.5 font-mono-tight text-[10.5px] font-bold uppercase tracking-[0.2em] text-ink-400 transition-colors hover:text-ink-900"
           >
-            <ArrowLeft className="h-3 w-3" /> Archivo / Detalle
+            <ArrowLeft className="h-3 w-3" /> Archive / Detail
           </Link>
         }
-        title={`Campaña ${campaign.scenario.codename}`}
-        subtitle={`${campaign.scenario.company} · ${campaign.scenario.industry}. Ficha completa con el registro íntegro de acciones, comandos reales contra el laboratorio, evidencia HTTP y las lecciones que archivó esta campaña en la memoria del sistema.`}
+        title={`Campaign ${campaign.scenario.codename}`}
+        subtitle={`${campaign.scenario.company} · ${campaign.scenario.industry}. Full record with the complete action log, real commands against the laboratory, HTTP evidence and the lessons this campaign archived into the system memory.`}
       />
 
       {/* Exportación de la telemetría (mismo dialecto que las otras
@@ -168,7 +168,7 @@ function DetailPage() {
             type="button"
             onClick={handleExportEventsCsv}
             className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-ink-900"
-            title={`Descargar los ${detail.events.length} eventos de la campaña en CSV — mismo dialecto que las demás exportaciones: BOM UTF-8, separador «;», escapado RFC 4180 (seq, ronda, fase, equipo, agente, acción, resultado, impacto, severidad, nodo, comando y detalle)`}
+            title={`Download the campaign's ${detail.events.length} events as CSV — same dialect as the other exports: UTF-8 BOM, “;” separator, RFC 4180 escaping (seq, round, phase, team, agent, action, outcome, impact, severity, node, command and detail)`}
           >
             <FileSpreadsheet className="h-3 w-3" /> CSV
           </button>
@@ -176,7 +176,7 @@ function DetailPage() {
             type="button"
             onClick={handleExportEventsJson}
             className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-ink-900"
-            title={`Descargar la telemetría en JSON con metadatos de la campaña: ganador, progresos, modo del motor, objetivos del escenario y los ${detail.events.length} eventos íntegros (evidencia y comandos incluidos)`}
+            title={`Download the telemetry as JSON with the campaign's metadata: winner, progress, engine mode, scenario objectives and the ${detail.events.length} full events (evidence and commands included)`}
           >
             <FileJson className="h-3 w-3" /> JSON
           </button>
@@ -190,9 +190,9 @@ function DetailPage() {
         >
           <Radio className="h-4 w-4 shrink-0" />
           <span>
-            Esta campaña está <b>en curso</b> — la telemetría en directo (mapa animado, operadores en
-            turno y feed en vivo) está en la página de Operaciones. Esta ficha muestra el estado
-            registrado hasta este momento.
+            This campaign is <b>in progress</b> — the live telemetry (animated map, on-turn
+            operators and live feed) lives on the Operations page. This record shows the state
+            registered up to this moment.
           </span>
         </Link>
       )}
@@ -200,10 +200,10 @@ function DetailPage() {
       {/* Modo del motor + resumen de eventos y lecciones */}
       <div className="mb-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         {[
-          { label: 'Modo del motor', value: campaign.engineMode === 'LLM' ? 'LLM' : 'Determinista' },
-          { label: 'Eventos registrados', value: String(detail.events.length) },
-          { label: 'Lecciones archivadas', value: String(detail.knowledge.length) },
-          { label: 'Duración', value: durationLabel },
+          { label: 'Engine mode', value: campaign.engineMode === 'LLM' ? 'LLM' : 'Deterministic' },
+          { label: 'Recorded events', value: String(detail.events.length) },
+          { label: 'Archived lessons', value: String(detail.knowledge.length) },
+          { label: 'Duration', value: durationLabel },
         ].map((m) => (
           <div key={m.label} className="panel rounded-xl px-3.5 py-3">
             <p className="font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.16em] text-ink-400">
@@ -231,7 +231,7 @@ function DetailPage() {
         <div className="mb-2.5 flex items-center gap-2">
           <BrainCircuit className="h-4 w-4 text-ink-500" />
           <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.2em] text-[#475467]">
-            Memoria archivada por esta campaña
+            Memory archived by this campaign
           </h3>
           <span className="rounded-full border border-[#e4e7ec] bg-white px-2 py-0.5 font-mono-tight text-[9.5px] font-bold text-ink-500">
             {detail.knowledge.length}
@@ -239,7 +239,7 @@ function DetailPage() {
         </div>
         {detail.knowledge.length === 0 ? (
           <p className="panel rounded-xl px-4 py-5 text-center text-[12.5px] text-ink-500">
-            Esta campaña no archivó lecciones nuevas en la memoria del sistema.
+            This campaign archived no new lessons into the system memory.
           </p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -262,7 +262,7 @@ function DetailPage() {
                 <p className="mt-1 line-clamp-3 text-[11.5px] leading-relaxed text-ink-500">{k.content}</p>
                 <div className="mt-3 flex items-center justify-between font-mono-tight text-[10px] text-ink-500">
                   <span>
-                    Confianza {Math.round(k.confidence * 100)}% · {k.timesUsed} usos
+                    Confidence {Math.round(k.confidence * 100)}% · {k.timesUsed} uses
                   </span>
                   <Building2 className="h-3 w-3 text-[#d0d5dd]" />
                 </div>

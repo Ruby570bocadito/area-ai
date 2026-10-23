@@ -16,9 +16,9 @@ function AnaliticaPage() {
   return (
     <PageContainer>
       <PageHeader
-        kicker="Inteligencia de datos"
-        title="Analítica del laboratorio"
-        subtitle="Lectura agregada de todas las campañas: balance de victorias, evolución de puntuaciones, ranking de agentes por experiencia, comparativa del balance por escenario y qué lecciones del conocimiento funcionan mejor en combate."
+        kicker="Data intelligence"
+        title="Laboratory analytics"
+        subtitle="Aggregate reading of every campaign: victory balance, score evolution, agent leaderboard by experience, per-scenario balance comparison and which knowledge lessons work best in combat."
       />
       <Analytics
         agents={state.agents}

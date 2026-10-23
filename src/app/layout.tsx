@@ -35,30 +35,30 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: "area·ai — Simulador adversarial autónomo · Red Team vs Blue Team",
+  title: "area·ai — Autonomous adversarial simulator · Red Team vs Blue Team",
   description:
-    "Agentes de IA ofensivos y defensivos libran campañas continuas sobre infraestructura empresarial simulada. Cada combate genera conocimiento que se archiva, se reutiliza y hace evolucionar a ambos equipos.",
+    "Offensive and defensive AI agents wage continuous campaigns against simulated enterprise infrastructure. Every engagement generates knowledge that is archived, reused and evolves both teams.",
   keywords: [
     "red team",
     "blue team",
-    "ciberseguridad",
-    "inteligencia artificial",
-    "agentes autónomos",
-    "simulador adversarial",
+    "cybersecurity",
+    "artificial intelligence",
+    "autonomous agents",
+    "adversarial simulator",
     "sandbox",
   ],
   authors: [{ name: "area·ai" }],
   openGraph: {
-    title: "area·ai — Simulador adversarial autónomo",
+    title: "area·ai — Autonomous adversarial simulator",
     description:
-      "Red Team vs Blue Team con agentes de IA en evolución continua.",
+      "Red Team vs Blue Team with AI agents in continuous evolution.",
     type: "website",
-    images: [{ url: "/og.png", width: 1440, height: 704, alt: "area·ai — laboratorio adversarial" }],
+    images: [{ url: "/og.png", width: 1440, height: 704, alt: "area·ai — adversarial laboratory" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "area·ai — Simulador adversarial autónomo",
-    description: "Red Team vs Blue Team con agentes de IA en evolución continua.",
+    title: "area·ai — Autonomous adversarial simulator",
+    description: "Red Team vs Blue Team with AI agents in continuous evolution.",
     images: ["/og.png"],
   },
 };
@@ -73,7 +73,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body
         className={`${interTight.variable} ${inter.variable} ${jetbrains.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen`}
       >

@@ -18,9 +18,9 @@ function ArenaPage() {
   return (
     <PageContainer>
       <PageHeader
-        kicker="Telemetría"
-        title="Operaciones en vivo"
-        subtitle="Mapa de red de la infraestructura objetivo con vulnerabilidades y controles reales, cadena de ataque, decisiones de cada agente IA y estado de los nodos comprometidos o endurecidos."
+        kicker="Telemetry"
+        title="Live operations"
+        subtitle="Network map of the target infrastructure with real vulnerabilities and controls, attack chain, every AI agent's decisions and the state of compromised or hardened nodes."
       />
 
       {state.liveCampaign ? (
@@ -43,10 +43,10 @@ function ArenaPage() {
             <Radio className="h-5 w-5 text-ink-500" />
           </span>
           <div>
-            <h2 className="font-display text-base font-bold text-ink-900">Sin operaciones todavía</h2>
+            <h2 className="font-display text-base font-bold text-ink-900">No operations yet</h2>
             <p className="mx-auto mt-1 max-w-md text-[12.5px] leading-relaxed text-ink-500">
-              Cuando lances una campaña, aquí verás el mapa de la infraestructura, los haces de
-              ataque y defensa, las decisiones de cada agente y el registro completo de eventos.
+              When you launch a campaign, you will see the infrastructure map, the attack and
+              defense beams, every agent's decisions and the full event log here.
             </p>
           </div>
           <button
@@ -56,7 +56,7 @@ function ArenaPage() {
             className="shine-sweep flex items-center gap-2 rounded-lg bg-ink-900 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-[#182230] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Swords className="h-4 w-4" />
-            Lanzar primera campaña
+            Launch first campaign
           </button>
         </motion.div>
       )}

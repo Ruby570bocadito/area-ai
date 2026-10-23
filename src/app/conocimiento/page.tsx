@@ -44,9 +44,9 @@ function ConocimientoPage() {
   return (
     <PageContainer>
       <PageHeader
-        kicker="Memoria del sistema"
-        title="Base de conocimiento"
-        subtitle="Memoria completa del laboratorio: cada campaña archiva lecciones que se inyectan en las siguientes — cuanto más se usa una lección y mejor funciona, más sube su confianza. Busca, filtra por categoría y examina de dónde salió cada lección."
+        kicker="System memory"
+        title="Knowledge base"
+        subtitle="The laboratory's full memory: every campaign archives lessons that are injected into later ones — the more a lesson is used and the better it works, the more its confidence grows. Search, filter by category and inspect where each lesson came from."
       />
       <KnowledgePanel red={red} blue={blue} />
     </PageContainer>

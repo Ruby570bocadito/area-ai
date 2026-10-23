@@ -42,19 +42,19 @@ type ResultFilter = 'ALL' | 'RED' | 'BLUE' | 'DRAW' | 'RUNNING'
 export type { ResultFilter }
 
 const RESULT_FILTERS: Array<{ key: ResultFilter; label: string }> = [
-  { key: 'ALL', label: 'Todas' },
-  { key: 'RED', label: 'Gana RED' },
-  { key: 'BLUE', label: 'Gana BLUE' },
-  { key: 'DRAW', label: 'Empates' },
-  { key: 'RUNNING', label: 'En curso' },
+  { key: 'ALL', label: 'All' },
+  { key: 'RED', label: 'RED wins' },
+  { key: 'BLUE', label: 'BLUE wins' },
+  { key: 'DRAW', label: 'Draws' },
+  { key: 'RUNNING', label: 'In progress' },
 ]
 
 const RESULT_FILTER_DESC: Record<ResultFilter, string> = {
-  ALL: 'todas',
-  RED: 'solo victorias RED',
-  BLUE: 'solo victorias BLUE',
-  DRAW: 'solo empates',
-  RUNNING: 'solo en curso',
+  ALL: 'all',
+  RED: 'only RED victories',
+  BLUE: 'only BLUE victories',
+  DRAW: 'only draws',
+  RUNNING: 'only in progress',
 }
 
 // La regla de victoria y sus textos viven en src/lib/victory.ts (fuente única
@@ -68,7 +68,7 @@ function WinnerBadge({ winner, redProgress, blueProgress }: { winner: string | n
         title={title}
         className="flex cursor-help items-center gap-1 rounded-full border border-[#fecdca] bg-[#fef3f2] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#b42318]"
       >
-        <Swords className="h-2.5 w-2.5" /> GANA RED
+        <Swords className="h-2.5 w-2.5" /> RED WINS
       </span>
     )
   if (winner === 'BLUE')
@@ -77,7 +77,7 @@ function WinnerBadge({ winner, redProgress, blueProgress }: { winner: string | n
         title={title}
         className="flex cursor-help items-center gap-1 rounded-full border border-[#b2ddff] bg-[#f0f9ff] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#026aa2]"
       >
-        <ShieldCheck className="h-2.5 w-2.5" /> GANA BLUE
+        <ShieldCheck className="h-2.5 w-2.5" /> BLUE WINS
       </span>
     )
   return (
@@ -85,7 +85,7 @@ function WinnerBadge({ winner, redProgress, blueProgress }: { winner: string | n
       title={title}
       className="flex cursor-help items-center gap-1 rounded-full border border-[#fedf89] bg-[#fffaeb] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#b54708]"
     >
-      <Minus className="h-2.5 w-2.5" /> EMPATE
+      <Minus className="h-2.5 w-2.5" /> DRAW
     </span>
   )
 }
@@ -99,8 +99,8 @@ function WinnerBadge({ winner, redProgress, blueProgress }: { winner: string | n
 
 function exportCsv(campaigns: CampaignListItemDTO[]) {
   const header = [
-    'ID', 'Inicio', 'Fin', 'Escenario', 'Empresa', 'Industria', 'Dificultad',
-    'Estado', 'Ganador', 'Puntos RED', 'Puntos BLUE', 'Progreso RED %', 'Progreso BLUE %',
+    'ID', 'Started', 'Ended', 'Scenario', 'Company', 'Industry', 'Difficulty',
+    'Status', 'Winner', 'RED score', 'BLUE score', 'RED progress %', 'BLUE progress %',
   ]
   const fmt = (d: string | null) => (d ? new Date(d).toLocaleString('es-ES') : '')
   const rows = campaigns.map((c) => [
@@ -122,7 +122,7 @@ function exportCsv(campaigns: CampaignListItemDTO[]) {
   downloadBlob(
     csv,
     'text/csv;charset=utf-8',
-    exportFilename('campanas', 'csv')
+    exportFilename('campaigns', 'csv')
   )
 }
 
@@ -136,7 +136,7 @@ function exportMarkdown(campaigns: CampaignListItemDTO[], filtersDesc: string) {
   downloadBlob(
     md,
     'text/markdown;charset=utf-8',
-    exportFilename('informe', 'md')
+    exportFilename('report', 'md')
   )
 }
 
@@ -249,10 +249,10 @@ export function HistoryPanel({
   // Descripción legible de los filtros activos, para la cabecera del informe agregado
   const filtersDesc = useMemo(() => {
     const parts: string[] = []
-    if (query.trim()) parts.push(`búsqueda «${query.trim()}»`)
+    if (query.trim()) parts.push(`search “${query.trim()}”`)
     if (result !== 'ALL') parts.push(RESULT_FILTER_DESC[result])
-    if (effectiveScenario !== 'ALL') parts.push(`escenario ${effectiveScenario}`)
-    return parts.length > 0 ? parts.join(' · ') : 'ninguno (archivo completo)'
+    if (effectiveScenario !== 'ALL') parts.push(`scenario ${effectiveScenario}`)
+    return parts.length > 0 ? parts.join(' · ') : 'none (full archive)'
   }, [query, result, effectiveScenario])
 
   // Copia el informe de la selección filtrada al portapapeles (mismo texto
@@ -273,9 +273,9 @@ export function HistoryPanel({
       // (caso «exportación lista» de la política de toasts).
       exportMarkdown(filtered, filtersDesc)
       toast({
-        title: 'Informe descargado como archivo',
+        title: 'Report downloaded as a file',
         description:
-          'El portapapeles no está disponible en este navegador, así que el informe agregado se ha descargado en Markdown.',
+          'The clipboard is not available in this browser, so the aggregate report was downloaded in Markdown.',
       })
       setCopyState('error')
       if (copyTimer.current) clearTimeout(copyTimer.current)
@@ -287,9 +287,9 @@ export function HistoryPanel({
     return (
       <EmptyState
         icon={History}
-        title="El archivo de campañas está vacío"
-        description="Cada campaña que finalice quedará registrada aquí con su ficha completa, eventos y lecciones archivadas."
-        action={{ label: 'Ir al panel de mando', href: '/' }}
+        title="The campaign archive is empty"
+        description="Every finished campaign will be recorded here with its full record, events and archived lessons."
+        action={{ label: 'Go to the command deck', href: '/' }}
       />
     )
   }
@@ -305,12 +305,12 @@ export function HistoryPanel({
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar por codename, empresa…"
+            placeholder="Search by codename, company…"
             className="w-full rounded-lg border border-[#e4e7ec] bg-white py-1.5 pl-8 pr-2.5 text-[12px] text-ink-900 placeholder:text-ink-400 focus:border-[#d0d5dd] focus:outline-none focus:ring-2 focus:ring-[#eaecf0]"
           />
         </label>
 
-        <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Filtrar por resultado">
+        <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Filter by outcome">
           {RESULT_FILTERS.map((f) => (
             <button
               key={f.key}
@@ -327,10 +327,10 @@ export function HistoryPanel({
         <select
           value={effectiveScenario}
           onChange={(e) => setScenario(e.target.value)}
-          aria-label="Filtrar por escenario"
+          aria-label="Filter by scenario"
           className="rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-[#475467] focus:border-[#d0d5dd] focus:outline-none"
         >
-          <option value="ALL">Todos los escenarios</option>
+          <option value="ALL">All scenarios</option>
           {scenarioOptions.map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
@@ -338,26 +338,26 @@ export function HistoryPanel({
 
         <div className="ml-auto flex items-center gap-2">
           <span className="font-mono-tight text-[10px] text-ink-400">
-            {filtered.length} de {campaigns.length}
+            {filtered.length} of {campaigns.length}
           </span>
           <button
             type="button"
             onClick={handleCopyReport}
             disabled={filtered.length === 0}
             className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-ink-900 disabled:cursor-not-allowed disabled:opacity-50"
-            title="Copiar el informe agregado en Markdown de la selección filtrada al portapapeles (mismo contenido que la descarga del botón Informe)"
+            title="Copy the aggregate Markdown report of the filtered selection to the clipboard (same content as the Report button download)"
           >
             {copyState === 'copied' ? (
               <>
-                <Check className="h-3 w-3 text-[#067647]" /> Copiado
+                <Check className="h-3 w-3 text-[#067647]" /> Copied
               </>
             ) : copyState === 'error' ? (
               <>
-                <Download className="h-3 w-3 text-[#b54708]" /> Descargado
+                <Download className="h-3 w-3 text-[#b54708]" /> Downloaded
               </>
             ) : (
               <>
-                <ClipboardCopy className="h-3 w-3" /> Copiar
+                <ClipboardCopy className="h-3 w-3" /> Copy
               </>
             )}
           </button>
@@ -366,16 +366,16 @@ export function HistoryPanel({
             onClick={() => exportMarkdown(filtered, filtersDesc)}
             disabled={filtered.length === 0}
             className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-ink-900 disabled:cursor-not-allowed disabled:opacity-50"
-            title="Descargar un informe agregado en Markdown de la selección filtrada (resumen ejecutivo + una sección por campaña)"
+            title="Download an aggregate Markdown report of the filtered selection (executive summary + one section per campaign)"
           >
-            <FileText className="h-3 w-3" /> Informe
+            <FileText className="h-3 w-3" /> Report
           </button>
           <button
             type="button"
             onClick={() => exportCsv(filtered)}
             disabled={filtered.length === 0}
             className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-ink-900 disabled:cursor-not-allowed disabled:opacity-50"
-            title="Descargar la lista filtrada en CSV"
+            title="Download the filtered list as CSV"
           >
             <Download className="h-3 w-3" /> CSV
           </button>
@@ -385,10 +385,10 @@ export function HistoryPanel({
       {hasFilters && filtered.length === 0 ? (
         <EmptyState
           icon={Search}
-          title="Ninguna campaña coincide con los filtros"
-          description="Prueba con otro término de búsqueda o restablece los filtros para ver todo el archivo."
+          title="No campaigns match the filters"
+          description="Try a different search term or reset the filters to see the whole archive."
           action={{
-            label: 'Ver todo el archivo',
+            label: 'View the whole archive',
             onClick: () => {
               setQuery('')
               setResult('ALL')
@@ -409,7 +409,7 @@ export function HistoryPanel({
               <Link
                 href={`/historial/${c.id}`}
                 className="panel panel-hover group block rounded-xl p-3.5 transition-colors"
-                aria-label={`Ver ficha completa de la campaña ${c.scenario.codename}`}
+                aria-label={`View the full campaign record for ${c.scenario.codename}`}
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="min-w-0">
@@ -418,20 +418,20 @@ export function HistoryPanel({
                       <span className="ml-2 font-normal text-ink-500">· {c.scenario.company}</span>
                     </p>
                     <p className="mt-0.5 font-mono-tight text-[10.5px] text-ink-400">
-                      {new Date(c.startedAt).toLocaleString('es-ES', {
+                      {new Date(c.startedAt).toLocaleString('en-GB', {
                         day: '2-digit',
                         month: 'short',
                         hour: '2-digit',
                         minute: '2-digit',
                       })}{' '}
-                      · dificultad {c.scenario.difficulty}/5
+                      · difficulty {c.scenario.difficulty}/5
                       {c.status === 'COMPLETED' && (
                         <span className="ml-2 inline-flex items-center gap-1">
-                          · marcador <b className="text-[#475467]">{c.redScore}–{c.blueScore}</b>
+                          · score <b className="text-[#475467]">{c.redScore}–{c.blueScore}</b>
                           <span className="ml-1 text-ink-400">· {VICTORY_RULE_SHORT}:</span>
                           <b
                             className="cursor-help text-[#475467]"
-                            title={`El ganador lo decide el progreso del objetivo, no la puntuación (${c.redScore}–${c.blueScore} son puntos de actividad). ${VICTORY_RULE_DETAIL}`}
+                            title={`The winner is decided by objective progress, not the score (${c.redScore}–${c.blueScore} are activity points). ${VICTORY_RULE_DETAIL}`}
                           >
                             {decisiveProgressLabel(c.winner, c.redProgress, c.blueProgress)}
                           </b>
@@ -445,11 +445,11 @@ export function HistoryPanel({
                       <WinnerBadge winner={c.winner} redProgress={c.redProgress} blueProgress={c.blueProgress} />
                     ) : c.status === 'RUNNING' ? (
                       <span className="flex items-center gap-1 rounded-full border border-[#fedf89] bg-[#fffaeb] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#b54708]">
-                        <Hourglass className="h-2.5 w-2.5" /> EN CURSO
+                        <Hourglass className="h-2.5 w-2.5" /> IN PROGRESS
                       </span>
                     ) : (
                       <span className="rounded-full border border-[#e4e7ec] bg-[#f9fafb] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-ink-500">
-                        ABORTADA
+                        ABORTED
                       </span>
                     )}
                     <ChevronRight className="h-4 w-4 shrink-0 text-[#d0d5dd] transition-all group-hover:translate-x-0.5 group-hover:text-ink-400" />

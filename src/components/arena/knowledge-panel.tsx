@@ -42,19 +42,19 @@ type SortKey = 'FUERZA' | 'CONFIANZA' | 'USOS' | 'RECIENTES'
 // ─────────────────────────────────────────────────────────────
 
 const CATEGORY_LABEL: Record<string, string> = {
-  TACTICA: 'Táctica',
-  TECNICA: 'Técnica',
-  DEFENSA: 'Defensa',
-  VULNERABILIDAD: 'Vulnerabilidad',
-  LECCION: 'Lección',
-  INTELIGENCIA: 'Inteligencia',
+  TACTICA: 'Tactics',
+  TECNICA: 'Technique',
+  DEFENSA: 'Defense',
+  VULNERABILIDAD: 'Vulnerability',
+  LECCION: 'Lesson',
+  INTELIGENCIA: 'Intelligence',
 }
 
 const SORT_OPTIONS: Array<{ key: SortKey; label: string }> = [
-  { key: 'FUERZA', label: 'Más fuertes' },
-  { key: 'CONFIANZA', label: 'Más confianza' },
-  { key: 'USOS', label: 'Más usadas' },
-  { key: 'RECIENTES', label: 'Más recientes' },
+  { key: 'FUERZA', label: 'Strongest' },
+  { key: 'CONFIANZA', label: 'Most confidence' },
+  { key: 'USOS', label: 'Most used' },
+  { key: 'RECIENTES', label: 'Most recent' },
 ]
 
 function KnowledgeCard({ k, index, team }: { k: KnowledgeItem; index: number; team: 'RED' | 'BLUE' }) {
@@ -183,9 +183,9 @@ export function KnowledgePanel({
   // «filters» del JSON exportado y los titles de los botones.
   const filtersDesc = useMemo(() => {
     const parts: string[] = []
-    if (query.trim()) parts.push(`búsqueda «${query.trim()}»`)
-    if (category !== 'ALL') parts.push(`categoría ${CATEGORY_LABEL[category] ?? category}`)
-    parts.push(`orden ${SORT_OPTIONS.find((o) => o.key === sort)?.label ?? sort}`)
+    if (query.trim()) parts.push(`search “${query.trim()}”`)
+    if (category !== 'ALL') parts.push(`category ${CATEGORY_LABEL[category] ?? category}`)
+    parts.push(`sort ${SORT_OPTIONS.find((o) => o.key === sort)?.label ?? sort}`)
     return parts.join(' · ')
   }, [query, category, sort])
 
@@ -212,7 +212,7 @@ export function KnowledgePanel({
         blue: blueFiltered.length,
       }),
       'application/json;charset=utf-8',
-      exportFilename('conocimiento', 'json')
+      exportFilename('knowledge', 'json')
     )
   }
 
@@ -225,19 +225,19 @@ export function KnowledgePanel({
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar lecciones, tags, agente…"
+            placeholder="Search lessons, tags, agent…"
             className="w-full rounded-lg border border-[#e4e7ec] bg-white py-1.5 pl-8 pr-2.5 text-[12px] text-ink-900 placeholder:text-ink-400 focus:border-[#d0d5dd] focus:outline-none focus:ring-2 focus:ring-[#eaecf0]"
           />
         </label>
 
-        <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Filtrar por categoría">
+        <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Filter by category">
           <button
             type="button"
             onClick={() => setCategory('ALL')}
             data-active={category === 'ALL'}
             className="rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 transition-colors hover:border-[#d0d5dd] hover:text-ink-900 data-[active=true]:border-ink-900 data-[active=true]:bg-ink-900 data-[active=true]:text-white"
           >
-            Todas
+            All
           </button>
           {categories.map((cat) => (
             <button
@@ -254,14 +254,14 @@ export function KnowledgePanel({
 
         <div className="ml-auto flex items-center gap-2">
           <span className="font-mono-tight text-[10px] text-ink-400">
-            {exportSelection.length} de {red.length + blue.length}
+            {exportSelection.length} of {red.length + blue.length}
           </span>
           <button
             type="button"
             onClick={handleExportCsv}
             disabled={!hasMemory || exportSelection.length === 0}
             className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-ink-900 disabled:cursor-not-allowed disabled:opacity-50"
-            title={`Descargar la selección filtrada (${filtersDesc}) en CSV — mismo dialecto que el exportador de campañas: BOM UTF-8, separador «;», escapado RFC 4180`}
+            title={`Download the filtered selection (${filtersDesc}) as CSV — same dialect as the campaigns exporter: UTF-8 BOM, “;” separator, RFC 4180 escaping`}
           >
             <FileSpreadsheet className="h-3 w-3" /> CSV
           </button>
@@ -270,7 +270,7 @@ export function KnowledgePanel({
             onClick={handleExportJson}
             disabled={!hasMemory || exportSelection.length === 0}
             className="flex items-center gap-1.5 rounded-lg border border-[#e4e7ec] bg-white px-2.5 py-1.5 font-mono-tight text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:border-[#d0d5dd] hover:text-ink-900 disabled:cursor-not-allowed disabled:opacity-50"
-            title={`Descargar la selección filtrada (${filtersDesc}) en JSON con metadatos: instante, filtros, recuento por equipo, tasa de éxito precalculada y tags como lista`}
+            title={`Download the filtered selection (${filtersDesc}) as JSON with metadata: instant, filters, per-team count, precomputed success rate and tags as a list`}
           >
             <FileJson className="h-3 w-3" /> JSON
           </button>
@@ -317,13 +317,13 @@ export function KnowledgePanel({
             <EmptyState
               compact
               icon={Swords}
-              title={red.length === 0 ? 'Sin conocimiento ofensivo todavía' : 'Ninguna lección RED coincide'}
+              title={red.length === 0 ? 'No offensive knowledge yet' : 'No RED lessons match'}
               description={
                 red.length === 0
-                  ? 'Las lecciones RED se archivan al terminar cada campaña y se inyectan en las siguientes para afinar el ataque.'
-                  : 'Ajusta la búsqueda o los filtros para encontrar lecciones de este equipo.'
+                  ? 'RED lessons are archived when each campaign ends and are injected into later ones to sharpen the attack.'
+                  : 'Adjust the search or the filters to find lessons for this team.'
               }
-              action={red.length === 0 ? { label: 'Lanzar una campaña', href: '/' } : undefined}
+              action={red.length === 0 ? { label: 'Launch a campaign', href: '/' } : undefined}
             />
           )}
         </TabsContent>
@@ -339,13 +339,13 @@ export function KnowledgePanel({
             <EmptyState
               compact
               icon={ShieldCheck}
-              title={blue.length === 0 ? 'Sin conocimiento defensivo todavía' : 'Ninguna lección BLUE coincide'}
+              title={blue.length === 0 ? 'No defensive knowledge yet' : 'No BLUE lessons match'}
               description={
                 blue.length === 0
-                  ? 'Las lecciones BLUE se archivan al terminar cada campaña y endurecen las próximas defensas.'
-                  : 'Ajusta la búsqueda o los filtros para encontrar lecciones de este equipo.'
+                  ? 'BLUE lessons are archived when each campaign ends and harden upcoming defenses.'
+                  : 'Adjust the search or the filters to find lessons for this team.'
               }
-              action={blue.length === 0 ? { label: 'Lanzar una campaña', href: '/' } : undefined}
+              action={blue.length === 0 ? { label: 'Launch a campaign', href: '/' } : undefined}
             />
           )}
         </TabsContent>

@@ -11,7 +11,7 @@ import GlareHover from '@/components/arena/reactbits/glare-hover/GlareHover'
 
 function DifficultyDots({ level }: { level: number }) {
   return (
-    <span className="flex items-center gap-1" aria-label={`Dificultad ${level} de 5`}>
+    <span className="flex items-center gap-1" aria-label={`Difficulty ${level} out of 5`}>
       {Array.from({ length: 5 }).map((_, i) => (
         <span
           key={i}
@@ -73,17 +73,17 @@ export function ControlCenter({
           </span>
           <div>
             <h3 className="font-display text-base font-semibold tracking-tight text-ink-900 sm:text-lg">
-              Centro de lanzamiento
+              Launch center
             </h3>
             <p className="text-xs text-ink-500">
-              Elige la infraestructura objetivo y lanza una campaña autónoma Red vs Blue
+              Pick the target infrastructure and launch an autonomous Red vs Blue campaign
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <span className="flex items-center gap-1.5 rounded-full border border-surface-200 bg-white px-3 py-1.5 font-mono-tight text-[10px] text-ink-500">
             <Cpu className="h-3 w-3 text-[#0086c9]" />
-            Motor: <span className="text-ink-900">{provider}</span>
+            Engine: <span className="text-ink-900">{provider}</span>
           </span>
           <span
             className={cn(
@@ -92,7 +92,7 @@ export function ControlCenter({
             )}
           >
             <span className={cn('h-1.5 w-1.5 rounded-full pulse-dot', running ? 'bg-[#d97706]' : 'bg-[#12b76a]')} />
-            {running ? 'Campaña en curso' : 'Sistema listo'}
+            {running ? 'Campaign in progress' : 'System ready'}
           </span>
         </div>
       </div>
@@ -114,11 +114,11 @@ export function ControlCenter({
             <InfinityIcon className="h-4 w-4" />
           </span>
           <div className="min-w-0">
-            <p className="text-[13px] font-semibold text-ink-900">Operación continua</p>
+            <p className="text-[13px] font-semibold text-ink-900">Continuous operation</p>
             <p className="text-[11px] leading-snug text-ink-500">
               {autopilot
-                ? 'Activado — el motor encadena campañas reales en segundo plano, con un breve periodo de calma entre ellas.'
-                : 'Actívalo y el motor encadenará campañas reales sin intervención, escenario tras escenario.'}
+                ? 'On — the engine chains real campaigns in the background, with a short cool-down between them.'
+                : 'Turn it on and the engine will chain real campaigns hands-free, scenario after scenario.'}
             </p>
           </div>
         </div>
@@ -126,7 +126,7 @@ export function ControlCenter({
           type="button"
           role="switch"
           aria-checked={autopilot}
-          aria-label="Operación continua"
+          aria-label="Continuous operation"
           onClick={() => onToggleAutopilot(!autopilot)}
           className={cn(
             'relative h-6.5 w-11 shrink-0 rounded-full border transition-colors',
@@ -204,7 +204,7 @@ export function ControlCenter({
                       animate={{ scale: 1, opacity: 1 }}
                       className="absolute right-2.5 top-2.5 z-10 flex items-center gap-1 rounded-full bg-ink-900 px-2 py-0.5 font-mono-tight text-[9px] font-bold text-white shadow-lg"
                     >
-                      <Check className="h-2.5 w-2.5" /> SELECCIONADO
+                      <Check className="h-2.5 w-2.5" /> SELECTED
                     </motion.span>
                   )}
                 </GlareHover>
@@ -240,23 +240,23 @@ export function ControlCenter({
         >
           {starting ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" /> Iniciando campaña…
+              <Loader2 className="h-4 w-4 animate-spin" /> Starting campaign…
             </>
           ) : running ? (
             <>
-              <ShieldAlert className="h-4 w-4 pulse-dot" /> Campaña en curso
+              <ShieldAlert className="h-4 w-4 pulse-dot" /> Campaign in progress
             </>
           ) : (
             <>
               <Swords className="h-4 w-4" />
-              Iniciar campaña {selected ? '' : '(escenario aleatorio)'}
+              Start campaign {selected ? '' : '(random scenario)'}
               <Play className="h-3.5 w-3.5" />
             </>
           )}
         </motion.button>
         <p className="max-w-md text-center text-[11.5px] leading-relaxed text-ink-500">
-          Los agentes combatirán durante 8 rondas. El conocimiento generado se archiva
-          automáticamente y se inyecta en las próximas campañas.
+          The agents will fight for 12 rounds. Generated knowledge is archived automatically
+          and injected into upcoming campaigns.
         </p>
       </div>
 
@@ -266,26 +266,26 @@ export function ControlCenter({
         <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
             <DialogTitle className="font-display text-base font-bold text-ink-900">
-              ¿Lanzamos la campaña?
+              Launch this campaign?
             </DialogTitle>
             <DialogDescription className="text-[12.5px] leading-relaxed text-ink-500">
               {selectedScenario ? (
                 <>
-                  Infraestructura objetivo: <span className="font-semibold text-ink-700">{selectedScenario.codename}</span>{' '}
+                  Target infrastructure: <span className="font-semibold text-ink-700">{selectedScenario.codename}</span>{' '}
                   — {selectedScenario.company}.
                 </>
               ) : (
-                'Escenario aleatorio: el motor elegirá la infraestructura objetivo.'
+                'Random scenario: the engine will pick the target infrastructure.'
               )}{' '}
-              Se jugarán 8 rondas reales Red vs Blue contra el laboratorio local.
+              12 real Red vs Blue rounds will be played against the local laboratory.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-wrap items-center gap-2 font-mono-tight text-[10px] text-ink-500">
             <span className="flex items-center gap-1.5 rounded-full border border-surface-200 bg-surface-50 px-2.5 py-1">
-              <Cpu className="h-3 w-3 text-[#0086c9]" /> Motor: <span className="font-semibold text-ink-700">{provider}</span>
+              <Cpu className="h-3 w-3 text-[#0086c9]" /> Engine: <span className="font-semibold text-ink-700">{provider}</span>
             </span>
             <span className="flex items-center gap-1.5 rounded-full border border-surface-200 bg-surface-50 px-2.5 py-1">
-              <Swords className="h-3 w-3 text-ink-400" /> 8 rondas
+              <Swords className="h-3 w-3 text-ink-400" /> 12 rounds
             </span>
           </div>
           <DialogFooter className="gap-2">
@@ -295,7 +295,7 @@ export function ControlCenter({
               disabled={starting}
               className="rounded-lg border border-surface-200 bg-white px-4 py-2 text-[13px] font-semibold text-ink-700 transition-colors hover:bg-surface-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="button"
@@ -305,11 +305,11 @@ export function ControlCenter({
             >
               {starting ? (
                 <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Iniciando…
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Starting…
                 </>
               ) : (
                 <>
-                  <Play className="h-3.5 w-3.5" /> Lanzar campaña
+                  <Play className="h-3.5 w-3.5" /> Launch campaign
                 </>
               )}
             </button>

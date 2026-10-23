@@ -53,10 +53,10 @@ export function RoundEvolution({ events, maxRounds }: { events: EventDTO[]; maxR
   const momentumNote = (() => {
     if (p.isEmpty) return null
     if (p.turningPoints.length > 0) {
-      return `El momentum cambió de manos en la ronda ${p.turningPoints.join(' y en la ronda ')}.`
+      return `Momentum changed hands in round ${p.turningPoints.join(' and in round ')}.`
     }
-    if (p.redTotal === p.blueTotal) return 'Impacto igualado de principio a fin: empate táctico en actividad.'
-    return `${p.redTotal > p.blueTotal ? 'RED' : 'BLUE'} lideró el impacto de principio a fin.`
+    if (p.redTotal === p.blueTotal) return 'Impact matched from start to finish: a tactical draw in activity.'
+    return `${p.redTotal > p.blueTotal ? 'RED' : 'BLUE'} led the impact from start to finish.`
   })()
 
   return (
@@ -64,17 +64,17 @@ export function RoundEvolution({ events, maxRounds }: { events: EventDTO[]; maxR
       <div className="mb-2.5 flex items-center gap-2">
         <Activity className="h-4 w-4 text-ink-500" />
         <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.2em] text-ink-600">
-          Evolución ronda a ronda
+          Round-by-round evolution
         </h3>
         <span className="rounded-full border border-surface-200 bg-white px-2 py-0.5 font-mono-tight text-[9.5px] font-bold text-ink-500">
-          {p.roundsPlayed}/{maxRounds} rondas con actividad
+          {p.roundsPlayed}/{maxRounds} rounds with activity
         </span>
       </div>
 
       {p.isEmpty ? (
         <p className="panel rounded-xl px-4 py-5 text-center text-[12.5px] text-ink-500">
-          Esta campaña aún no registra acciones de los equipos — la evolución aparecerá con los primeros
-          eventos.
+          This campaign does not record team actions yet — the evolution will appear with the first
+          events.
         </p>
       ) : (
         <div className="panel rounded-xl p-4">
@@ -88,12 +88,12 @@ export function RoundEvolution({ events, maxRounds }: { events: EventDTO[]; maxR
               </span>
             </div>
             <span className="font-mono-tight text-[9.5px] uppercase tracking-wider text-ink-400">
-              impacto acumulado · máx {max}
+              accumulated impact · max {max}
             </span>
           </div>
 
-          <svg viewBox={`0 0 ${W} ${H}`} className="h-[150px] w-full overflow-visible" role="img" aria-label="Curva de impacto acumulado por ronda de RED y BLUE">
-            <title>Impacto acumulado de cada equipo a lo largo de las rondas</title>
+          <svg viewBox={`0 0 ${W} ${H}`} className="h-[150px] w-full overflow-visible" role="img" aria-label="Accumulated impact curve per round for RED and BLUE">
+            <title>Each team's accumulated impact across the rounds</title>
             <defs>
               <linearGradient id="rondas-red" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={RED} stopOpacity="0.14" />
@@ -175,7 +175,7 @@ export function RoundEvolution({ events, maxRounds }: { events: EventDTO[]; maxR
                 viewport={{ once: true }}
                 transition={{ delay: 0.5 + i * 0.06, type: 'spring', stiffness: 300, damping: 18 }}
               >
-                <title>{`Ronda ${pt.r.round} · RED ${pt.r.redCumulative} pts acumulados (${pt.r.redActions} acciones)`}</title>
+                <title>{`Round ${pt.r.round} · RED ${pt.r.redCumulative} cumulative pts (${pt.r.redActions} actions)`}</title>
               </motion.circle>
             ))}
             {bluePts.map((pt, i) => (
@@ -192,7 +192,7 @@ export function RoundEvolution({ events, maxRounds }: { events: EventDTO[]; maxR
                 viewport={{ once: true }}
                 transition={{ delay: 0.6 + i * 0.06, type: 'spring', stiffness: 300, damping: 18 }}
               >
-                <title>{`Ronda ${pt.r.round} · BLUE ${pt.r.blueCumulative} pts acumulados (${pt.r.blueActions} acciones)`}</title>
+                <title>{`Round ${pt.r.round} · BLUE ${pt.r.blueCumulative} cumulative pts (${pt.r.blueActions} actions)`}</title>
               </motion.circle>
             ))}
           </svg>
@@ -210,7 +210,7 @@ export function RoundEvolution({ events, maxRounds }: { events: EventDTO[]; maxR
                       ? 'border-[#b2ddff] bg-[#f0f9ff]'
                       : 'border-surface-200 bg-surface-50'
                 )}
-                title={`Ronda ${r.round}: RED ${r.redActions} acciones (+${r.redImpact}) con ${r.redHits} aciertos · BLUE ${r.blueActions} acciones (+${r.blueImpact}) con ${r.blueHits} aciertos`}
+                title={`Round ${r.round}: RED ${r.redActions} actions (+${r.redImpact}) with ${r.redHits} hits · BLUE ${r.blueActions} actions (+${r.blueImpact}) with ${r.blueHits} hits`}
               >
                 <p className="font-mono-tight text-[9px] font-bold uppercase tracking-wider text-ink-400">R{r.round}</p>
                 <p className="font-mono-tight text-[10.5px] font-bold text-[#b42318]">▲ {r.redImpact}</p>
@@ -238,30 +238,30 @@ function SiblingBadge({ status, winner }: { status: string; winner: string | nul
   if (status === 'RUNNING')
     return (
       <span className="flex items-center gap-1 rounded-full border border-[#fec84b] bg-[#fffaeb] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#b54708]">
-        EN CURSO
+        IN PROGRESS
       </span>
     )
   if (status !== 'COMPLETED')
     return (
       <span className="flex items-center gap-1 rounded-full border border-surface-200 bg-surface-50 px-2 py-0.5 font-mono-tight text-[9px] font-bold text-ink-500">
-        ABORTADA
+        ABORTED
       </span>
     )
   if (winner === 'RED')
     return (
       <span className="flex items-center gap-1 rounded-full border border-[#fecdca] bg-[#fef3f2] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#b42318]">
-        <Swords className="h-2.5 w-2.5" /> GANA RED
+        <Swords className="h-2.5 w-2.5" /> RED WINS
       </span>
     )
   if (winner === 'BLUE')
     return (
       <span className="flex items-center gap-1 rounded-full border border-[#b2ddff] bg-[#f0f9ff] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#026aa2]">
-        <ShieldCheck className="h-2.5 w-2.5" /> GANA BLUE
+        <ShieldCheck className="h-2.5 w-2.5" /> BLUE WINS
       </span>
     )
   return (
     <span className="flex items-center gap-1 rounded-full border border-[#fedf89] bg-[#fffaeb] px-2 py-0.5 font-mono-tight text-[9px] font-bold text-[#b54708]">
-      <Minus className="h-2.5 w-2.5" /> EMPATE
+      <Minus className="h-2.5 w-2.5" /> DRAW
     </span>
   )
 }
@@ -305,7 +305,7 @@ export function ScenarioSiblings({
       <div className="mb-2.5 flex items-center gap-2">
         <Layers className="h-4 w-4 text-ink-500" />
         <h3 className="font-mono-tight text-[11px] font-bold uppercase tracking-[0.2em] text-ink-600">
-          Otras campañas en este escenario
+          Sibling campaigns in this scenario
         </h3>
         <span className="rounded-full border border-surface-200 bg-white px-2 py-0.5 font-mono-tight text-[9.5px] font-bold text-ink-500">
           {rows.length} · {current.scenario.codename}
@@ -325,21 +325,21 @@ export function ScenarioSiblings({
             <SiblingBadge status={r.status} winner={r.winner} />
             {r.isCurrent && (
               <span className="rounded bg-ink-900 px-1.5 py-0.5 font-mono-tight text-[8.5px] font-bold uppercase tracking-wider text-white">
-                esta campaña
+                this campaign
               </span>
             )}
             <span className="flex items-center gap-3 font-mono-tight text-[10.5px] text-ink-600">
-              <span title="Puntuación RED · BLUE">
+              <span title="RED · BLUE score">
                 <b className="text-[#b42318]">{r.redScore}</b>
                 <span className="text-surface-300"> · </span>
                 <b className="text-[#026aa2]">{r.blueScore}</b> pts
               </span>
-              <span title="Progreso de objetivos RED · BLUE">
-                {r.redProgress}/{r.blueProgress} de 100
+              <span title="RED · BLUE objective progress">
+                {r.redProgress}/{r.blueProgress} of 100
               </span>
             </span>
             <span className="ml-auto flex items-center gap-3 font-mono-tight text-[10px] text-ink-400">
-              <span className="flex items-center gap-1" title="Duración">
+              <span className="flex items-center gap-1" title="Duration">
                 <Clock className="h-3 w-3" /> {formatDuration(r.endedAt ? new Date(r.endedAt).getTime() - new Date(r.startedAt).getTime() : NaN)}
               </span>
               <span>{fmtDate(r.startedAt)}</span>
@@ -348,7 +348,7 @@ export function ScenarioSiblings({
                   href={`/historial/${r.id}`}
                   className="rounded-md border border-surface-200 bg-white px-2 py-0.5 font-bold text-ink-500 transition-colors hover:border-surface-300 hover:text-ink-900"
                 >
-                  Ver ficha
+                  View record
                 </Link>
               )}
             </span>
@@ -356,8 +356,8 @@ export function ScenarioSiblings({
         ))}
         <p className="border-t border-surface-100 bg-surface-50/60 px-3.5 py-2 font-mono-tight text-[9.5px] text-ink-500">
           {siblings.length === 0
-            ? 'Es la primera campaña registrada de este escenario.'
-            : `Media del escenario (${completed.length} finalizadas): RED ${avgRed ?? '—'} pts · BLUE ${avgBlue ?? '—'} pts · progreso ${avgRedProgress ?? '—'}/${avgBlueProgress ?? '—'} de 100`}
+            ? 'This is the first recorded campaign of this scenario.'
+            : `Scenario average (${completed.length} finished): RED ${avgRed ?? '—'} pts · BLUE ${avgBlue ?? '—'} pts · progress ${avgRedProgress ?? '—'}/${avgBlueProgress ?? '—'} of 100`}
           {' · '}
           {VICTORY_RULE_SHORT}
         </p>

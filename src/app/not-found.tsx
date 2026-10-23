@@ -17,11 +17,11 @@ export default function NotFound() {
           Error 404
         </p>
         <h1 className="font-display mt-1.5 text-lg font-bold text-ink-900">
-          Esta ruta no existe en el laboratorio
+          This route does not exist in the laboratory
         </h1>
         <p className="mt-2 text-[13px] leading-relaxed text-ink-500">
-          La página que buscas no se encuentra o ha cambiado de sitio. Vuelve al panel de mando
-          o consulta el archivo de campañas.
+          The page you are looking for is missing or has moved. Go back to the command deck
+          or browse the campaign archive.
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
           <Link
@@ -29,14 +29,14 @@ export default function NotFound() {
             className="flex items-center gap-2 rounded-lg bg-ink-900 px-4 py-2 text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-[#182230]"
           >
             <LayoutDashboard className="h-3.5 w-3.5" />
-            Ir al panel
+            Go to the deck
           </Link>
           <Link
             href="/historial"
             className="flex items-center gap-2 rounded-lg border border-surface-200 bg-white px-4 py-2 text-[13px] font-semibold text-ink-700 transition-colors hover:bg-surface-50"
           >
             <History className="h-3.5 w-3.5" />
-            Ver historial
+            View history
           </Link>
         </div>
       </div>

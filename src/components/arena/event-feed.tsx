@@ -19,14 +19,14 @@ import { cn } from '@/lib/utils'
 import type { EventDTO } from '@/lib/api-types'
 
 const RESULT_STYLE: Record<string, { label: string; cls: string; icon: LucideIcon }> = {
-  EXITO: { label: 'ÉXITO', cls: 'bg-[#fef3f2] text-[#b42318] border-[#fecdca]', icon: Zap },
-  PARCIAL: { label: 'PARCIAL', cls: 'bg-[#fffaeb] text-[#b54708] border-[#fedf89]', icon: AlertTriangle },
-  FALLO: { label: 'FALLO', cls: 'bg-surface-50 text-ink-500 border-surface-200', icon: ShieldX },
-  BLOQUEADO: { label: 'BLOQUEADO', cls: 'bg-[#f0f9ff] text-[#026aa2] border-[#b2ddff]', icon: ShieldCheck },
-  DETECTADO: { label: 'DETECTADO', cls: 'bg-[#ecfdf3] text-[#067647] border-[#a6f4c5]', icon: Eye },
-  CONTENIDO: { label: 'CONTENIDO', cls: 'bg-[#f5f3ff] text-[#6941c6] border-[#ddd6fe]', icon: Lock },
-  ENDURECIDO: { label: 'ENDURECIDO', cls: 'bg-[#f0f9ff] text-[#026aa2] border-[#b2ddff]', icon: ShieldCheck },
-  IGNORADO: { label: 'IGNORADO', cls: 'bg-[#fffaeb] text-[#b54708] border-[#fedf89]', icon: AlertTriangle },
+  EXITO: { label: 'SUCCESS', cls: 'bg-[#fef3f2] text-[#b42318] border-[#fecdca]', icon: Zap },
+  PARCIAL: { label: 'PARTIAL', cls: 'bg-[#fffaeb] text-[#b54708] border-[#fedf89]', icon: AlertTriangle },
+  FALLO: { label: 'FAILED', cls: 'bg-surface-50 text-ink-500 border-surface-200', icon: ShieldX },
+  BLOQUEADO: { label: 'BLOCKED', cls: 'bg-[#f0f9ff] text-[#026aa2] border-[#b2ddff]', icon: ShieldCheck },
+  DETECTADO: { label: 'DETECTED', cls: 'bg-[#ecfdf3] text-[#067647] border-[#a6f4c5]', icon: Eye },
+  CONTENIDO: { label: 'CONTAINED', cls: 'bg-[#f5f3ff] text-[#6941c6] border-[#ddd6fe]', icon: Lock },
+  ENDURECIDO: { label: 'HARDENED', cls: 'bg-[#f0f9ff] text-[#026aa2] border-[#b2ddff]', icon: ShieldCheck },
+  IGNORADO: { label: 'IGNORED', cls: 'bg-[#fffaeb] text-[#b54708] border-[#fedf89]', icon: AlertTriangle },
 }
 
 interface EvidenceParsed {
@@ -85,7 +85,7 @@ export function EventFeed({
         className
       )}
       role="log"
-      aria-label="Registro de eventos de la campaña"
+      aria-label="Campaign event log"
     >
       <AnimatePresence initial={false}>
         {shown.map((ev) => {
@@ -133,7 +133,7 @@ export function EventFeed({
                       isRed ? 'text-[#b42318]' : isBlue ? 'text-[#026aa2]' : 'text-[#b54708]'
                     )}
                   >
-                    {ev.agentCodename ?? 'SISTEMA'}
+                    {ev.agentCodename ?? 'SYSTEM'}
                   </span>
                   <span className={cn('font-mono-tight text-[9px] uppercase', SEVERITY_COLOR[ev.severity] ?? 'text-ink-400')}>
                     R{ev.round}·{ev.phase}
@@ -158,7 +158,7 @@ export function EventFeed({
                     <div className="flex items-center gap-1.5 border-b border-surface-100 px-2 py-1">
                       <TerminalSquare className="h-3 w-3 shrink-0 text-ink-400" />
                       <span className="font-mono-tight text-[8.5px] font-bold uppercase tracking-[0.14em] text-ink-400">
-                        comando real · laboratorio
+                        real command · laboratory
                       </span>
                       {evidence?.exchanges && evidence.exchanges.length > 0 && (
                         <span className="ml-auto flex items-center gap-1">
@@ -196,7 +196,7 @@ export function EventFeed({
       {shown.length === 0 && (
         <div className="flex h-full min-h-32 flex-col items-center justify-center gap-2 text-ink-400">
           <Info className="h-5 w-5" />
-          <p className="text-xs">Sin eventos todavía — las acciones de los agentes aparecerán aquí.</p>
+          <p className="text-xs">No events yet — agent actions will appear here.</p>
         </div>
       )}
     </div>

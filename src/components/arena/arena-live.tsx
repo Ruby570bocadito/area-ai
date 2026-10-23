@@ -13,15 +13,25 @@ import { NetworkMap } from './network-map'
 
 const PHASES = ['RECON', 'ARMADO', 'INTRUSION', 'ESCALADA', 'LATERAL', 'OBJETIVO'] as const
 
+// Etiquetas visibles de las fases (las claves PHASES son los valores de BD del motor)
+const PHASE_LABEL: Record<string, string> = {
+  RECON: 'RECON',
+  ARMADO: 'ARMING',
+  INTRUSION: 'INTRUSION',
+  ESCALADA: 'ESCALATION',
+  LATERAL: 'LATERAL',
+  OBJETIVO: 'OBJECTIVE',
+}
+
 const RESULT_BADGE: Record<string, { label: string; cls: string }> = {
-  EXITO: { label: 'ÉXITO', cls: 'border-[#fecdca] bg-[#fef3f2] text-[#b42318]' },
-  PARCIAL: { label: 'PARCIAL', cls: 'border-[#fedf89] bg-[#fffaeb] text-[#b54708]' },
-  FALLO: { label: 'FALLO', cls: 'border-surface-200 bg-surface-50 text-ink-500' },
-  BLOQUEADO: { label: 'BLOQUEADO', cls: 'border-[#b2ddff] bg-[#f0f9ff] text-[#026aa2]' },
-  DETECTADO: { label: 'DETECTADO', cls: 'border-[#a6f4c5] bg-[#ecfdf3] text-[#067647]' },
-  CONTENIDO: { label: 'CONTENIDO', cls: 'border-[#ddd6fe] bg-[#f5f3ff] text-[#6941c6]' },
-  ENDURECIDO: { label: 'ENDURECIDO', cls: 'border-[#b2ddff] bg-[#f0f9ff] text-[#026aa2]' },
-  IGNORADO: { label: 'IGNORADO', cls: 'border-[#fedf89] bg-[#fffaeb] text-[#b54708]' },
+  EXITO: { label: 'SUCCESS', cls: 'border-[#fecdca] bg-[#fef3f2] text-[#b42318]' },
+  PARCIAL: { label: 'PARTIAL', cls: 'border-[#fedf89] bg-[#fffaeb] text-[#b54708]' },
+  FALLO: { label: 'FAILED', cls: 'border-surface-200 bg-surface-50 text-ink-500' },
+  BLOQUEADO: { label: 'BLOCKED', cls: 'border-[#b2ddff] bg-[#f0f9ff] text-[#026aa2]' },
+  DETECTADO: { label: 'DETECTED', cls: 'border-[#a6f4c5] bg-[#ecfdf3] text-[#067647]' },
+  CONTENIDO: { label: 'CONTAINED', cls: 'border-[#ddd6fe] bg-[#f5f3ff] text-[#6941c6]' },
+  ENDURECIDO: { label: 'HARDENED', cls: 'border-[#b2ddff] bg-[#f0f9ff] text-[#026aa2]' },
+  IGNORADO: { label: 'IGNORED', cls: 'border-[#fedf89] bg-[#fffaeb] text-[#b54708]' },
 }
 
 // Tarjeta del operador que está resolviendo el turno ahora mismo.
@@ -57,7 +67,7 @@ function TurnOperator({
             </>
           ) : (
             <span className="font-mono-tight text-[11px] text-ink-400">
-              {team === 'red' ? 'RED sin acciones aún' : 'BLUE sin acciones aún'}
+              {team === 'red' ? 'RED has no actions yet' : 'BLUE has no actions yet'}
             </span>
           )}
         </div>
@@ -157,40 +167,40 @@ export function ArenaLive({
 
   // Exporta el informe de campaña como Markdown descargable
   const downloadReport = () => {
-    const res = winner === 'RED' ? 'VICTORIA RED' : winner === 'BLUE' ? 'VICTORIA BLUE' : winner == null && !running ? 'EMPATE' : 'EN CURSO'
+    const res = winner === 'RED' ? 'RED VICTORY' : winner === 'BLUE' ? 'BLUE VICTORY' : winner == null && !running ? 'DRAW' : 'IN PROGRESS'
     const lines = [
-      `# Informe de campaña — ${campaign.scenario.codename}`,
+      `# Campaign report — ${campaign.scenario.codename}`,
       '',
-      `- **Empresa:** ${campaign.scenario.company} (${campaign.scenario.industry})`,
-      `- **Dificultad:** ${campaign.scenario.difficulty}/5`,
-      `- **Estado:** ${res} · Ronda ${campaign.round}/${campaign.maxRounds}`,
-      `- **Inicio:** ${formatDateTime(campaign.startedAt)}`,
-      campaign.endedAt ? `- **Fin:** ${formatDateTime(campaign.endedAt)}` : null,
+      `- **Company:** ${campaign.scenario.company} (${campaign.scenario.industry})`,
+      `- **Difficulty:** ${campaign.scenario.difficulty}/5`,
+      `- **Status:** ${res} · Round ${campaign.round}/${campaign.maxRounds}`,
+      `- **Started:** ${formatDateTime(campaign.startedAt)}`,
+      campaign.endedAt ? `- **Ended:** ${formatDateTime(campaign.endedAt)}` : null,
       '',
-      `## Resultado`,
-      `| Métrica | RED | BLUE |`,
+      `## Outcome`,
+      `| Metric | RED | BLUE |`,
       `| --- | --- | --- |`,
-      `| Progreso objetivo | ${campaign.redProgress}/100 | ${campaign.blueProgress}/100 |`,
-      `| Puntuación | ${campaign.redScore} | ${campaign.blueScore} |`,
+      `| Objective progress | ${campaign.redProgress}/100 | ${campaign.blueProgress}/100 |`,
+      `| Score | ${campaign.redScore} | ${campaign.blueScore} |`,
       '',
-      `## Objetivos`,
+      `## Objectives`,
       `- **RED:** ${campaign.scenario.redObjective}`,
       `- **BLUE:** ${campaign.scenario.blueObjective}`,
       '',
-      `## Registro de acciones (${events.length} eventos)`,
+      `## Action log (${events.length} events)`,
       ...events.map(
         (e) =>
-          `### R${e.round} · [${e.team}] ${e.agentCodename ?? 'SISTEMA'} — ${e.action}\n\n${e.detail}${e.result ? `\n\n> Resultado: ${e.result} (impacto ${e.impact > 0 ? '+' : ''}${e.impact})` : ''}`
+          `### R${e.round} · [${e.team}] ${e.agentCodename ?? 'SYSTEM'} — ${e.action}\n\n${e.detail}${e.result ? `\n\n> Outcome: ${e.result} (impact ${e.impact > 0 ? '+' : ''}${e.impact})` : ''}`
       ),
       '',
       `---`,
-      `Generado por area·ai — laboratorio adversarial de agentes IA.`,
+      `Generated by area·ai — adversarial laboratory of AI agents.`,
     ].filter((l): l is string => l != null)
     const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `informe-${campaign.scenario.key}-${campaign.id.slice(0, 8)}.md`
+    a.download = `report-${campaign.scenario.key}-${campaign.id.slice(0, 8)}.md`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -208,17 +218,17 @@ export function ArenaLive({
               </h3>
               {running ? (
                 <span className="flex items-center gap-1.5 rounded-full border border-[#fec84b] bg-[#fffaeb] px-2.5 py-0.5 font-mono-tight text-[10px] font-bold text-[#b54708]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#d97706] pulse-dot" /> EN VIVO
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#d97706] pulse-dot" /> LIVE
                 </span>
               ) : (
                 <span className="rounded-full border border-surface-200 bg-surface-50 px-2.5 py-0.5 font-mono-tight text-[10px] font-bold text-ink-500">
-                  FINALIZADA
+                  FINISHED
                 </span>
               )}
             </div>
             <p className="mt-1 flex items-center gap-1.5 text-xs text-ink-500">
               <Building2 className="h-3 w-3" />
-              {campaign.scenario.company} · {campaign.scenario.industry} · dificultad {campaign.scenario.difficulty}/5
+              {campaign.scenario.company} · {campaign.scenario.industry} · difficulty {campaign.scenario.difficulty}/5
             </p>
           </div>
           {/* acciones + progreso de rondas */}
@@ -226,9 +236,9 @@ export function ArenaLive({
             <button
               onClick={downloadReport}
               className="flex items-center gap-1.5 rounded-md border border-surface-200 bg-white px-2.5 py-1 font-mono-tight text-[10px] font-bold text-ink-500 shadow-sm transition-colors hover:border-surface-300 hover:text-ink-900"
-              title="Descargar informe de la campaña en Markdown"
+              title="Download the campaign report in Markdown"
             >
-              <Download className="h-3 w-3" /> Informe
+              <Download className="h-3 w-3" /> Report
             </button>
             <div className="flex items-center gap-1">
               {Array.from({ length: campaign.maxRounds }).map((_, i) => (
@@ -240,11 +250,11 @@ export function ArenaLive({
                     scale: running && i === campaign.round - 1 ? 1.25 : 1,
                   }}
                   className="h-2 w-4 rounded-sm"
-                  title={`Ronda ${i + 1}`}
+                  title={`Round ${i + 1}`}
                 />
               ))}
               <span className="ml-2 font-mono-tight text-[11px] text-ink-500">
-                Ronda {campaign.round}/{campaign.maxRounds}
+                Round {campaign.round}/{campaign.maxRounds}
               </span>
             </div>
           </div>
@@ -263,7 +273,7 @@ export function ArenaLive({
                     : 'border-surface-100 bg-transparent text-ink-400'
               )}
             >
-              {p}
+              {PHASE_LABEL[p] ?? p}
             </span>
           ))}
         </div>
@@ -285,7 +295,7 @@ export function ArenaLive({
                           ev.team === 'RED' ? 'text-[#b42318]' : ev.team === 'BLUE' ? 'text-[#026aa2]' : 'text-[#b54708]'
                         )}
                       >
-                        {ev.agentCodename ?? 'SISTEMA'}
+                        {ev.agentCodename ?? 'SYSTEM'}
                       </span>
                       <span className="text-ink-600">{ev.action}</span>
                       <span className="text-surface-300">◆</span>
@@ -352,7 +362,7 @@ export function ArenaLive({
                   <NumberFlow value={campaign.redScore} />
                 </p>
               </div>
-              <p className="mt-1 font-mono-tight text-[9.5px] uppercase tracking-[0.2em] text-ink-400">Impacto rojo</p>
+              <p className="mt-1 font-mono-tight text-[9.5px] uppercase tracking-[0.2em] text-ink-400">Red impact</p>
             </div>
             <motion.div
               animate={running ? { scale: [1, 1.12, 1] } : {}}
@@ -375,29 +385,29 @@ export function ArenaLive({
                   <NumberFlow value={campaign.blueScore} />
                 </p>
               </div>
-              <p className="mt-1 font-mono-tight text-[9.5px] uppercase tracking-[0.2em] text-ink-400">Defensa azul</p>
+              <p className="mt-1 font-mono-tight text-[9.5px] uppercase tracking-[0.2em] text-ink-400">Blue defense</p>
             </div>
           </div>
           <div className="relative z-10 space-y-3.5">
             <ProgressBar
               value={campaign.redProgress}
               color="red"
-              label="Avance del objetivo ofensivo"
+              label="Offensive objective progress"
               icon={<Swords className="h-3 w-3" />}
             />
             <ProgressBar
               value={campaign.blueProgress}
               color="blue"
-              label="Endurecimiento de la postura"
+              label="Posture hardening"
               icon={<ShieldCheck className="h-3 w-3" />}
             />
           </div>
           <div className="relative z-10 grid gap-2 text-[11px] sm:grid-cols-2">
             <p className="rounded-lg border border-[#fecdca] bg-[#fef3f2] p-2.5 leading-snug text-ink-700">
-              <span className="font-bold text-[#b42318]">Objetivo RED:</span> {campaign.scenario.redObjective}
+              <span className="font-bold text-[#b42318]">RED objective:</span> {campaign.scenario.redObjective}
             </p>
             <p className="rounded-lg border border-[#b2ddff] bg-[#f0f9ff] p-2.5 leading-snug text-ink-700">
-              <span className="font-bold text-[#026aa2]">Objetivo BLUE:</span> {campaign.scenario.blueObjective}
+              <span className="font-bold text-[#026aa2]">BLUE objective:</span> {campaign.scenario.blueObjective}
             </p>
           </div>
         </div>
@@ -418,7 +428,7 @@ export function ArenaLive({
         {infraNodes.length > 0 ? (
           <NetworkMap nodes={infraNodes} events={events} running={running} phase={campaign.phase} liveLab={liveLab} />
         ) : (
-          <div className="panel rounded-xl p-6 text-sm text-ink-500">Sin mapa disponible.</div>
+          <div className="panel rounded-xl p-6 text-sm text-ink-500">No map available.</div>
         )}
         <EventFeed events={events} className="max-h-[420px] min-h-[280px]" />
       </div>
@@ -467,10 +477,10 @@ export function ArenaLive({
                 )}
               >
                 {winner === 'RED'
-                  ? 'Victoria del RED TEAM'
+                  ? 'RED TEAM victory'
                   : winner === 'BLUE'
-                    ? 'Victoria del BLUE TEAM'
-                    : 'Empate táctico'}
+                    ? 'BLUE TEAM victory'
+                    : 'Tactical draw'}
               </p>
               <p className="mt-0.5 font-mono-tight text-[10.5px] text-ink-600">
                 {explainWinner(winner, campaign.redProgress, campaign.blueProgress)}
@@ -481,7 +491,7 @@ export function ArenaLive({
               className="hidden cursor-help items-center gap-1.5 rounded-lg border border-surface-200 bg-white/70 px-2.5 py-1.5 font-mono-tight text-[9.5px] font-bold text-ink-500 sm:flex"
               title={VICTORY_RULE_DETAIL}
             >
-              <Info className="h-3 w-3" /> regla: progreso, no puntos
+              <Info className="h-3 w-3" /> rule: progress, not points
             </span>
           </div>
         </motion.div>

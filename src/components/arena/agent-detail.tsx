@@ -18,11 +18,11 @@ const AGENT_PHASES = new Map<string, string[]>(
 
 const PHASE_SHORT: Record<string, string> = {
   RECON: 'Recon',
-  ARMADO: 'Armado',
-  INTRUSION: 'Intrusión',
-  ESCALADA: 'Escalada',
+  ARMADO: 'Arming',
+  INTRUSION: 'Intrusion',
+  ESCALADA: 'Escalation',
   LATERAL: 'Lateral',
-  OBJETIVO: 'Objetivo',
+  OBJETIVO: 'Objective',
 }
 
 interface ActivityData {
@@ -143,9 +143,9 @@ export function AgentDetailDialog({
         {/* Stats */}
         <div className="grid grid-cols-3 gap-2 px-6">
           {[
-            { icon: Swords, label: 'Campañas', value: agent.campaigns, color: 'text-ink-900' },
-            { icon: Trophy, label: 'Victorias', value: agent.victories, color: 'text-[#067647]' },
-            { icon: GraduationCap, label: 'Nivel', value: agent.level, color: 'text-[#b54708]' },
+            { icon: Swords, label: 'Campaigns', value: agent.campaigns, color: 'text-ink-900' },
+            { icon: Trophy, label: 'Victories', value: agent.victories, color: 'text-[#067647]' },
+            { icon: GraduationCap, label: 'Level', value: agent.level, color: 'text-[#b54708]' },
           ].map((s, i) => (
             <motion.div
               key={s.label}
@@ -182,7 +182,7 @@ export function AgentDetailDialog({
           </div>
           <div>
             <div className="mb-1 flex items-center justify-between font-mono-tight text-[10px] text-ink-500">
-              <span>Tasa de victorias</span>
+              <span>Win rate</span>
               <span>{winRate}%</span>
             </div>
             <div className="flex h-1.5 overflow-hidden rounded-full bg-surface-100">
@@ -200,7 +200,7 @@ export function AgentDetailDialog({
         {phases.length > 0 && (
           <div className="px-6 pt-4">
             <p className="font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.2em] text-ink-400">
-              Fases con iniciativa en el motor
+              Phases where the engine gives them the initiative
             </p>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {phases.map((p) => (
@@ -220,7 +220,7 @@ export function AgentDetailDialog({
         <div className="px-6 pt-4">
           <div className="flex items-center justify-between">
             <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.2em] text-ink-400">
-              <History className="h-3 w-3" /> Actividad registrada
+              <History className="h-3 w-3" /> Recorded activity
             </p>
             {loading && <Loader2 className="h-3 w-3 animate-spin text-ink-400" />}
           </div>
@@ -230,24 +230,24 @@ export function AgentDetailDialog({
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <div className="rounded-lg border border-surface-100 bg-surface-50 p-2.5 text-center">
                   <p className="font-display text-base font-extrabold text-ink-900">{sum.totalActions}</p>
-                  <p className="font-mono-tight text-[8.5px] uppercase tracking-[0.16em] text-ink-400">Acciones totales</p>
+                  <p className="font-mono-tight text-[8.5px] uppercase tracking-[0.16em] text-ink-400">Total actions</p>
                 </div>
                 <div className="rounded-lg border border-surface-100 bg-surface-50 p-2.5 text-center">
                   <p className="font-display text-base font-extrabold" style={{ color: sum.successRate >= 50 ? '#067647' : soft }}>
                     {sum.successRate}%
                   </p>
                   <p className="font-mono-tight text-[8.5px] uppercase tracking-[0.16em] text-ink-400">
-                    {isRed ? 'Tasa de éxito' : 'Tasa de acierto'}
+                    {isRed ? 'Success rate' : 'Detection rate'}
                   </p>
                 </div>
               </div>
 
               {sum.techniques.length > 0 && (
                 <div className="mt-2.5">
-                  <p className="font-mono-tight text-[9px] uppercase tracking-[0.16em] text-ink-400">Técnicas más usadas</p>
+                  <p className="font-mono-tight text-[9px] uppercase tracking-[0.16em] text-ink-400">Most used techniques</p>
                   <div className="mt-1 flex flex-wrap gap-1.5">
                     {sum.techniques.slice(0, 4).map((t) => (
-                      <span key={t.name} className="rounded bg-surface-100 px-1.5 py-0.5 text-[10px] text-ink-700" title={`${t.count} usos`}>
+                      <span key={t.name} className="rounded bg-surface-100 px-1.5 py-0.5 text-[10px] text-ink-700" title={`${t.count} uses`}>
                         {t.name} <span className="font-mono-tight text-ink-500">×{t.count}</span>
                       </span>
                     ))}
@@ -257,7 +257,7 @@ export function AgentDetailDialog({
 
               {sum.byPhase.length > 0 && (
                 <div className="mt-2.5 space-y-1">
-                  <p className="font-mono-tight text-[9px] uppercase tracking-[0.16em] text-ink-400">Rendimiento por fase</p>
+                  <p className="font-mono-tight text-[9px] uppercase tracking-[0.16em] text-ink-400">Performance by phase</p>
                   {sum.byPhase.map((p) => (
                     <div key={p.phase} className="flex items-center gap-2">
                       <span className="w-16 shrink-0 font-mono-tight text-[9.5px] text-ink-500">{PHASE_SHORT[p.phase] ?? p.phase}</span>
@@ -314,9 +314,9 @@ export function AgentDetailDialog({
               <EmptyState
                 compact
                 icon={Activity}
-                title="Sin acciones registradas todavía"
-                description="Este agente entrará en combate en las próximas campañas."
-                action={{ label: 'Lanzar campaña', href: '/' }}
+                title="No actions recorded yet"
+                description="This agent will enter combat in upcoming campaigns."
+                action={{ label: 'Launch campaign', href: '/' }}
               />
             )
           )}

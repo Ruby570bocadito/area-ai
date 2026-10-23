@@ -201,7 +201,7 @@ function toastError(titulo: string, detalle?: unknown) {
       ? detalle.trim()
       : detalle instanceof Error && detalle.message.trim() !== ""
         ? detalle.message.trim()
-        : "Motivo desconocido; comprueba la conexión con el motor e inténtalo de nuevo."
+        : "Unknown reason; check the connection with the engine and try again."
   toast({
     title: titulo,
     description: descripcion,

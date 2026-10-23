@@ -17,12 +17,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 // ─────────────────────────────────────────────────────────────
 
 const G_SEQUENCES: Record<string, { href: string; label: string }> = {
-  p: { href: '/', label: 'Panel de mando' },
-  o: { href: '/arena', label: 'Operaciones' },
-  a: { href: '/agentes', label: 'Agentes' },
-  c: { href: '/conocimiento', label: 'Conocimiento' },
-  h: { href: '/historial', label: 'Historial' },
-  n: { href: '/analitica', label: 'Analítica' },
+  p: { href: '/', label: 'Command deck' },
+  o: { href: '/arena', label: 'Operations' },
+  a: { href: '/agentes', label: 'Agents' },
+  c: { href: '/conocimiento', label: 'Knowledge' },
+  h: { href: '/historial', label: 'History' },
+  n: { href: '/analitica', label: 'Analytics' },
   m: { href: '/modelos', label: 'Model Studio' },
 }
 
@@ -108,8 +108,8 @@ export function KeyboardShortcuts() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Atajos de teclado"
-        title="Atajos de teclado (?)"
+        aria-label="Keyboard shortcuts"
+        title="Keyboard shortcuts (?)"
         className="hidden h-8 w-8 items-center justify-center rounded-md border border-surface-200 bg-white text-ink-500 shadow-sm transition-colors hover:border-surface-300 hover:text-ink-900 md:flex"
       >
         <Keyboard className="h-3.5 w-3.5" />
@@ -118,16 +118,16 @@ export function KeyboardShortcuts() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-display text-base font-bold text-ink-900">Atajos de teclado</DialogTitle>
+            <DialogTitle className="font-display text-base font-bold text-ink-900">Keyboard shortcuts</DialogTitle>
             <DialogDescription className="text-[12.5px] leading-relaxed text-ink-500">
-              Muevete por el laboratorio sin tocar el ratón. Las secuencias «g» se completan en menos de un segundo.
+              Move around the laboratory without touching the mouse. The “g” sequences complete in under a second.
             </DialogDescription>
           </DialogHeader>
 
           <div className="nice-scroll max-h-[60vh] space-y-4 overflow-y-auto pr-1">
             <section>
               <p className="mb-1 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.16em] text-ink-400">
-                Navegación
+                Navigation
               </p>
               <div className="divide-y divide-surface-100">
                 {Object.entries(G_SEQUENCES).map(([key, dest]) => (
@@ -141,16 +141,16 @@ export function KeyboardShortcuts() {
                 General
               </p>
               <div className="divide-y divide-surface-100">
-                <ShortcutRow keys={['⌘', 'K']} label="Paleta de comandos (buscar y lanzar)" />
-                <ShortcutRow keys={['?']} label="Esta ayuda" />
-                <ShortcutRow keys={['Esc']} label="Cerrar diálogos" />
+                <ShortcutRow keys={['⌘', 'K']} label="Command palette (search and launch)" />
+                <ShortcutRow keys={['?']} label="This help" />
+                <ShortcutRow keys={['Esc']} label="Close dialogs" />
               </div>
             </section>
           </div>
 
           <p className="border-t border-surface-200 pt-3 text-[11px] leading-relaxed text-ink-400">
-            Los atajos se ignoran mientras escribes en un campo de texto, y no interfieren con los combos del navegador
-            (solo «g» sin modificadores abre la secuencia).
+            Shortcuts are ignored while you are typing in a text field, and they do not interfere with browser combos
+            (only a bare “g” without modifiers opens the sequence).
           </p>
         </DialogContent>
       </Dialog>

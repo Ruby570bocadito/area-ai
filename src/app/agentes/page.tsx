@@ -16,9 +16,9 @@ function AgentesPage() {
   return (
     <PageContainer>
       <PageHeader
-        kicker="Operadores"
-        title="Agentes IA"
-        subtitle="Diez operadores autónomos con especialidad, fases asignadas y memoria propia: ganan experiencia, suben de nivel y refinan sus tácticas campaña tras campaña. Abre cualquier ficha para ver su actividad real."
+        kicker="Operators"
+        title="AI agents"
+        subtitle="Ten autonomous operators with a specialty, assigned phases and their own memory: they earn experience, level up and refine their tactics campaign after campaign. Open any card to see their real activity."
       />
       <Roster agents={state.agents} />
     </PageContainer>

@@ -42,10 +42,10 @@ const PRESETS: ProviderPreset[] = [
   { id: 'openai', label: 'OpenAI', baseUrl: 'https://api.openai.com/v1', hint: 'gpt-4o · gpt-4o-mini · o3-mini', icon: <FaRobot className="h-4 w-4" /> },
   { id: 'deepseek', label: 'DeepSeek', baseUrl: 'https://api.deepseek.com/v1', hint: 'deepseek-chat · deepseek-reasoner', icon: <SiDeepseek className="h-4 w-4" /> },
   { id: 'groq', label: 'Groq', baseUrl: 'https://api.groq.com/openai/v1', hint: 'llama-3.3-70b · mixtral', icon: <Zap className="h-4 w-4" /> },
-  { id: 'openrouter', label: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', hint: '+300 modelos unificados', icon: <FaRocket className="h-4 w-4" /> },
+  { id: 'openrouter', label: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', hint: '+300 unified models', icon: <FaRocket className="h-4 w-4" /> },
   { id: 'together', label: 'Together AI', baseUrl: 'https://api.together.xyz/v1', hint: 'llama · qwen · mistral', icon: <SiHuggingface className="h-4 w-4" /> },
-  { id: 'fireworks', label: 'Fireworks', baseUrl: 'https://api.fireworks.ai/inference/v1', hint: 'modelos open-source rápidos', icon: <FaFire className="h-4 w-4" /> },
-  { id: 'ollama', label: 'Ollama (local)', baseUrl: 'http://localhost:11434/v1', hint: 'modelos locales sin coste', icon: <SiOllama className="h-4 w-4" /> },
+  { id: 'fireworks', label: 'Fireworks', baseUrl: 'https://api.fireworks.ai/inference/v1', hint: 'fast open-source models', icon: <FaFire className="h-4 w-4" /> },
+  { id: 'ollama', label: 'Ollama (local)', baseUrl: 'http://localhost:11434/v1', hint: 'local models at zero cost', icon: <SiOllama className="h-4 w-4" /> },
 ]
 
 interface ModelInfo {
@@ -100,7 +100,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
 
   const fetchModels = async () => {
     if (!baseUrl.trim()) {
-      toastError('Falta la Base URL', 'Elige un proveedor o escribe la URL compatible OpenAI.')
+      toastError('Base URL missing', 'Pick a provider or type the OpenAI-compatible URL.')
       return
     }
     setFetching(true)
@@ -111,18 +111,18 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
         body: JSON.stringify({ baseUrl: baseUrl.trim(), apiKey: apiKey.trim() || undefined }),
       })
       const data = (await res.json()) as { ok: boolean; models?: ModelInfo[]; count?: number; error?: string }
-      if (!data.ok) throw new Error(data.error || 'No se pudo descargar el catálogo')
+      if (!data.ok) throw new Error(data.error || 'Could not download the catalog')
       setModels(data.models ?? [])
       setActivePreset((cur) => {
         const match = PRESETS.find((p) => p.baseUrl.replace(/\/$/, '') === baseUrl.replace(/\/$/, ''))
         return match ? match.id : cur
       })
       toast({
-        title: `${data.count ?? 0} modelos descargados`,
-        description: 'Catálogo sincronizado con el proveedor. Selecciona un modelo.',
+        title: `${data.count ?? 0} models downloaded`,
+        description: 'Catalog synced with the provider. Pick a model.',
       })
     } catch (e) {
-      toastError('No se pudo descargar el catálogo', e)
+      toastError('Could not download the catalog', e)
     } finally {
       setFetching(false)
     }
@@ -130,7 +130,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
 
   const save = async () => {
     if (!baseUrl.trim() || !model.trim() || !(apiKey.trim() || settings?.hasApiKey)) {
-      toastError('Configuración incompleta', 'Se necesitan Base URL, API key y un modelo seleccionado.')
+      toastError('Incomplete configuration', 'Base URL, API key and a selected model are required.')
       return
     }
     setSaving(true)
@@ -141,16 +141,16 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
         body: JSON.stringify({ baseUrl: baseUrl.trim(), apiKey: apiKey.trim() || undefined, model: model.trim() }),
       })
       const data = (await res.json()) as { ok: boolean; error?: string }
-      if (!data.ok) throw new Error(data.error || 'No se pudo guardar')
+      if (!data.ok) throw new Error(data.error || 'Could not save')
       toast({
-        title: 'Motor actualizado',
-        description: `Los agentes usarán ${model.trim()} en la próxima campaña.`,
+        title: 'Engine updated',
+        description: `The agents will use ${model.trim()} in the next campaign.`,
       })
       setApiKey('')
       await loadSettings()
       onSaved?.()
     } catch (e) {
-      toastError('No se pudo guardar la configuración', e)
+      toastError('Could not save the configuration', e)
     } finally {
       setSaving(false)
     }
@@ -163,9 +163,9 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
   }, [models, query])
 
   const sourceBadge = {
-    db: { label: 'Personalizado', cls: 'border-[#a6f4c5] bg-[#ecfdf3] text-[#067647]', icon: <CheckCircle2 className="h-3 w-3" /> },
-    env: { label: 'Variables de entorno', cls: 'status-live', icon: <KeyRound className="h-3 w-3" /> },
-    zai: { label: 'Motor integrado z-ai', cls: 'border-[#b2ddff] bg-[#f0f9ff] text-[#026aa2]', icon: <Cpu className="h-3 w-3" /> },
+    db: { label: 'Custom', cls: 'border-[#a6f4c5] bg-[#ecfdf3] text-[#067647]', icon: <CheckCircle2 className="h-3 w-3" /> },
+    env: { label: 'Environment variables', cls: 'status-live', icon: <KeyRound className="h-3 w-3" /> },
+    zai: { label: 'Built-in z-ai engine', cls: 'border-[#b2ddff] bg-[#f0f9ff] text-[#026aa2]', icon: <Cpu className="h-3 w-3" /> },
   }[settings?.source ?? 'zai']
 
   return (
@@ -181,11 +181,11 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
           <span className="font-mono-tight text-[11px] text-ink-500">
             {settings?.model ? (
               <>
-                modelo: <span className="text-ink-900">{settings.model}</span>
+                model: <span className="text-ink-900">{settings.model}</span>
                 {settings.hasApiKey && <span className="ml-2 text-[10px]">🔑 {settings.apiKeyMasked}</span>}
               </>
             ) : (
-              'motor por defecto sin API key'
+              'default engine without API key'
             )}
           </span>
         </div>
@@ -193,7 +193,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
         {/* Presets */}
         <div className="mt-5">
           <Label className="font-mono-tight text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-500">
-            1 · Proveedor
+            1 · Provider
           </Label>
           <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
             {PRESETS.map((p) => (
@@ -222,7 +222,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
         <div className="mt-5 grid gap-3">
           <div>
             <Label htmlFor="ms-url" className="font-mono-tight flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-500">
-              <Link2 className="h-3 w-3" /> 2 · Base URL (compatible OpenAI)
+              <Link2 className="h-3 w-3" /> 2 · Base URL (OpenAI-compatible)
             </Label>
             <Input
               id="ms-url"
@@ -237,7 +237,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
           </div>
           <div>
             <Label htmlFor="ms-key" className="font-mono-tight flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-500">
-              <KeyRound className="h-3 w-3" /> 3 · API key {settings?.hasApiKey && <span className="normal-case tracking-normal text-[10px] font-normal text-ink-500">(dejar vacío para conservar {settings.apiKeyMasked})</span>}
+              <KeyRound className="h-3 w-3" /> 3 · API key {settings?.hasApiKey && <span className="normal-case tracking-normal text-[10px] font-normal text-ink-500">(leave empty to keep {settings.apiKeyMasked})</span>}
             </Label>
             <Input
               id="ms-key"
@@ -254,7 +254,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
         <div className="mt-5">
           <div className="flex items-center justify-between gap-2">
             <Label className="font-mono-tight text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-500">
-              4 · Catálogo de modelos
+              4 · Model catalog
             </Label>
             <Button
               type="button"
@@ -264,7 +264,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
               className="h-8 gap-1.5 bg-ink-900 font-mono-tight text-[11px] font-bold text-white hover:bg-[#182230]"
             >
               {fetching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
-              Descargar modelos
+              Download models
             </Button>
           </div>
 
@@ -275,7 +275,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
                 <Input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Filtrar modelos…"
+                  placeholder="Filter models…"
                   className="h-8 border-surface-300 bg-white pl-8 font-mono-tight text-xs"
                 />
               </div>
@@ -309,7 +309,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
                 </AnimatePresence>
                 {filtered.length === 0 && (
                   <p className="px-3 py-6 text-center text-[11px] text-ink-500">
-                    Sin resultados para «{query}»
+                    No results for “{query}”
                   </p>
                 )}
               </ScrollArea>
@@ -318,7 +318,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
           {models.length === 0 && (
             <p className="mt-2 flex items-center gap-1.5 rounded-lg border border-dashed border-surface-300 bg-surface-50 px-3 py-2.5 text-[11px] text-ink-500">
               <CircleAlert className="h-3.5 w-3.5 shrink-0" />
-              Pulsa «Descargar modelos» para sincronizar el catálogo del proveedor.
+              Press “Download models” to sync the provider's catalog.
             </p>
           )}
         </div>
@@ -326,7 +326,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
         {/* Modelo manual */}
         <div className="mt-5">
           <Label htmlFor="ms-model" className="font-mono-tight text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-500">
-            5 · Modelo seleccionado
+            5 · Selected model
           </Label>
           <Input
             id="ms-model"
@@ -344,7 +344,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
           className="mt-5 w-full gap-2 bg-ink-900 font-mono-tight text-xs font-bold uppercase tracking-[0.15em] text-white hover:bg-[#182230]"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-          Guardar y activar motor
+          Save and activate engine
         </Button>
       </div>
 
@@ -352,35 +352,35 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
       <div className="space-y-4">
         <div className="panel rounded-2xl p-4.5">
           <p className="flex items-center gap-2 font-mono-tight text-[10px] font-bold uppercase tracking-[0.18em] text-ink-500">
-            <Info className="h-3.5 w-3.5" /> Qué hace esta configuración
+            <Info className="h-3.5 w-3.5" /> What this configuration does
           </p>
           <ul className="mt-3 space-y-2.5 text-[12px] leading-relaxed text-ink-600">
             <li className="flex gap-2">
               <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink-400" />
-              Cada acción de los agentes (tácticas, narrativa, lecciones archivadas) la decide el modelo activo.
+              Every agent action (tactics, narrative, archived lessons) is decided by the active model.
             </li>
             <li className="flex gap-2">
               <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink-400" />
-              La API key se guarda en la base de datos local del laboratorio y nunca se muestra en claro.
+              The API key is stored in the laboratory's local database and never shown in clear.
             </li>
             <li className="flex gap-2">
               <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink-400" />
-              Sin configuración externa, el motor usa el proveedor integrado z-ai.
+              With no external configuration, the engine uses the built-in z-ai provider.
             </li>
             <li className="flex gap-2">
               <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink-400" />
-              El cambio es inmediato: la próxima campaña que se lance usará el modelo activado.
+              The change is immediate: the next campaign you launch will use the activated model.
             </li>
           </ul>
         </div>
 
         <div className="panel rounded-2xl p-4.5">
           <p className="flex items-center gap-2 font-mono-tight text-[10px] font-bold uppercase tracking-[0.18em] text-ink-500">
-            <ShieldCheck className="h-3.5 w-3.5" /> Estado del motor
+            <ShieldCheck className="h-3.5 w-3.5" /> Engine status
           </p>
           <div className="mt-3 space-y-2 font-mono-tight text-[11px]">
             <div className="flex items-center justify-between">
-              <span className="text-ink-500">Fuente</span>
+              <span className="text-ink-500">Source</span>
               <span className="font-semibold text-ink-900">{sourceBadge.label}</span>
             </div>
             <div className="flex items-center justify-between gap-2">
@@ -388,12 +388,12 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
               <span className="truncate text-ink-900">{settings?.baseUrl || '—'}</span>
             </div>
             <div className="flex items-center justify-between gap-2">
-              <span className="text-ink-500">Modelo</span>
+              <span className="text-ink-500">Model</span>
               <span className="truncate text-ink-900">{settings?.model || 'z-ai-sdk'}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-ink-500">API key</span>
-              <span className="text-ink-900">{settings?.hasApiKey ? settings.apiKeyMasked : 'no configurada'}</span>
+              <span className="text-ink-900">{settings?.hasApiKey ? settings.apiKeyMasked : 'not configured'}</span>
             </div>
           </div>
         </div>

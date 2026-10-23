@@ -33,30 +33,30 @@ import { Footer } from '@/components/arena/layout/footer'
 // ─────────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Panel', icon: LayoutDashboard },
-  { href: '/arena', label: 'Operaciones', icon: Radio },
-  { href: '/agentes', label: 'Agentes', icon: Users },
-  { href: '/conocimiento', label: 'Conocimiento', icon: BrainCircuit },
-  { href: '/historial', label: 'Historial', icon: History },
-  { href: '/analitica', label: 'Analítica', icon: BarChart3 },
-  { href: '/modelos', label: 'Modelos', icon: SlidersHorizontal },
+  { href: '/', label: 'Deck', icon: LayoutDashboard },
+  { href: '/arena', label: 'Operations', icon: Radio },
+  { href: '/agentes', label: 'Agents', icon: Users },
+  { href: '/conocimiento', label: 'Knowledge', icon: BrainCircuit },
+  { href: '/historial', label: 'History', icon: History },
+  { href: '/analitica', label: 'Analytics', icon: BarChart3 },
+  { href: '/modelos', label: 'Models', icon: SlidersHorizontal },
 ] as const
 
 const PAGE_TITLES: Record<string, { title: string; sub: string }> = {
-  '/': { title: 'Panel de mando', sub: 'Visión general del laboratorio' },
-  '/arena': { title: 'Operaciones en vivo', sub: 'Telemetría de la campaña activa' },
-  '/agentes': { title: 'Agentes IA', sub: 'Roster de operadores autónomos' },
-  '/conocimiento': { title: 'Base de conocimiento', sub: 'Memoria en evolución del sistema' },
-  '/historial': { title: 'Historial de campañas', sub: 'Archivo de enfrentamientos' },
-  '/analitica': { title: 'Analítica', sub: 'Lectura agregada del laboratorio' },
-  '/modelos': { title: 'Model Studio', sub: 'Motor LLM de los agentes' },
+  '/': { title: 'Command deck', sub: 'Laboratory overview' },
+  '/arena': { title: 'Live operations', sub: 'Telemetry of the active campaign' },
+  '/agentes': { title: 'AI agents', sub: 'Roster of autonomous operators' },
+  '/conocimiento': { title: 'Knowledge base', sub: 'The system’s evolving memory' },
+  '/historial': { title: 'Campaign history', sub: 'Archive of engagements' },
+  '/analitica': { title: 'Analytics', sub: 'Aggregate reading of the laboratory' },
+  '/modelos': { title: 'Model Studio', sub: 'The agents’ LLM engine' },
 }
 
 function pageMeta(pathname: string): { title: string; sub: string } {
   if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname]
-  // Rutas anidadas conocidas (p. ej. ficha de campaña /historial/[id])
+  // Known nested routes (e.g. campaign detail /historial/[id])
   if (pathname.startsWith('/historial/'))
-    return { title: 'Detalle de campaña', sub: 'Ficha completa del enfrentamiento' }
+    return { title: 'Campaign detail', sub: 'Full record of the engagement' }
   return { title: 'area·ai', sub: '' }
 }
 
@@ -76,7 +76,7 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
         </Link>
       </div>
 
-      <nav aria-label="Navegación principal" className="flex-1 space-y-0.5 px-3">
+      <nav aria-label="Main navigation" className="flex-1 space-y-0.5 px-3">
         {NAV_ITEMS.map((item) => {
           const active =
             pathname === item.href ||
@@ -113,7 +113,7 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
       <div className="mx-3 mb-5 rounded-xl border border-surface-200 bg-surface-50 p-3.5">
         <div className="flex items-center justify-between gap-2">
           <span className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.16em] text-ink-500">
-            <Cpu className="h-3 w-3" /> Sistema
+            <Cpu className="h-3 w-3" /> System
           </span>
           {/* El chip describe la CONEXIÓN con el motor (H-005): si el sondeo
               falla, rojo «Sin conexión» con prioridad sobre «En directo/En
@@ -138,14 +138,14 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
                     : 'pulse-dot bg-[#12b76a]'
               )}
             />
-            {status === 'offline' ? 'Sin conexión' : running ? 'En directo' : 'En espera'}
+            {status === 'offline' ? 'Disconnected' : running ? 'Live' : 'Standby'}
           </span>
         </div>
         {/* Filas de salud — sin estado cargado (conectando o motor caído)
             se muestra «—», nunca un valor supuesto (H-005). */}
         <dl className="mt-2.5 space-y-1.5 border-t border-surface-200 pt-2.5 font-mono-tight text-[9.5px]">
           <div className="flex items-center justify-between gap-2">
-            <dt className="text-ink-500">BD</dt>
+            <dt className="text-ink-500">DB</dt>
             <dd
               className={cn(
                 'flex items-center gap-1 font-semibold',
@@ -158,7 +158,7 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
                   dbStatus === 'up' ? 'bg-[#12b76a]' : dbStatus === 'down' ? 'bg-[#f04438]' : 'bg-surface-300'
                 )}
               />
-              {dbStatus === 'up' ? 'Operativa' : dbStatus === 'down' ? 'Caída' : '—'}
+              {dbStatus === 'up' ? 'Operational' : dbStatus === 'down' ? 'Down' : '—'}
             </dd>
           </div>
           <div className="flex items-center justify-between gap-2">
@@ -169,18 +169,18 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
                 state?.lab.online ? 'text-[#067647]' : 'text-ink-400'
               )}
             >
-              {state ? (state.lab.online ? `En línea :${state.lab.port ?? '—'}` : 'Fuera de línea') : '—'}
+              {state ? (state.lab.online ? `Online :${state.lab.port ?? '—'}` : 'Offline') : '—'}
             </dd>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <dt className="text-ink-500">Motor LLM</dt>
+            <dt className="text-ink-500">LLM engine</dt>
             <dd className="flex min-w-0 items-center gap-1 text-ink-600">
               {deterministic && (
                 <span
-                  title="La campaña en pantalla arrancó en simulación determinista: el LLM no estaba disponible al lanzarla"
+                  title="The on-screen campaign started in deterministic simulation: the LLM was unavailable when it launched"
                   className="shrink-0 rounded-full bg-[#fffaeb] px-1.5 py-px text-[8.5px] font-bold uppercase tracking-wider text-[#b54708]"
                 >
-                  Determinista
+                  Deterministic
                 </span>
               )}
               <span className="truncate">{state?.provider ?? '—'}</span>
@@ -188,10 +188,10 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
           </div>
         </dl>
         <div className="mt-2.5 flex items-center justify-between border-t border-surface-200 pt-2.5 font-mono-tight text-[9.5px] text-ink-500">
-          <span>{state ? `${state.stats.totalCampaigns} campañas` : '— campañas'}</span>
+          <span>{state ? `${state.stats.totalCampaigns} campaigns` : '— campaigns'}</span>
           <span className="flex items-center gap-1">
             {state?.autopilot && <InfinityIcon className="h-3 w-3 text-[#7c3aed]" />}
-            {state ? `${state.stats.knowledgeCount} lecciones` : '— lecciones'}
+            {state ? `${state.stats.knowledgeCount} lessons` : '— lessons'}
           </span>
         </div>
       </div>
@@ -227,7 +227,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <button
                 type="button"
                 onClick={() => setMobileOpen(true)}
-                aria-label="Abrir navegación"
+                aria-label="Open navigation"
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-surface-200 bg-white text-ink-700 transition-colors hover:bg-surface-100 lg:hidden"
               >
                 <Menu className="h-4 w-4" />
@@ -267,7 +267,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 )}
                 title={
                   status === 'offline'
-                    ? 'El sondeo del motor está fallando; reintentando automáticamente'
+                    ? 'The engine poll is failing; retrying automatically'
                     : undefined
                 }
               >
@@ -277,7 +277,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <Radio className="h-3 w-3" />
                 )}
                 <span className="hidden sm:inline">
-                  {status === 'offline' ? 'Sin conexión' : running ? 'En directo' : 'En espera'}
+                  {status === 'offline' ? 'Disconnected' : running ? 'Live' : 'Standby'}
                 </span>
                 {running && status !== 'offline' && (
                   <span className="h-1.5 w-1.5 rounded-full bg-[#d97706] pulse-dot" />
@@ -293,7 +293,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div role="status" aria-live="polite" className="sticky top-14 z-20 border-b border-[#fedf89] bg-[#fffaeb]">
             <p className="mx-auto flex h-9 w-full max-w-[1240px] items-center justify-center gap-2 px-4 font-mono-tight text-[11px] font-semibold text-[#b54708] sm:px-6 lg:px-8">
               <WifiOff className="h-3.5 w-3.5 shrink-0" />
-              Sin conexión con el motor — los datos pueden estar desactualizados; reintentando…
+              Disconnected from the engine — data may be stale; retrying…
             </p>
           </div>
         )}
@@ -322,12 +322,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               transition={{ type: 'spring', stiffness: 380, damping: 36 }}
               className="fixed inset-y-0 left-0 z-50 w-[264px] border-r border-surface-200 bg-white shadow-2xl lg:hidden"
               role="dialog"
-              aria-label="Navegación"
+              aria-label="Navigation"
             >
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
-                aria-label="Cerrar navegación"
+                aria-label="Close navigation"
                 className="absolute right-3 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 transition-colors hover:bg-surface-100 hover:text-ink-900"
               >
                 <X className="h-4 w-4" />

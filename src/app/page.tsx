@@ -37,12 +37,12 @@ import { EventFeed } from '@/components/arena/event-feed'
 // ─────────────────────────────────────────────────────────────
 
 const QUICK_LINKS = [
-  { href: '/arena', label: 'Operaciones', desc: 'Mapa y telemetría en vivo', icon: Radio, tint: 'text-[#0086c9] bg-[#f0f9ff] border-[#bae6fd]' },
-  { href: '/agentes', label: 'Agentes', desc: 'Roster y actividad real', icon: Users, tint: 'text-ink-900 bg-surface-100 border-surface-200' },
-  { href: '/conocimiento', label: 'Conocimiento', desc: 'Lecciones que evolucionan', icon: BrainCircuit, tint: 'text-[#7c3aed] bg-[#f5f3ff] border-[#ddd6fe]' },
-  { href: '/historial', label: 'Historial', desc: 'Archivo de campañas', icon: History, tint: 'text-[#b54708] bg-[#fffaeb] border-[#fedf89]' },
-  { href: '/analitica', label: 'Analítica', desc: 'Balance y evolución', icon: BarChart3, tint: 'text-[#067647] bg-[#ecfdf3] border-[#a6f4c5]' },
-  { href: '/modelos', label: 'Modelos', desc: 'Motor LLM del sistema', icon: SlidersHorizontal, tint: 'text-ink-900 bg-surface-100 border-surface-200' },
+  { href: '/arena', label: 'Operations', desc: 'Live map and telemetry', icon: Radio, tint: 'text-[#0086c9] bg-[#f0f9ff] border-[#bae6fd]' },
+  { href: '/agentes', label: 'Agents', desc: 'Roster and real activity', icon: Users, tint: 'text-ink-900 bg-surface-100 border-surface-200' },
+  { href: '/conocimiento', label: 'Knowledge', desc: 'Lessons that evolve', icon: BrainCircuit, tint: 'text-[#7c3aed] bg-[#f5f3ff] border-[#ddd6fe]' },
+  { href: '/historial', label: 'History', desc: 'Campaign archive', icon: History, tint: 'text-[#b54708] bg-[#fffaeb] border-[#fedf89]' },
+  { href: '/analitica', label: 'Analytics', desc: 'Balance and evolution', icon: BarChart3, tint: 'text-[#067647] bg-[#ecfdf3] border-[#a6f4c5]' },
+  { href: '/modelos', label: 'Models', desc: 'The system’s LLM engine', icon: SlidersHorizontal, tint: 'text-ink-900 bg-surface-100 border-surface-200' },
 ] as const
 
 const RESULT_CHIP: Record<string, string> = {
@@ -58,12 +58,12 @@ const RESULT_CHIP: Record<string, string> = {
 
 function relTime(iso: string): string {
   const s = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 1000))
-  if (s < 60) return `hace ${s}s`
+  if (s < 60) return `${s}s ago`
   const m = Math.round(s / 60)
-  if (m < 60) return `hace ${m} min`
+  if (m < 60) return `${m} min ago`
   const h = Math.round(m / 60)
-  if (h < 24) return `hace ${h} h`
-  return `hace ${Math.round(h / 24)} d`
+  if (h < 24) return `${h} h ago`
+  return `${Math.round(h / 24)} d ago`
 }
 
 function KpiCard({
@@ -113,7 +113,7 @@ function LabStatusCard({ delay }: { delay: number }) {
     <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay, duration: 0.4 }} className="panel rounded-xl p-4">
       <div className="flex items-center justify-between gap-2">
         <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-ink-400">
-          <Server className="h-3 w-3" /> Laboratorio real
+          <Server className="h-3 w-3" /> Real laboratory
         </p>
         <span
           className={cn(
@@ -122,31 +122,31 @@ function LabStatusCard({ delay }: { delay: number }) {
           )}
         >
           <span className={cn('h-1.5 w-1.5 rounded-full', lab.online ? 'bg-[#12b76a] pulse-dot' : 'bg-ink-400')} />
-          {lab.online ? 'operativo' : 'en espera'}
+          {lab.online ? 'operational' : 'standby'}
         </span>
       </div>
       {lab.online || liveLab ? (
         <div className="mt-3 grid grid-cols-2 gap-2">
           <div className="rounded-lg border border-surface-100 bg-surface-50 px-2.5 py-1.5">
-            <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Servicios HTTP</p>
+            <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">HTTP services</p>
             <p className="font-mono-tight text-[13px] font-bold text-ink-900">
               127.0.0.1:{lab.port ?? '—'}
             </p>
           </div>
           <div className="rounded-lg border border-surface-100 bg-surface-50 px-2.5 py-1.5">
-            <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Intercambios reales</p>
+            <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Real exchanges</p>
             <p className="font-mono-tight text-[13px] font-bold text-ink-900">
               <NumberFlow value={lab.exchanges} />
             </p>
           </div>
           <div className="rounded-lg border border-surface-100 bg-surface-50 px-2.5 py-1.5">
-            <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Sesiones activas</p>
+            <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Active sessions</p>
             <p className="font-mono-tight text-[13px] font-bold text-ink-900">
               <NumberFlow value={liveLab?.sessions ?? 0} />
             </p>
           </div>
           <div className="rounded-lg border border-surface-100 bg-surface-50 px-2.5 py-1.5">
-            <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Reglas SIEM</p>
+            <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">SIEM rules</p>
             <p className="font-mono-tight text-[13px] font-bold text-ink-900">
               <NumberFlow value={activeMonitors} />
             </p>
@@ -154,14 +154,14 @@ function LabStatusCard({ delay }: { delay: number }) {
         </div>
       ) : (
         <p className="mt-3 text-[11.5px] leading-relaxed text-ink-500">
-          Al iniciar una campaña se despliega un ciber range con servicios HTTP reales por nodo, política de red por
-          segmentos y SIEM. Cada acción de los agentes es un intercambio verificable.
+          Launching a campaign deploys a real cyber range with per-node HTTP services, tiered
+          network policy and SIEM. Every agent action is a verifiable exchange.
         </p>
       )}
       <p className="mt-2.5 border-t border-surface-100 pt-2 text-[10px] leading-snug text-ink-400">
         {running && liveLab
-          ? `${liveLab.exchanges} intercambios HTTP en la campaña en curso · ${liveLab.nodes.filter((n) => n.compromised).length} nodos comprometidos · ${liveLab.nodes.filter((n) => n.isolated).length} aislados`
-          : 'Los resultados se derivan de respuestas reales, no de dados.'}
+          ? `${liveLab.exchanges} HTTP exchanges in the ongoing campaign · ${liveLab.nodes.filter((n) => n.compromised).length} nodes compromised · ${liveLab.nodes.filter((n) => n.isolated).length} isolated`
+          : 'Outcomes are derived from real responses, not from dice.'}
       </p>
     </motion.div>
   )
@@ -177,13 +177,13 @@ function RecentActivity() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3, duration: 0.4 }}
       className="panel rounded-xl p-4"
-      aria-label="Actividad del laboratorio entre campañas"
+      aria-label="Laboratory activity between campaigns"
     >
       <div className="flex items-center justify-between">
         <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-ink-400">
-          <Activity className="h-3 w-3" /> Actividad del laboratorio
+          <Activity className="h-3 w-3" /> Laboratory activity
         </p>
-        <span className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">últimos eventos reales</span>
+        <span className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">latest real events</span>
       </div>
       <ul className="mt-3 space-y-1.5">
         {state.recentActivity.slice(0, 8).map((e) => (
@@ -227,10 +227,10 @@ function TopOperatorsAndSpark() {
       <div className="panel rounded-xl p-4">
         <div className="flex items-center justify-between">
           <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-ink-400">
-            <Flame className="h-3 w-3" /> Top operadores
+            <Flame className="h-3 w-3" /> Top operators
           </p>
           <Link href="/agentes" className="flex items-center gap-1 text-[11px] font-semibold text-[#026aa2] hover:underline">
-            Ver roster <ArrowRight className="h-3 w-3" />
+            View roster <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
         <ul className="mt-3 space-y-2">
@@ -248,7 +248,7 @@ function TopOperatorsAndSpark() {
                 />
               </div>
               <span className="shrink-0 font-mono-tight text-[10px] text-ink-500">
-                Nv{a.level} · {a.xp} XP
+                Lv{a.level} · {a.xp} XP
               </span>
             </li>
           ))}
@@ -258,9 +258,9 @@ function TopOperatorsAndSpark() {
       <div className="panel rounded-xl p-4">
         <div className="flex items-center justify-between">
           <p className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-ink-400">
-            <BrainCircuit className="h-3 w-3" /> Conocimiento por día
+            <BrainCircuit className="h-3 w-3" /> Knowledge per day
           </p>
-          <span className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">14 días · {sparkTotal} lecciones</span>
+          <span className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">14 days · {sparkTotal} lessons</span>
         </div>
         <div className="mt-3 flex h-[74px] items-end gap-[5px]">
           {spark.map((v, i) => (
@@ -270,12 +270,12 @@ function TopOperatorsAndSpark() {
               animate={{ height: Math.max(3, Math.round((v / sparkMax) * 70)) }}
               transition={{ duration: 0.5, delay: i * 0.03, ease: [0.22, 1, 0.36, 1] }}
               className={cn('flex-1 rounded-t-[3px]', v > 0 ? 'bg-gradient-to-t from-[#0086c9]/60 to-[#0086c9]' : 'bg-surface-100')}
-              title={`${v} lecciones`}
+              title={`${v} lessons`}
             />
           ))}
         </div>
         <p className="mt-2 border-t border-surface-100 pt-2 text-[10px] leading-snug text-ink-400">
-          Cada lección nace de una campaña real y se reutiliza en las siguientes con su tasa de éxito.
+          Every lesson is born from a real campaign and is reused in later ones with its success rate.
         </p>
       </div>
     </motion.section>
@@ -318,7 +318,7 @@ function HeroBand({ autopilot }: { autopilot: boolean }) {
       <div className="relative mx-auto w-full max-w-[1240px] px-4 pb-8 pt-9 sm:px-6 sm:pb-9 sm:pt-10 lg:px-8">
         <p className="font-mono-tight text-[10.5px] font-bold uppercase tracking-[0.2em]">
           <ShinyText
-            text="Laboratorio adversarial · RED vs BLUE"
+            text="Adversarial laboratory · RED vs BLUE"
             color="#98a2b3"
             shineColor="#7cd4fd"
             speed={2.6}
@@ -333,16 +333,16 @@ function HeroBand({ autopilot }: { autopilot: boolean }) {
               glow={0.25}
               className="font-display block text-[24px] font-bold tracking-tight sm:text-[30px]"
             >
-              Panel de mando
+              Command deck
             </GradientText>
             <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-[#d0d5dd]">
-              Ciber range real: los agentes ejecutan comandos verificables contra servicios desplegados, archivan
-              conocimiento y evolucionan campaña tras campaña.
+              A real cyber range: agents run verifiable commands against deployed services, archive
+              knowledge and evolve campaign after campaign.
             </p>
           </div>
           <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 font-mono-tight text-[10px] font-bold uppercase tracking-wider text-[#d0d5dd] backdrop-blur-sm">
             <InfinityIcon className={cn('h-3.5 w-3.5', autopilot ? 'text-[#d6bbfb]' : 'text-[#98a2b3]')} />
-            {autopilot ? 'Operación continua activa' : 'Motor listo'}
+            {autopilot ? 'Continuous operation active' : 'Engine ready'}
           </span>
         </div>
       </div>
@@ -367,14 +367,14 @@ function DashboardPage() {
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <KpiCard
           icon={Swords}
-          label="Campañas"
+          label="Campaigns"
           value={stats.totalCampaigns}
-          sub={running ? 'una en directo ahora mismo' : 'sin campañas activas'}
+          sub={running ? 'one live right now' : 'no active campaigns'}
           delay={0}
         />
         <KpiCard
           icon={Trophy}
-          label="Balance B·R·E"
+          label="Record B·R·D"
           value={totalWins}
           sub={
             <span className="flex items-center gap-2 font-mono-tight text-[10px]">
@@ -382,24 +382,24 @@ function DashboardPage() {
               <span className="text-surface-300">·</span>
               <span><b className="font-bold text-[#026aa2]">{stats.blueWins}</b> blue</span>
               <span className="text-surface-300">·</span>
-              <span><b className="font-bold text-[#b54708]">{stats.draws}</b> empates</span>
+              <span><b className="font-bold text-[#b54708]">{stats.draws}</b> draws</span>
             </span>
           }
           delay={0.05}
         />
         <KpiCard
           icon={BrainCircuit}
-          label="Lecciones"
+          label="Lessons"
           value={stats.knowledgeCount}
-          sub={`evolución RED ${stats.evolutionRed}% · BLUE ${stats.evolutionBlue}%`}
+          sub={`RED evolution ${stats.evolutionRed}% · BLUE evolution ${stats.evolutionBlue}%`}
           delay={0.1}
         />
         <KpiCard
           icon={GraduationCap}
-          label="Nivel medio"
+          label="Average level"
           value={Number(avgLevel)}
-          suffix={`/ agentes: ${agents.length}`}
-          sub="experiencia acumulada del roster"
+          suffix={`/ agents: ${agents.length}`}
+          sub="roster's accumulated experience"
           delay={0.15}
         />
       </div>
@@ -428,9 +428,9 @@ function DashboardPage() {
           >
             <div className="flex items-center justify-between gap-2">
               <p className="font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.18em] text-ink-400">
-                {running ? 'Campaña en curso' : liveCampaign ? 'Última campaña' : 'Arena'}
+                {running ? 'Ongoing campaign' : liveCampaign ? 'Last campaign' : 'Arena'}
               </p>
-              {running && <span className="status-live rounded-full border px-2 py-0.5 font-mono-tight text-[9px] font-bold">EN DIRECTO</span>}
+              {running && <span className="status-live rounded-full border px-2 py-0.5 font-mono-tight text-[9px] font-bold">LIVE</span>}
             </div>
             {liveCampaign ? (
               <Link href="/arena" className="group mt-3 block">
@@ -452,13 +452,13 @@ function DashboardPage() {
                   </span>
                 </div>
                 <span className="mt-3 flex items-center gap-1 text-[11.5px] font-semibold text-[#026aa2]">
-                  Abrir operaciones <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                  Open operations <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
                 </span>
               </Link>
             ) : (
               <p className="mt-3 text-[12px] leading-relaxed text-ink-500">
-                No hay ninguna campaña todavía. Lanza la primera desde el centro de mando o activa
-                la operación continua para que el motor encadene campañas solo.
+                No campaigns yet. Launch the first one from the control center or enable
+                continuous operation so the engine chains campaigns on its own.
               </p>
             )}
           </motion.div>
@@ -494,14 +494,14 @@ function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.28, duration: 0.4 }}
           className="mt-4"
-          aria-label="Actividad reciente"
+          aria-label="Recent activity"
         >
           <div className="mb-2.5 flex items-center justify-between">
             <h2 className="flex items-center gap-2 font-mono-tight text-[10.5px] font-bold uppercase tracking-[0.2em] text-ink-500">
-              <History className="h-3.5 w-3.5" /> Telemetría de la campaña en curso
+              <History className="h-3.5 w-3.5" /> Live campaign telemetry
             </h2>
             <Link href="/arena" className="flex items-center gap-1 text-[11.5px] font-semibold text-[#026aa2] hover:underline">
-              Ver operaciones <ArrowRight className="h-3 w-3" />
+              View operations <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
           <EventFeed events={state.liveEvents} max={6} className="max-h-[300px]" />

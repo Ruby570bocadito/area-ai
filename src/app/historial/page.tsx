@@ -85,9 +85,9 @@ function HistorialPage() {
   return (
     <PageContainer>
       <PageHeader
-        kicker="Archivo"
-        title="Historial de campañas"
-        subtitle="Archivo completo de enfrentamientos: marcador, duración, escenario y resultado. Filtra, exporta a CSV y abre la ficha de cualquier campaña para revisar sus comandos reales y las lecciones que archivó."
+        kicker="Archive"
+        title="Campaign history"
+        subtitle="Complete archive of engagements: scoreboard, duration, scenario and outcome. Filter, export to CSV and open any campaign's record to review its real commands and the lessons it archived."
       />
       <Suspense
         fallback={

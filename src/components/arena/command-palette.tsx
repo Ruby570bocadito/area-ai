@@ -20,13 +20,13 @@ import { useArena } from './shell/arena-provider'
 // ─────────────────────────────────────────────────────────────
 
 const ROUTES = [
-  { href: '/', label: 'Panel de mando', icon: LayoutDashboard },
-  { href: '/arena', label: 'Operaciones en vivo', icon: Radio },
-  { href: '/agentes', label: 'Roster de agentes', icon: Users },
-  { href: '/conocimiento', label: 'Base de conocimiento', icon: BrainCircuit },
-  { href: '/historial', label: 'Historial de campañas', icon: History },
-  { href: '/analitica', label: 'Analítica del laboratorio', icon: BarChart3 },
-  { href: '/modelos', label: 'Model Studio · motor LLM', icon: SlidersHorizontal },
+  { href: '/', label: 'Command deck', icon: LayoutDashboard },
+  { href: '/arena', label: 'Live operations', icon: Radio },
+  { href: '/agentes', label: 'Agent roster', icon: Users },
+  { href: '/conocimiento', label: 'Knowledge base', icon: BrainCircuit },
+  { href: '/historial', label: 'Campaign history', icon: History },
+  { href: '/analitica', label: 'Laboratory analytics', icon: BarChart3 },
+  { href: '/modelos', label: 'Model Studio · LLM engine', icon: SlidersHorizontal },
 ] as const
 
 export function CommandPalette() {
@@ -59,40 +59,40 @@ export function CommandPalette() {
     <>
       <button
         onClick={() => setOpen(true)}
-        aria-label="Abrir paleta de comandos"
+        aria-label="Open command palette"
         className="hidden items-center gap-1.5 rounded-md border border-surface-200 bg-white px-2.5 py-1.5 font-mono-tight text-[10px] text-ink-500 shadow-sm transition-colors hover:border-surface-300 hover:text-ink-900 md:flex"
-        title="Paleta de comandos (⌘K)"
+        title="Command palette (⌘K)"
       >
         <span className="text-[11px]">⌘</span>K
       </button>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Buscar acciones: lanzar campaña, ir a una página…" />
+        <CommandInput placeholder="Search actions: launch a campaign, go to a page…" />
         <CommandList className="nice-scroll">
-          <CommandEmpty>Sin resultados.</CommandEmpty>
+          <CommandEmpty>No results.</CommandEmpty>
 
-          <CommandGroup heading="Campañas">
+          <CommandGroup heading="Campaigns">
             {(state?.scenarios ?? []).map((s) => (
               <CommandItem
                 key={s.id}
-                value={`lanzar ${s.codename} ${s.company} ${s.industry}`}
+                value={`launch ${s.codename} ${s.company} ${s.industry}`}
                 disabled={running}
                 onSelect={() => launch(s.id)}
                 className="gap-2.5"
               >
                 <Swords className="h-3.5 w-3.5 text-[#d92d20]" />
                 <span className="flex-1">
-                  Lanzar <b>{s.codename}</b>
+                  Launch <b>{s.codename}</b>
                   <span className="ml-1.5 text-ink-500">· {s.company}</span>
                 </span>
-                <span className="font-mono-tight text-[9px] text-ink-500">dif {s.difficulty}/5</span>
+                <span className="font-mono-tight text-[9px] text-ink-500">diff {s.difficulty}/5</span>
               </CommandItem>
             ))}
           </CommandGroup>
           <CommandSeparator />
 
-          <CommandGroup heading="Navegación">
+          <CommandGroup heading="Navigation">
             {ROUTES.map((s) => (
-              <CommandItem key={s.href} value={`ir a ${s.label}`} onSelect={() => go(s.href)} className="gap-2.5">
+              <CommandItem key={s.href} value={`go to ${s.label}`} onSelect={() => go(s.href)} className="gap-2.5">
                 <s.icon className="h-3.5 w-3.5 text-ink-500" />
                 <span className="flex-1">{s.label}</span>
                 <ArrowUpRight className="h-3 w-3 text-ink-400" />

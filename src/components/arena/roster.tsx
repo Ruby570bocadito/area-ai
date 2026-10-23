@@ -30,7 +30,7 @@ function RosterCard({ agent, index, onSelect }: { agent: AgentDTO; index: number
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') onSelect(agent)
       }}
-      aria-label={`Ver ficha de ${agent.codename}`}
+      aria-label={`View ${agent.codename}'s record`}
       className="panel panel-hover spot-card group relative cursor-pointer overflow-hidden rounded-xl p-4"
     >
       {/* indicador de ficha */}
@@ -72,15 +72,15 @@ function RosterCard({ agent, index, onSelect }: { agent: AgentDTO; index: number
       <div className="mt-3 grid grid-cols-3 gap-2 border-t border-surface-100 pt-3 text-center">
         <div>
           <p className="font-mono-tight text-sm font-bold text-ink-900">{agent.campaigns}</p>
-          <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Campañas</p>
+          <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Campaigns</p>
         </div>
         <div>
           <p className="font-mono-tight text-sm font-bold text-[#067647]">{agent.victories}</p>
-          <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Victorias</p>
+          <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Victories</p>
         </div>
         <div>
           <p className="font-mono-tight text-sm font-bold text-[#b54708]">{agent.xp} XP</p>
-          <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Nivel {agent.level}</p>
+          <p className="font-mono-tight text-[9px] uppercase tracking-wider text-ink-400">Level {agent.level}</p>
         </div>
       </div>
     </motion.article>
