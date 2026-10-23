@@ -5,6 +5,7 @@ import { ensureProgressionMigration, levelForXp } from './progression'
 import { knowledgeScore } from './knowledge-score'
 import { normalizeLessonCategory, normalizeLessonTags } from './taxonomy'
 import { sanitizeForPrompt } from '@/lib/text'
+import { createLaunchGate } from './launch-lock'
 import {
   BLUE_GAIN_BY_VERDICT,
   BLUE_HUNT_ROLL,
@@ -144,41 +145,50 @@ export function redShouldChain(result: string | undefined, roll: number): boolea
 // Arranque de campaña
 // ─────────────────────────────────────────────────────────────
 
+const launchGate = createLaunchGate()
+
 export async function startCampaign(scenarioId?: string) {
   await ensureSeed()
   await ensureProgressionMigration()
 
-  const running = await db.campaign.findFirst({ where: { status: 'RUNNING' } })
-  if (running) {
-    const err = new Error('Ya existe una campaña en curso') as Error & { code?: string }
-    err.code = 'CAMPAIGN_RUNNING'
-    throw err
-  }
+  // Cerrojo de lanzamiento (idempotencia-lanzamiento, [verificar] confirmado:
+  // 6 POST concurrentes creaban 2 campañas RUNNING — TOCTOU entre el
+  // findFirst y el create). El check+create entra en la puerta de
+  // src/lib/sim/launch-lock.ts y se ejecuta en serie: el segundo que
+  // llega ya ve la RUNNING y termina en CAMPAIGN_RUNNING (409).
+  return launchGate(async () => {
+    const running = await db.campaign.findFirst({ where: { status: 'RUNNING' } })
+    if (running) {
+      const err = new Error('Ya existe una campaña en curso') as Error & { code?: string }
+      err.code = 'CAMPAIGN_RUNNING'
+      throw err
+    }
 
-  const scenarios = await db.scenario.findMany()
-  if (scenarios.length === 0) throw new Error('No hay escenarios disponibles')
-  const scenario = scenarioId
-    ? scenarios.find((s) => s.id === scenarioId) ?? rand(scenarios)
-    : rand(scenarios)
+    const scenarios = await db.scenario.findMany()
+    if (scenarios.length === 0) throw new Error('No hay escenarios disponibles')
+    const scenario = scenarioId
+      ? scenarios.find((s) => s.id === scenarioId) ?? rand(scenarios)
+      : rand(scenarios)
 
-  const campaign = await db.campaign.create({
-    data: {
-      scenarioId: scenario.id,
-      maxRounds: PHASE_ORDER.length,
-      status: 'RUNNING',
-      phase: 'RECON',
-    },
+    const campaign = await db.campaign.create({
+      data: {
+        scenarioId: scenario.id,
+        maxRounds: PHASE_ORDER.length,
+        status: 'RUNNING',
+        phase: 'RECON',
+      },
+    })
+
+    // Lanzar el bucle en segundo plano (no bloquea la respuesta HTTP)
+    void runCampaign(campaign.id).catch(async (err) => {
+      console.error('[engine] error fatal de campaña:', err)
+      try {
+        await db.campaign.update({ where: { id: campaign.id }, data: { status: 'ABORTED', endedAt: new Date() } })
+      } catch { /* noop */ }
+    })
+
+    return campaign
   })
-
-  // Lanzar el bucle en segundo plano (no bloquea la respuesta HTTP)
-  void runCampaign(campaign.id).catch(async (err) => {
-    console.error('[engine] error fatal de campaña:', err)
-    try {
-      await db.campaign.update({ where: { id: campaign.id }, data: { status: 'ABORTED', endedAt: new Date() } })
-    } catch { /* noop */ }
-  })
-
-  return campaign
 }
 
 // ─────────────────────────────────────────────────────────────

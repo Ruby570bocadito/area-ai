@@ -8,6 +8,11 @@ import {
   rateLimit,
   clientKey,
 } from '@/lib/net/access'
+import {
+  findLaunch,
+  recordLaunch,
+  resolveDedupeKey,
+} from './idempotencia'
 
 export const dynamic = 'force-dynamic'
 
@@ -101,7 +106,25 @@ export async function POST(req: NextRequest) {
 
     const scenarioId = parsed.ok ? parsed.body?.scenarioId : undefined
 
+    // Dedupe en servidor (idempotencia-lanzamiento: el cerrojo de
+    // confirmacion-lanzamiento es solo cliente). Con Idempotency-Key
+    // el replay dura 10 min; sin ella, el cuerpo idéntico se deduplica
+    // en ventana corta (5 s, escala del doble clic). El replay devuelve
+    // la respuesta original SIN consumir cuota de rate-limit: es el
+    // mismo lanzamiento lógico, no uno nuevo.
+    const dedupeKey = resolveDedupeKey(req.headers, parsed.ok ? parsed.body : undefined)
+    if (dedupeKey) {
+      const replay = findLaunch(dedupeKey)
+      if (replay) {
+        return NextResponse.json(replay.body, {
+          status: replay.status,
+          headers: { 'Idempotency-Replay': 'true' },
+        })
+      }
+    }
+
     const campaign = await startCampaign(scenarioId)
+    if (dedupeKey) recordLaunch(dedupeKey, 200, { ok: true, campaignId: campaign.id })
     return NextResponse.json({ ok: true, campaignId: campaign.id })
   } catch (error) {
     const err = error as Error & { code?: string }
