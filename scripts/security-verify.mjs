@@ -24,7 +24,7 @@
 // ROADMAP, acordada con PUL) — cada agente puede pasar su puerto de la sección 6
 // del protocolo (p. ej. SECURITY_VERIFY_PORT=3113 para SEG) sin pisar a nadie.
 import { spawn } from 'node:child_process'
-import { request as httpRequest } from 'node:http'
+import { request as httpRequest, Agent } from 'node:http'
 import { resolve } from 'node:path'
 
 const ROOT = resolve(import.meta.dir, '..')
@@ -226,15 +226,27 @@ check('cuerpo > 1KB en autopilot → 413 pre-parse', fatBody.status === 413, `st
 // trozos), 8 KB en autopilot (tope 1 KB) → 413 al consumir el stream con tope.
 const chunkedPost = (path, headers, chunks) =>
   new Promise((resolveP) => {
+    // Agente de un solo uso: el cuerpo chunked puede quedar SIN leer en el
+    // servidor (p. ej. 401 antes de readJsonBody) y el globalAgent podría
+    // reutilizar ese socket para la petición siguiente — bytes residuales del
+    // cuerpo y respuesta 400 vacía intermitente del parser. Socket dedicado y
+    // cerrado = secuencia determinista (diagnóstico del ROJO del 2026-10-23).
+    const agent = new Agent({ keepAlive: false })
     const req = httpRequest(
-      { host: '127.0.0.1', port: PORT, path, method: 'POST', headers },
+      { host: '127.0.0.1', port: PORT, path, method: 'POST', headers, agent },
       (res) => {
         let data = ''
         res.on('data', (c) => (data += c))
-        res.on('end', () => resolveP({ status: res.statusCode, body: data, te: res.headers['transfer-encoding'] }))
+        res.on('end', () => {
+          agent.destroy()
+          resolveP({ status: res.statusCode, body: data, te: res.headers['transfer-encoding'] })
+        })
       }
     )
-    req.on('error', (e) => resolveP({ status: 0, body: String(e) }))
+    req.on('error', (e) => {
+      agent.destroy()
+      resolveP({ status: 0, body: String(e) })
+    })
     for (const c of chunks) req.write(c)
     req.end()
   })
@@ -287,7 +299,7 @@ const login = await rawPost('/api/auth', {
 const setCookie = Array.isArray(login.headers?.['set-cookie']) ? login.headers['set-cookie'][0] : (login.headers?.['set-cookie'] ?? '')
 check('login correcto → 200 + cookie HttpOnly SameSite=Strict Path=/',
   login.status === 200 && setCookie.includes('admin_token=') && setCookie.includes('HttpOnly') && /samesite=strict/i.test(setCookie) && setCookie.includes('Path=/'),
-  `status=${login.status} cookie=${setCookie.split(';').slice(0, 6).join(';')}`)
+  `status=${login.status} cookie=${setCookie.split(';').slice(0, 6).join(';')} cuerpo=${login.body.slice(0, 80)}`)
 check('cookie local (http) sin Secure — Secure solo en https', !setCookie.includes('Secure'), setCookie.includes('Secure') ? 'contiene Secure (no esperado en http)' : 'sin Secure')
 
 // La cookie fijada por el servidor acredita mutaciones sin cabeceras (camino de la UI)
