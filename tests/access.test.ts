@@ -247,6 +247,69 @@ describe('isSameOrigin — CSRF en mutaciones (Ronda 12)', () => {
   })
 })
 
+// ─────────────────────────────────────────────────────────────
+// Allowlist opcional NEXT_PUBLIC_SITE_URL (tarea
+// origin-allowlist-env del ROADMAP): despliegues tras proxies
+// que reescriben el Host.
+// ─────────────────────────────────────────────────────────────
+
+describe('isSameOrigin — allowlist NEXT_PUBLIC_SITE_URL (origin-allowlist-env)', () => {
+  const original = process.env.NEXT_PUBLIC_SITE_URL
+  const setSiteUrl = (value: string | undefined) => {
+    if (value === undefined) delete process.env.NEXT_PUBLIC_SITE_URL
+    else process.env.NEXT_PUBLIC_SITE_URL = value
+  }
+  afterEach(() => setSiteUrl(original))
+
+  test('sin la variable: Host reescrito sigue rechazado (comportamiento previo intacto)', () => {
+    setSiteUrl(undefined)
+    expect(
+      isSameOrigin(new Headers({ origin: 'https://area.example', host: 'interno.local:3000' }))
+    ).toBe(false)
+  })
+
+  test('sin la variable: sin Host con Origin → rechazado (igual que antes)', () => {
+    setSiteUrl(undefined)
+    expect(isSameOrigin(new Headers({ origin: 'https://area.example' }))).toBe(false)
+  })
+
+  test('con la variable: Origin del sitio público se acredita aunque el Host difiera', () => {
+    setSiteUrl('https://area.example')
+    expect(
+      isSameOrigin(new Headers({ origin: 'https://area.example', host: 'interno.local:3000' }))
+    ).toBe(true)
+  })
+
+  test('con la variable: Origin del sitio se acredita incluso sin Host', () => {
+    setSiteUrl('https://area.example')
+    expect(isSameOrigin(new Headers({ origin: 'https://area.example' }))).toBe(true)
+  })
+
+  test('con la variable: Origin ajeno sigue rechazado', () => {
+    setSiteUrl('https://area.example')
+    expect(
+      isSameOrigin(new Headers({ origin: 'https://evil.example', host: 'area.example' }))
+    ).toBe(false)
+  })
+
+  test('con la variable: puerto distinto del sitio declarado → rechazado (host[:puerto])', () => {
+    setSiteUrl('https://area.example')
+    expect(
+      isSameOrigin(new Headers({ origin: 'https://area.example:8443', host: 'area.example' }))
+    ).toBe(false)
+  })
+
+  test('URL del sitio malformada → rechaza sin lanzar (no relaja nada)', () => {
+    setSiteUrl('no-es-una-url')
+    // Host distinto del Origin: solo la allowlist podría acreditarlo, y una
+    // URL de sitio malformada no acredita a nadie.
+    expect(
+      isSameOrigin(new Headers({ origin: 'https://area.example', host: 'otro.host:8080' }))
+    ).toBe(false)
+    expect(isSameOrigin(new Headers({ origin: 'https://area.example' }))).toBe(false)
+  })
+})
+
 describe('contentLengthExceeds — tope pre-parse (Ronda 12)', () => {
   test('Content-Length dentro del tope → false', () => {
     expect(contentLengthExceeds(new Headers({ 'content-length': '512' }), 1024)).toBe(false)

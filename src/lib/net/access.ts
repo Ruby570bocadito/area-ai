@@ -111,6 +111,14 @@ export const ADMIN_COOKIE_MAX_AGE_S = 60 * 60 * 12
 //     así que la comparación también es válida tras el proxy. Solo se
 //     compara host[:puerto], no el esquema (http de apoyo y https
 //     públicos comparten host en el despliegue documentado).
+//   · Allowlist opcional (tarea origin-allowlist-env del ROADMAP): si el
+//     operador define `NEXT_PUBLIC_SITE_URL` (la misma variable que usan
+//     robots/sitemap/metadataBase), un Origin cuyo host coincida con la
+//     URL pública declarada también se acredita aunque el Host de la
+//     petición difiera — proxies externos que reescriben el Host (o lo
+//     normalizan a un nombre interno) dejaban al usuario legítimo fuera
+//     con el 403 de abajo. Sin la variable el comportamiento es exactamente
+//     el anterior; una URL del sitio malformada no relaja nada.
 // ─────────────────────────────────────────────────────────────
 
 export function isSameOrigin(headers: Headers): boolean {
@@ -118,12 +126,23 @@ export function isSameOrigin(headers: Headers): boolean {
   if (origin === null) return true // cliente no-navegador
   if (origin === 'null') return false // sandbox/redirect: nunca es la UI
   const host = headers.get('host')
-  if (!host) return false // sin Host no se puede acreditar el origen
-  try {
-    return new URL(origin).host === host.trim().toLowerCase()
-  } catch {
-    return false // Origin no parseable → no acreditado
+  if (host) {
+    try {
+      if (new URL(origin).host === host.trim().toLowerCase()) return true
+    } catch {
+      return false // Origin no parseable → no acreditado
+    }
   }
+  // Allowlist: el Origin del sitio público declarado se acredita por sí mismo.
+  const site = process.env.NEXT_PUBLIC_SITE_URL
+  if (site) {
+    try {
+      return new URL(origin).host === new URL(site).host
+    } catch {
+      return false // URL del sitio malformada → no se relaja el chequeo
+    }
+  }
+  return false // sin Host no se puede acreditar el origen
 }
 
 // ─────────────────────────────────────────────────────────────
