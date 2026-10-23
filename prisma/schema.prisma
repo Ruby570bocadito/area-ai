@@ -63,6 +63,16 @@ model Campaign {
   winner       String? // RED | BLUE | DRAW
   narrative    String?
   engineMode   String    @default("LLM") // LLM | SIM (fallback)
+  // Semilla del RNG del motor (seed-determinista). Null en filas
+  // históricas anteriores a la tarea. Garantiza reproducibilidad
+  // EXACTA solo en modo determinista (SIM): en LLM gobierna las
+  // tiradas del motor (encadenamiento, caza, parcheo), no las
+  // decisiones del proveedor.
+  seed         Int?
+  // Modo determinista forzado (seed-determinista): true = la campaña
+  // corre en SIM aunque haya proveedor LLM disponible (sin sonda).
+  // Reproducibilidad exacta garantizada SOLO con determinista=true.
+  determinista Boolean  @default(false)
   startedAt    DateTime  @default(now())
   endedAt      DateTime?
 

@@ -89,7 +89,52 @@ function engineRoll(): number {
   return rng()
 }
 
+/**
+ * Sonda del RNG interno (seed-determinista): devuelve la tirada cruda
+ * para fijar en tests el contrato de reproducibilidad (misma semilla →
+ * misma secuencia). El flujo de producción no la consume.
+ */
+export function engineRollProbe(): number {
+  return rng()
+}
+
 const rand = <T,>(arr: T[]): T => arr[Math.floor(engineRoll() * arr.length)]
+
+// ── Semilla por campaña (seed-determinista) ────────────────
+
+/** Tope de la semilla: entero positivo de 31 bits (rango seguro para SQLite e Int32). */
+export const SEED_MAX = 0x7fffffff
+
+/**
+ * Genera la semilla de una campaña nueva. Inyectable para tests;
+ * por defecto Math.random (NUNCA engineRoll: la semilla generada
+ * con el RNG ya sembrado correlacionaría las campañas entre sí).
+ */
+export function newCampaignSeed(rand: () => number = Math.random): number {
+  return Math.floor(rand() * SEED_MAX)
+}
+
+/**
+ * Valida una semilla provista por el cliente (POST /api/campaigns).
+ * Acepta enteros en [0, SEED_MAX]; devuelve null si no es usable —
+ * el llamador responde 400 (validación de entradas, H-004) en vez
+ * de silenciar la intención del usuario.
+ */
+export function acceptSeed(value: unknown): number | null {
+  if (typeof value !== 'number' || !Number.isInteger(value)) return null
+  if (value < 0 || value > SEED_MAX) return null
+  return value
+}
+
+/**
+ * Valida el interruptor determinista provisto por el cliente
+ * (POST /api/campaigns). Solo booleanos; otro tipo → null y la ruta
+ * responde 400 (mismo criterio que acceptSeed: no se silencia).
+ */
+export function acceptDeterminista(value: unknown): boolean | null {
+  if (typeof value !== 'boolean') return null
+  return value
+}
 
 /** Acumulación de progreso en la escala cerrada [0, 100] (fuente única de la regla: victory.ts). */
 export function accumulateProgress(current: number, delta: number): number {
@@ -147,7 +192,7 @@ export function redShouldChain(result: string | undefined, roll: number): boolea
 
 const launchGate = createLaunchGate()
 
-export async function startCampaign(scenarioId?: string) {
+export async function startCampaign(scenarioId?: string, seed?: number, determinista?: boolean) {
   await ensureSeed()
   await ensureProgressionMigration()
 
@@ -157,6 +202,13 @@ export async function startCampaign(scenarioId?: string) {
   // src/lib/sim/launch-lock.ts y se ejecuta en serie: el segundo que
   // llega ya ve la RUNNING y termina en CAMPAIGN_RUNNING (409).
   return launchGate(async () => {
+    // Sembrar el RNG ANTES de elegir escenario (seed-determinista):
+    // la elección de escenario es una tirada más y debe ser
+    // reproducible. runCampaign volverá a sembrar con la misma
+    // semilla guardada al arrancar el bucle.
+    const semilla = seed ?? newCampaignSeed()
+    setEngineSeed(semilla)
+
     const running = await db.campaign.findFirst({ where: { status: 'RUNNING' } })
     if (running) {
       const err = new Error('Ya existe una campaña en curso') as Error & { code?: string }
@@ -176,6 +228,13 @@ export async function startCampaign(scenarioId?: string) {
         maxRounds: PHASE_ORDER.length,
         status: 'RUNNING',
         phase: 'RECON',
+        // Semilla de reproducibilidad (seed-determinista): la que
+        // pidió el cliente o una nueva aleatoria. Se GUARDA en BD
+        // — es la única forma de reproducir una campaña pasada.
+        seed: semilla,
+        // Modo determinista forzado: reproducibilidad exacta aunque
+        // haya proveedor LLM disponible (runCampaign no sondará).
+        determinista: determinista ?? false,
       },
     })
 
@@ -242,6 +301,12 @@ async function runCampaign(campaignId: string) {
   const campaign = await db.campaign.findUnique({ where: { id: campaignId }, include: { scenario: true } })
   if (!campaign) return
 
+  // Semilla de la campaña (seed-determinista): TODAS las tiradas de
+  // esta corrida salen de aquí. Null en filas históricas → Math.random
+  // (comportamiento previo intacto). Global y seguro: solo vive una
+  // campaña a la vez (cerrojo de lanzamiento + guard RUNNING).
+  setEngineSeed(campaign.seed ?? undefined)
+
   const scenario = campaign.scenario
   const infra = JSON.parse(scenario.infrastructure) as Infrastructure
   const nodes: InfraNode[] = infra.nodes
@@ -283,9 +348,16 @@ async function runCampaign(campaignId: string) {
     })
   }
 
-  // ── Sonda de disponibilidad LLM
-  const probe = await llmJson<{ ok: boolean }>('Responde solo con JSON.', 'Confirma disponibilidad devolviendo {"ok": true}', 12000)
-  const llmAlive = probe?.ok === true
+  // ── Sonda de disponibilidad LLM (salta si el determinista está forzado)
+  let llmAlive: boolean
+  if (campaign.determinista) {
+    // seed-determinista: el cliente pidió SIM explícitamente — sin
+    // sonda (cero llamadas LLM, arranque inmediato, corrida exacta).
+    llmAlive = false
+  } else {
+    const probe = await llmJson<{ ok: boolean }>('Responde solo con JSON.', 'Confirma disponibilidad devolviendo {"ok": true}', 12000)
+    llmAlive = probe?.ok === true
+  }
   g.__aegisLLMAlive = llmAlive
   if (!llmAlive) engineMode = 'SIM'
 

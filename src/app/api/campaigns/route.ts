@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { startCampaign } from '@/lib/sim/engine'
+import { startCampaign, acceptSeed, acceptDeterminista } from '@/lib/sim/engine'
 import { db } from '@/lib/db'
 import {
   isMutationAuthorized,
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
     // acota TAMBIÉN las peticiones chunked sin Content-Length (tarea
     // cuerpo-chunked del ROADMAP), leyendo el stream con tope. Tras el 401:
     // el orden canónico de barreras es 403→429→401→413 (HD4).
-    const parsed = await readJsonBody<{ scenarioId?: string }>(req, 4096)
+    const parsed = await readJsonBody<{ scenarioId?: string; seed?: unknown; determinista?: unknown }>(req, 4096)
     if (!parsed.ok) {
       if (parsed.reason === 'too-large') {
         return NextResponse.json({ ok: false, error: 'Cuerpo demasiado grande' }, { status: 413 })
@@ -106,6 +106,38 @@ export async function POST(req: NextRequest) {
 
     const scenarioId = parsed.ok ? parsed.body?.scenarioId : undefined
 
+    // Semilla opcional (seed-determinista): entero [0, 2^31-1] para
+    // reproducir una campaña idéntica en modo determinista. Si el
+    // cliente la envía inválida se rechaza con 400 — NO se silencia
+    // (pedir una semilla concreta y obtener otra al azar es una
+    // promesa rota; validación de entradas, H-004).
+    let seed: number | undefined
+    if (parsed.ok && parsed.body?.seed !== undefined) {
+      const semilla = acceptSeed(parsed.body.seed)
+      if (semilla === null) {
+        return NextResponse.json(
+          { ok: false, error: 'Semilla inválida: debe ser un entero entre 0 y 2147483647' },
+          { status: 400 }
+        )
+      }
+      seed = semilla
+    }
+
+    // Interruptor determinista (seed-determinista): fuerza SIM aunque
+    // haya proveedor — es lo que hace la reproducción OPERATIVA (con
+    // LLM las decisiones del proveedor no son reproducibles).
+    let determinista: boolean | undefined
+    if (parsed.ok && parsed.body?.determinista !== undefined) {
+      const forzado = acceptDeterminista(parsed.body.determinista)
+      if (forzado === null) {
+        return NextResponse.json(
+          { ok: false, error: 'determinista inválido: debe ser un booleano' },
+          { status: 400 }
+        )
+      }
+      determinista = forzado
+    }
+
     // Dedupe en servidor (idempotencia-lanzamiento: el cerrojo de
     // confirmacion-lanzamiento es solo cliente). Con Idempotency-Key
     // el replay dura 10 min; sin ella, el cuerpo idéntico se deduplica
@@ -123,9 +155,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const campaign = await startCampaign(scenarioId)
-    if (dedupeKey) recordLaunch(dedupeKey, 200, { ok: true, campaignId: campaign.id })
-    return NextResponse.json({ ok: true, campaignId: campaign.id })
+    const campaign = await startCampaign(scenarioId, seed, determinista)
+    const respuesta = { ok: true, campaignId: campaign.id, seed: campaign.seed, determinista: campaign.determinista }
+    if (dedupeKey) recordLaunch(dedupeKey, 200, respuesta)
+    return NextResponse.json(respuesta)
   } catch (error) {
     const err = error as Error & { code?: string }
     if (err.code === 'CAMPAIGN_RUNNING') {
