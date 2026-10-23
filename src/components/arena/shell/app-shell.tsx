@@ -61,7 +61,7 @@ function pageMeta(pathname: string): { title: string; sub: string } {
 
 function SideNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
-  const { state, running } = useArena()
+  const { state, running, status } = useArena()
 
   return (
     <div className="flex h-full flex-col">
@@ -109,24 +109,42 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
           <span className="flex items-center gap-1.5 font-mono-tight text-[9.5px] font-bold uppercase tracking-[0.16em] text-ink-500">
             <Cpu className="h-3 w-3" /> Motor
           </span>
+          {/* El chip describe la CONEXIÓN con el motor (H-005): si el sondeo
+              falla, rojo «Sin conexión» con prioridad sobre «En directo/En
+              espera» — nunca verde mientras /api responde 503. */}
           <span
             className={cn(
               'flex items-center gap-1.5 rounded-full px-2 py-0.5 font-mono-tight text-[9px] font-bold uppercase tracking-wider',
-              running ? 'bg-[#fffaeb] text-[#b54708]' : 'bg-[#ecfdf3] text-[#067647]'
+              status === 'offline'
+                ? 'bg-[#fef3f2] text-[#b42318]'
+                : running
+                  ? 'bg-[#fffaeb] text-[#b54708]'
+                  : 'bg-[#ecfdf3] text-[#067647]'
             )}
           >
-            <span className={cn('h-1.5 w-1.5 rounded-full pulse-dot', running ? 'bg-[#fdb022]' : 'bg-[#12b76a]')} />
-            {running ? 'En directo' : 'En espera'}
+            <span
+              className={cn(
+                'h-1.5 w-1.5 rounded-full',
+                status === 'offline'
+                  ? 'bg-[#f04438]'
+                  : running
+                    ? 'pulse-dot bg-[#fdb022]'
+                    : 'pulse-dot bg-[#12b76a]'
+              )}
+            />
+            {status === 'offline' ? 'Sin conexión' : running ? 'En directo' : 'En espera'}
           </span>
         </div>
+        {/* Sin estado cargado (conectando o motor caído) no se inventan cifras:
+            «—» comunica «sin dato» en lugar del engañoso «0» (H-005). */}
         <p className="mt-2 truncate font-mono-tight text-[10.5px] text-ink-600">
-          {state?.provider ?? 'z-ai-sdk'}
+          {state?.provider ?? '—'}
         </p>
         <div className="mt-2.5 flex items-center justify-between border-t border-surface-200 pt-2.5 font-mono-tight text-[9.5px] text-ink-500">
-          <span>{state?.stats.totalCampaigns ?? 0} campañas</span>
+          <span>{state ? `${state.stats.totalCampaigns} campañas` : '— campañas'}</span>
           <span className="flex items-center gap-1">
             {state?.autopilot && <InfinityIcon className="h-3 w-3 text-[#7c3aed]" />}
-            {state?.stats.knowledgeCount ?? 0} lecciones
+            {state ? `${state.stats.knowledgeCount} lecciones` : '— lecciones'}
           </span>
         </div>
       </div>
@@ -188,17 +206,34 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
             <div className="flex shrink-0 items-center gap-2">
               <CommandPalette />
+              {/* Misma semántica de conexión que el widget del sidebar (H-005):
+                  rojo «Sin conexión» mientras el sondeo falla. */}
               <span
                 className={cn(
                   'flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono-tight text-[10px] font-bold uppercase tracking-wider',
-                  running
-                    ? 'status-live'
-                    : 'border-surface-200 bg-white text-ink-500'
+                  status === 'offline'
+                    ? 'border-[#fecdca] bg-[#fef3f2] text-[#b42318]'
+                    : running
+                      ? 'status-live'
+                      : 'border-surface-200 bg-white text-ink-500'
                 )}
+                title={
+                  status === 'offline'
+                    ? 'El sondeo del motor está fallando; reintentando automáticamente'
+                    : undefined
+                }
               >
-                <Radio className="h-3 w-3" />
-                <span className="hidden sm:inline">{running ? 'En directo' : 'En espera'}</span>
-                {running && <span className="h-1.5 w-1.5 rounded-full bg-[#d97706] pulse-dot" />}
+                {status === 'offline' ? (
+                  <WifiOff className="h-3 w-3" />
+                ) : (
+                  <Radio className="h-3 w-3" />
+                )}
+                <span className="hidden sm:inline">
+                  {status === 'offline' ? 'Sin conexión' : running ? 'En directo' : 'En espera'}
+                </span>
+                {running && status !== 'offline' && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#d97706] pulse-dot" />
+                )}
               </span>
             </div>
           </div>
