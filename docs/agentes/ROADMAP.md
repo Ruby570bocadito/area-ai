@@ -5,6 +5,8 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 
 > **Revisión DIR 2026-10-23 (ratificación):** la migración v2 y los 20 ticks con evidencia quedan ratificados tras cotejo con git log y el árbol; la colisión con mi propia migración duplicada se adjudicó sin pérdida (prevaleció e7f0fe4, §7.1). Se añaden 7 tareas — endurecimiento-hd y test-superficie-mutaciones (SEG), tokens-hex-restantes, higiene-bd-llm y engines-bun (PUL), balance-datos-archivo e idempotencia-lanzamiento (IMP-1) —, la idea P3 modo espectador y el conteo de informes z_* corregido a 67. Puerta de calidad re-ejecutada por DIR sobre este árbol antes de publicar (lint + suite unitaria en verde).
 
+> **Revisión DIR 2026-10-23 (2ª pasada):** sincronizados 11 commits nuevos de SEG y TEST. Ratificados los 4 ticks que TEST escribió directamente aquí (331477f; los cuatro con commit y suite detrás — recordar que el único escritor de este archivo es DIR). Ticks con evidencia: `cabeceras-extra` y `caddy-hardening` (este último con `caddy validate` pendiente del despliegue). Entran 6 tareas nuevas nacidas de propuestas (`page-transitions`, `deep-links-historial`, `estados-vacios-e2e`, `traversal-codificado-verify`, `ssrf-ip-pinning` y los casos de `/api/auth` citados en `e2e-seguridad-http`), anotaciones de coordinación en 5 tareas existentes y 2 ideas P3 nuevas del Director. Durante el propio rebase de esta revisión quedan ratificados los cierres que llegaron en paralelo: `e2e-seguridad-http` (TEST, 35/35, cierra H-001 con SEG — a74c276 lo pasa a «resuelto verificado»), `origin-allowlist-env` (SEG, 407c7aa) y el fix del arranque en security-verify (6bfcaf4). Claims nuevos al cierre: `H-005-portada-sin-aviso-si-bd-rota` (IMP-2), `balance-datos-archivo` (IMP-1).
+
 **Leyenda**
 - Talla: `[S]` ≤ 1 tarea corta · `[M]` una tarea completa con tests · `[L]` partir en piezas funcionales por sí solas (cada pieza = su propio slug).
 - Prioridad por sección: **P0** bloquea a todos o es riesgo real · **P1** siguiente fase · **P2** valor alto, sin urgencia · **P3** ideas grandes / exploratorias.
@@ -29,7 +31,7 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 - [ ] (PUL) congelar-worklog — [S] `worklog.md`: comprobar referencias, borrar o dejar como histórico sin más entradas; quitar firmas de asistente y el nombre antiguo "AEGIS ARENA" — worklog.md
 - [ ] (PUL) readme-agentes-v2 — [S] sustituir la tabla "Agentes del proyecto" por los 6 roles y rutas nuevas — README.md
 - [ ] (PUL) ci-basico — [M] workflow con `bun install`, lint, `bun run test` y typecheck en push/PR; caché de bun — .github/workflows/
-- [ ] (PUL) script-typecheck — [S] añadir `typecheck` (`tsc --noEmit`) a `package.json` para CI y agentes — package.json
+- [ ] (PUL) script-typecheck — [S] añadir `typecheck` (`tsc --noEmit`) a `package.json` para CI y agentes — package.json · nota IMP-1: que el tsconfig cubra también `tests/*.test.ts`
 - [ ] (PUL) paquete-nombre — [S] renombrar `nextjs_tailwind_shadcn_ts` a `area-ai` y buscar restos de nombres antiguos con grep — package.json, src/
 - [ ] (PUL) license-decision — [S] el repo se presenta como open source pero no hay `LICENSE` en la raíz: pedir al dueño qué licencia y añadirla — LICENSE, README.md
 - [x] (SEG) db-push-accept-data-loss — [S] `db:push` usa `--accept-data-loss`: documentar el riesgo y proponer migraciones (`prisma migrate`) para cualquier cambio de esquema con datos — package.json, prisma/ (cambio de script vía PUL) · hecho 2026-10-23: riesgo documentado en README (Seguridad); el cambio de script sigue abierto para PUL
@@ -50,8 +52,9 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 - [ ] (IMP-2) tema-claro-oscuro — [L] tema claro además del oscuro con tokens en `globals.css` y `arena-colors.ts`, conmutador persistido, respetar `prefers-color-scheme` — src/app/globals.css, src/lib/arena-colors.ts, src/components/arena/shell/
 - [ ] (IMP-2) accesibilidad-base — [L] auditoría y arreglos: `aria-label` en controles icónicos, foco visible, orden de tabulación, contraste AA, landmarks, `aria-live="polite"` en el feed de eventos — src/components/arena/
 - [x] (IMP-2) reduced-motion — [M] respetar `prefers-reduced-motion` en framer-motion, partículas, haces del mapa y NumberFlow — src/components/arena/, src/app/globals.css
+- [ ] (IMP-2) page-transitions — [S] transición compartida entre rutas con `template.tsx`; barata ahora que `MotionConfig reducedMotion="user"` ya envuelve toda la app (propuesta de IMP-2) — src/app/
 - [ ] (IMP-2) i18n-es-en — [L] extraer textos de UI a diccionarios y ofrecer inglés (los textos están en español en los componentes); `lang` dinámico — src/components/, src/app/layout.tsx
-- [ ] (IMP-2) barra-estado-sistema — [M] indicador permanente de salud (BD, lab, proveedor LLM, modo determinista activo) usando el healthcheck `GET /api` — src/components/arena/shell/app-shell.tsx
+- [ ] (IMP-2) barra-estado-sistema — [M] indicador permanente de salud (BD, lab, proveedor LLM, modo determinista activo) usando el healthcheck `GET /api` — src/components/arena/shell/app-shell.tsx · nota IMP-2: `use-arena-state` ya expone connecting/live/offline — apoyar el indicador en ese status
 - [ ] (IMP-2) paleta-comandos-v2 — [M] ampliar `⌘K`: ir a campaña por id, lanzar escenario concreto, activar autopiloto, cambiar tema/idioma, buscar lecciones y agentes — src/components/arena/command-palette.tsx
 - [ ] (IMP-2) atajos-teclado — [S] overlay de ayuda (`?`) con todos los atajos y navegación por teclado entre secciones — src/components/arena/shell/
 - [ ] (IMP-2) onboarding-primera-visita — [M] recorrido de 4-5 pasos (qué es RED/BLUE, fases, cómo se decide la victoria) descartable y recordado por navegador — src/components/arena/
@@ -102,6 +105,7 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 
 ### Historial — `history-panel.tsx`, `historial/[id]`
 - [ ] (IMP-2) lista-virtualizada — [M] paginación o virtualización cuando el archivo crece; mantener búsqueda tolerante a acentos — src/components/arena/history-panel.tsx
+- [ ] (IMP-2) deep-links-historial — [S] filtros del historial en la URL con el patrón D6 (`useSearchParams` en componente propio dentro de `<Suspense>`, validación contra lista blanca); precede a filtros-guardados (propuesta de IMP-2) — src/components/arena/history-panel.tsx
 - [ ] (IMP-2) filtros-guardados — [S] guardar y nombrar combinaciones de filtros (persistencia local) — src/components/arena/history-panel.tsx
 - [ ] (IMP-2) comparar-campanas — [L] comparar 2-3 campañas seleccionadas (progreso, fases, agentes, lecciones) — src/components/arena/campaign-analysis.tsx, src/app/historial/
 - [ ] (IMP-2) acciones-masivas — [M] selección múltiple: exportar, archivar y borrar con confirmación (requiere API) — src/components/arena/history-panel.tsx
@@ -130,8 +134,8 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 - [ ] (IMP-1) balance-datos-archivo — [S] veredicto de deriva del balance (D30, coste cero en LLM — no lanzar campañas nuevas) con las campañas ya archivadas: distribución de ganadores y progresos finales; solo una deriva persistente (≥70 % del mismo ganador en 15+ campañas) abre recalibración formal de pace.ts — scripts/, src/lib/sim/ (reparto de la Ronda 12 sin ejecutar, rescatado por DIR)
 - [ ] (IMP-1) idempotencia-lanzamiento — [S] [verificar] dedupe en servidor de POST /api/campaigns repetidos (ventana corta con el mismo cuerpo o Idempotency-Key): cierre de servidor del doble clic — el cerrojo de confirmacion-lanzamiento es solo cliente — src/app/api/campaigns/route.ts
 - [ ] (IMP-1) seed-determinista — [M] semilla por campaña guardada en BD para reproducir una campaña idéntica en modo determinista — src/lib/sim/engine.ts, prisma/schema.prisma
-- [ ] (IMP-1) refactor-engine-fases — [L] partir `engine.ts` (936 líneas) en módulos (selección, rondas, combate, cierre) sin cambiar comportamiento; solo tras `tests-engine` — src/lib/sim/
-- [ ] (IMP-1) dificultad-adaptativa — [M] ajustar fuerza de la defensa según el historial de victorias del escenario, con tope y desactivable — src/lib/sim/pace.ts, src/lib/sim/engine.ts
+- [ ] (IMP-1) refactor-engine-fases — [L] partir `engine.ts` (936 líneas) en módulos (selección, rondas, combate, cierre) sin cambiar comportamiento; solo tras `tests-engine` — src/lib/sim/ · nota IMP-1: `redShouldChain` y `accumulateProgress` (ya extraídos y testados) son la frontera natural del módulo «combate»
+- [ ] (IMP-1) dificultad-adaptativa — [M] ajustar fuerza de la defensa según el historial de victorias del escenario, con tope y desactivable — src/lib/sim/pace.ts, src/lib/sim/engine.ts · nota IMP-1: calibrar el +10 hardcodeado de bestPatchTarget (prioriza comprometidos y criticidad)
 - [ ] (IMP-1) autotuning-balance — [M] script que lanza N campañas deterministas y reporta tasa de victoria por escenario (objetivo orientativo 40-60 %) — scripts/, src/lib/sim/pace.ts
 - [ ] (IMP-1) ranking-elo — [M] puntuación tipo ELO por agente y por emparejamiento, mostrada en analítica — src/lib/sim/progression.ts
 - [ ] (IMP-1) memoria-por-agente — [L] cada agente recupera lecciones relevantes a su especialidad y fase con presupuesto de tokens — src/lib/sim/engine.ts, src/lib/sim/knowledge-score.ts
@@ -207,6 +211,7 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 - [x] (SEG) token-comparacion-constante — [S] comparar `ADMIN_TOKEN` con comparación de tiempo constante y test — src/lib/net/access.ts · verificado 2026-10-23: ya implementado (timingSafeEqual + dummyCompare para no filtrar longitud)
 - [x] (SEG) cookie-admin-httponly — [M] endpoint de acceso que fije la cookie `admin_token` con `HttpOnly; SameSite=Strict` en vez de `document.cookie` — src/lib/net/access.ts, src/app/api/ · hecho 2026-10-23: POST/DELETE /api/auth (login/logout, Secure en https, 12 h, bucket admin:) + 5 casos en security-verify
 - [ ] (SEG) dns-rebinding-guard — [M] el guard SSRF comprueba literales; resolver el host y validar la IP en el punto de uso para cerrar rebinding — src/lib/net/target-guard.ts · verificado 2026-10-23: mitigación parcial ya en código (resolución DNS con TODAS las direcciones en clasificación, bloqueo siempre de metadata vía DNS, `redirect: 'error'`); residual TOCTOU entre clasificar y fetch — cerrarlo exige conectar por IP con Host fijado, cambio invasivo que merece tarea propia
+- [ ] (SEG) ssrf-ip-pinning — [L] cerrar el TOCTOU residual del guard SSRF conectando por la IP ya resuelta con cabecera Host fijada (el guard clasifica, pero `fetch` re-resuelve); cambio invasivo: partir en piezas con tests de regresión; derivada de la verificación de dns-rebinding-guard — src/lib/net/target-guard.ts, src/lib/net/
 - [x] (SEG) rate-limit-memoria — [S] expulsión de claves antiguas del rate limit en memoria para que no crezca sin límite — src/lib/net/access.ts · verificado 2026-10-23: ya implementada (limpieza perezosa al superar 1000 claves)
 - [x] (SEG) xss-evidencia-ui — [M] comprobar que comandos y evidencia del lab se renderizan siempre como texto (sin HTML) en UI, informes y copia al portapapeles — src/components/arena/ · verificado 2026-10-23: cero `dangerouslySetInnerHTML`/`innerHTML`/`document.cookie` en src/; React escapa por defecto y la evidencia viaja como texto/JSON
 - [ ] (SEG) validacion-esquemas-api — [L] validar con esquema todas las entradas de POST/PUT y parámetros de consulta (límites, tipos, listas blancas) — src/app/api/
@@ -214,14 +219,15 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 - [x] (SEG) escaneo-secretos-historial — [S] `gitleaks`/`trufflehog` sobre el historial completo (cierra R7) y anotar resultado — scripts/, docs/agentes/estado/SEG.md · ejecutado 2026-10-23: 212 commits contra 7 familias de patrones + blobs históricos de `.env` (solo DATABASE_URL) y `db/custom.db` (sin claves): LIMPIO; resultado en estado/SEG.md
 
 ### P2
-- [ ] (SEG) cabeceras-extra — [S] COOP/CORP y `Cache-Control` adecuado en respuestas con datos; verificar con `security-verify` — next.config.ts, scripts/security-verify.mjs
-- [ ] (SEG) caddy-hardening — [S] HSTS, límites de cuerpo y tiempos en el Caddyfile del repo — Caddyfile
+- [x] (SEG) cabeceras-extra — [S] COOP/CORP y `Cache-Control` adecuado en respuestas con datos; verificar con `security-verify` — next.config.ts, scripts/security-verify.mjs · hecho 2026-10-23: COOP/CORP same-origin en todas las respuestas y `Cache-Control: no-store` solo en `/api/*` (los assets conservan su caché immutable); checks en security-verify — 47d4f90, release 384e52d
+- [x] (SEG) caddy-hardening — [S] HSTS, límites de cuerpo y tiempos en el Caddyfile del repo — Caddyfile · hecho 2026-10-23: timeouts (read_body/read_header 10 s, write 30 s, idle 2 m), `request_body max_size 1MB`, HSTS y `-Server` en el Caddyfile; `poweredByHeader: false` en next.config.ts con caso 12 duradero en security-verify; sintaxis según docs de Caddy v2 — `caddy validate` pendiente de ejecutar en el despliegue — 86497c2, 093b123, release d792d7d
 - [ ] (SEG) auditoria-dependencias-ci — [M] auditoría de dependencias en cada PR y alerta de vulnerabilidades — .github/workflows/ (con PUL)
 - [ ] (SEG) fuzz-normalizadores — [M] pruebas de fuzzing de `taxonomy`, `text` y parseo de filtros de URL — tests/
 - [ ] (SEG) security-verify-casos-nuevos — [M] ampliar `security-verify` con casos de los hallazgos cerrados (cada fix = un caso) — scripts/security-verify.mjs
+- [ ] (SEG) traversal-codificado-verify — [S] caso en `security-verify` de traversal codificado (`..%2f`), la variante que realmente llega al clasificador del lab (petición de IMP-1) — scripts/security-verify.mjs
 - [ ] (SEG) sbom-y-lockfile — [S] generar SBOM y verificar integridad del `bun.lock` en CI — .github/workflows/
 - [ ] (SEG) logs-sin-secretos — [S] comprobar que ningún log ni informe contiene claves, tokens ni cabeceras sensibles — src/lib/
-- [ ] (SEG) origin-allowlist-env — [S] validar el `Origin` también contra `NEXT_PUBLIC_SITE_URL` cuando esté definida, para despliegues tras proxies que reescriben el Host (complementa isSameOrigin) — src/lib/net/access.ts
+- [x] (SEG) origin-allowlist-env — [S] validar el `Origin` también contra `NEXT_PUBLIC_SITE_URL` cuando esté definida, para despliegues tras proxies que reescriben el Host (complementa isSameOrigin) — src/lib/net/access.ts · hecho 2026-10-23: allowlist en isSameOrigin; sin la variable el comportamiento es exactamente el anterior y una URL malformada no relaja nada; 7 tests nuevos (334→341) — 407c7aa, release 5688039
 - [ ] (SEG) gitleaks-ci — [S] fijar el escaneo de secretos en CI (`gitleaks protect` en cada push/PR); el barrido manual del 2026-10-23 quedó limpio y debe perpetuarse — .github/workflows/ (con PUL)
 - [ ] (IMP-2) auth-ui — [M] formulario de login y estado de sesión cuando `ADMIN_TOKEN` está definido, usando `POST /api/auth` / `DELETE /api/auth` (cookie ya HttpOnly); sin guardar el token en localStorage — src/components/arena/, src/hooks/
 
@@ -264,8 +270,9 @@ Cada sesión rota al menos 4 personas. Suites e2e a construir en `tests/e2e/` (`
 - [ ] (TEST) e2e-exportaciones — [M] CSV/JSON/`.md` íntegros: columnas, codificación, celdas peligrosas y consistencia con la ficha — tests/e2e/
 - [ ] (TEST) e2e-model-studio-mock — [L] servidor local compatible OpenAI como fixture: descarga de catálogo, selección, errores 401/500/timeouts — tests/e2e/fixtures/
 - [ ] (TEST) e2e-degradacion-llm — [M] proveedor caído a mitad de campaña: la campaña continúa en modo determinista y queda reflejado — tests/e2e/
-- [x] (TEST) e2e-seguridad-http — [M] CSRF (`text/plain`, `Origin: null`), tokens, rate limits, cuerpos grandes y SSRF contra la instancia local — tests/e2e/ (35/35: fase A modo abierto + fase B ADMIN_TOKEN; cierra H-001 con SEG)
+- [x] (TEST) e2e-seguridad-http — [M] CSRF (`text/plain`, `Origin: null`), tokens, rate limits, cuerpos grandes y SSRF contra la instancia local — tests/e2e/ (35/35: fase A modo abierto + fase B ADMIN_TOKEN; incluye login erróneo/correcto, cookie y logout que pidió SEG; cierra H-001 con SEG) · ratificado por DIR: dd76326, release 1492458
 - [x] (TEST) e2e-doble-lanzamiento — [S] doble clic y peticiones simultáneas de `POST /api/campaigns` — tests/e2e/
+- [ ] (TEST) estados-vacios-e2e — [S] e2e del banner de desconexión, la tarjeta de reintento y los EmptyState (persona «usuario torpe» con el servidor parado; propuesta de IMP-2) — tests/e2e/
 - [ ] (TEST) e2e-reinicio-servidor — [M] matar el servidor a mitad de campaña y comprobar la recuperación de huérfanas — tests/e2e/
 - [ ] (TEST) e2e-autopiloto — [M] activar/desactivar, coerción del booleano, respeto de límites — tests/e2e/
 - [ ] (TEST) e2e-entorno-adverso — [M] `LAB_PORT` inválido u ocupado, `DATABASE_URL` relativa, BD ausente o corrupta — tests/e2e/
@@ -297,6 +304,8 @@ Cada sesión rota al menos 4 personas. Suites e2e a construir en `tests/e2e/` (`
 - **Biblioteca de reglas de detección:** catálogo navegable de las reglas generadas por BLUE, con su evidencia de origen.
 - **Galería pública de campañas:** informes de solo lectura exportables (HTML estático) para compartir sin exponer la app.
 - **Modo espectador:** enlace de solo lectura a una campaña en curso o finalizada (streaming de eventos sin mutaciones ni datos sensibles), predecesor ligero de la galería mientras la exportación estática no existe.
+- **Sello de origen del conocimiento (antiveneno):** cada lección conserva trazabilidad a la campaña y a la evidencia que la generó; detección de lecciones «envenenadas» (derivadas de evidencia manipulada o ruido) con cuarentena revisable — complementa prompt-injection-evidencia, que sanea la entrada pero no audita lo ya aprendido.
+- **Modo cooperativo humano+agente:** un operador inserta o veta acciones en RED o BLUE junto a los agentes, con la misma trazabilidad de eventos; convierte la arena en herramienta de entrenamiento real (evoluciona desde el modo espectador).
 - **Modo multiusuario:** cuentas, roles y espacios separados (cierra el riesgo R4 de forma estructural; exige rediseñar el modelo de acceso).
 - **Extensiones:** puntos de enganche para nuevos agentes, firmas y escenarios sin tocar el núcleo.
 
