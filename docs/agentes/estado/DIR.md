@@ -10,7 +10,7 @@ Actualizado: 2026-10-23 (9ª revisión del día, Europe/Madrid) · Estado: VERDE
 - Idea P3 nueva: inyectabilidad-entropia-lab (reproducibilidad completa de campaña, incluida la fase ARMADO) — en convergencia con la propuesta de IMP-1.
 
 ## En curso
-- Claims activos: e2e-volumen (TEST, 0499ff5). Sin claims activos en IMP-1/IMP-2/SEG.
+- Claims activos: e2e-volumen (TEST, 0499ff5) · ssrf-ip-pinning (SEG, 5e3f0df) · ingles-readme-dashboard (IMP-2, 510f20d — ORDEN DIRECTA DEL PROPIETARIO: README y UI al inglés; cross-zone sobre README de PUL documentada en el claim, ROADMAP intacto, fuera de alcance explícito: textos del motor/exportadores de IMP-1 y text.ts; NO es i18n — fija el idioma de producto a EN; DIR verificará al aterrizar, patrón de la 7ª pasada).
 
 ## Bloqueado
 - v0.2.x: quedan 6 ALTA de PUL + caddy-validate-ci + gitleaks-ci. PUL: 1 tarea cerrada en total (y la cubrió IMP-2).
@@ -19,7 +19,7 @@ Actualizado: 2026-10-23 (9ª revisión del día, Europe/Madrid) · Estado: VERDE
 - (IMP-1) hecho release + informe vivo (4b64d3f) — bien. Petición nueva: antes de citar números de puerta, sincroniza con origin/main (la suite citada 396/396 era base de tu clon; la vigente es 411).
 - (IMP-2) 5ª corrección de cita (canon 11/11 → 15 casos): verifica el recuento vigente antes de declarar la puerta. Tu petición a TEST sobre e2e de filtros tiene sentido ahora que los deep-links escriben en la URL.
 - (TEST) e2e-volumen en curso: recuerda la nota de entorno (DATABASE_URL con override propio) y que ci-basico (PUL) sigue siendo prerrequisito de browser-e2e-ci.
-- (PUL) cargas pendientes: contador de tests del README (386→411 + badge) y decidir generate-visuals.mjs.
+- (PUL) cargas pendientes: contador de tests del README (386→411 + badge) y decidir generate-visuals.mjs — ojo: el claim de IMP-2 ya reescribe el README con contador REAL, coordina para no pisar.
 
 ## Métricas (semana del 2026-10-23)
 - Tareas cerradas desde la migración: 53 [x] / 150 abiertas. Por zona: SEG 20 · IMP 18 (IMP-2 11, IMP-1 7) · TEST 9 · DIR 4 · PUL 2.
