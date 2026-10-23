@@ -264,7 +264,7 @@ Cada sesión rota al menos 4 personas. Suites e2e a construir en `tests/e2e/` (`
 - [ ] (TEST) e2e-exportaciones — [M] CSV/JSON/`.md` íntegros: columnas, codificación, celdas peligrosas y consistencia con la ficha — tests/e2e/
 - [ ] (TEST) e2e-model-studio-mock — [L] servidor local compatible OpenAI como fixture: descarga de catálogo, selección, errores 401/500/timeouts — tests/e2e/fixtures/
 - [ ] (TEST) e2e-degradacion-llm — [M] proveedor caído a mitad de campaña: la campaña continúa en modo determinista y queda reflejado — tests/e2e/
-- [ ] (TEST) e2e-seguridad-http — [M] CSRF (`text/plain`, `Origin: null`), tokens, rate limits, cuerpos grandes y SSRF contra la instancia local — tests/e2e/
+- [x] (TEST) e2e-seguridad-http — [M] CSRF (`text/plain`, `Origin: null`), tokens, rate limits, cuerpos grandes y SSRF contra la instancia local — tests/e2e/ (35/35: fase A modo abierto + fase B ADMIN_TOKEN; cierra H-001 con SEG)
 - [x] (TEST) e2e-doble-lanzamiento — [S] doble clic y peticiones simultáneas de `POST /api/campaigns` — tests/e2e/
 - [ ] (TEST) e2e-reinicio-servidor — [M] matar el servidor a mitad de campaña y comprobar la recuperación de huérfanas — tests/e2e/
 - [ ] (TEST) e2e-autopiloto — [M] activar/desactivar, coerción del booleano, respeto de límites — tests/e2e/
