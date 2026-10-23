@@ -88,3 +88,24 @@ workflow puede volver a `bun run test` paralelo si se quiere (una línea).
   sería rojo con alta frecuencia desde el primer día.
 - Local: irrelevante para desarrolladores que corren ficheros concretos;
   relevante para puertas de suite completa (usar `--parallel=1` hasta el fix).
+
+## Adendum (sesión 11, tras la 15ª pasada de DIR — árbol fusionado con el fix H-006 bbd1b28)
+
+La suite creció a 514 tests / 30 ficheros (infraestructura-lanzable.test.ts
+de IMP-1: 15 tests con el repro de H-006 — siembra un escenario roto
+`{"nodes":[]}` en la BD compartida y lo retira en afterAll). Sobre ese árbol,
+con `--parallel=1`:
+
+- 1 corrida roja observada (512/514 — los 2 fallos NO llegaron a capturarse
+  con nombre; la corrida siguiente y otras 5 más fueron 514/514).
+- Balance honesto: **1 roja / 6 verdes** serializado. El flake persiste
+  incluso sin paralelismo de ficheros — la sospechosa principal es el estado
+  global que el fichero nuevo introduce (escenario roto visible para las
+  rutas que eligen escenario al azar de otros ficheros, y/o colas de
+  arranque de sus 15 tests con lanzamientos SIM). Sin nombres capturados no
+  se adjudica causa: el workflow ci-basico correrá la suite completa en cada
+  push y devolverá los nombres con su log completo cuando recurra.
+- Refuerza el fix de fondo (BD por fichero + semillas marcadas retiradas en
+  afterAll como YA hace infraestructura-lanzable) y añade una regla nueva
+  para autores de tests: los ficheros que siembran escenarios/campañas
+  globales deben asumir que OTROS ficheros los ven en el mismo instante.
