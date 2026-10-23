@@ -1,12 +1,11 @@
 # TEST — informe vivo
 
 ## Hecho (últimas 24 h)
-- Migración v2 sembrada por orden del dueño: PROTOCOLO v2, OWNERSHIP, ROADMAP y carpetas claims/estado/hallazgos (tarea `migracion-protocolo-v2`; queda para DIR ratificarla y para PUL retirar `z_*` y congelar `worklog.md`).
-- `baseline-e2e` (4+ personas: nuevo, avanzado, torpe, malintencionado, admin/operador, entorno adverso): 35 PASS / 2 FAIL sobre instancia local (puertos 3115/4415, BD propia). Los 2 FAIL son hallazgos reales (H-001, H-002); el FAIL del healthcheck era del arnés, verificado a mano en verde.
-- `e2e-golden-path`: `tests/e2e/golden-path.e2e.mjs` — 14/14 PASS (BD dedicada, campaña real COMPLETED, comandos reales, escala [0,100], lecciones, engineMode).
-- `e2e-doble-lanzamiento`: `tests/e2e/doble-lanzamiento.e2e.mjs` — 8/8 PASS (409/409 simultáneo, 409 secuencial, relanzamiento tras fin, 2 campañas exactas).
-- `tiempo-instalacion-readme` (frío, caché bun vacía): install 10,1 s (441 paquetes) · prisma generate 0,1 s · db push ~2 s · build 24 s · campaña determinista 16-20 s · README seguido sin errores de principio a fin.
-- Puerta de calidad en la copia: lint 0 errores · 215/215 tests.
+- Sesión 1: migración v2 sembrada, `baseline-e2e` (6 personas, 35 PASS/2 FAIL), `e2e-golden-path` (14/14), `e2e-doble-lanzamiento` (8/8), `tiempo-instalacion-readme` (install 10,1 s frío · build 24 s), hallazgos H-001..H-005.
+- Sesión 2 — `e2e-seguridad-http`: `tests/e2e/seguridad-http.e2e.mjs`, **35/35 OK** sobre standalone de main (con fixes de SEG), BD dedicada `db/e2e-seguridad.db`, puertos 3115/4415. Dos fases:
+  · Fase A (modo abierto): CSRF — cross-host/`Origin: null`/`text/plain` cross-site → 403; sin Origin y same-host → admitidos. Topes: autopilot 2 KB→413, campaigns 5 KB→413; chunked 8 KB→413 y chunked 16 B→200 (H-001). Login abierto→400, JSON inválido→400. SSRF: IMDS y metadata.google.internal→403. Rate limit: 7ª petición→429, GET no limitado, la campaña en curso termina COMPLETED.
+  · Fase B (ADMIN_TOKEN): sin credencial→401 (incl. chunked, caso H-001), token erróneo→401, GETs abiertos→200; login erróneo→401, correcto→200 con cookie HttpOnly/SameSite=Strict/Path=/12 h (sin Secure en http); la cookie sola acredita mutaciones; logout expira (Max-Age=0); cross-origin→403 aunque el token sea válido.
+- **H-001 CERRADO** (`resuelto`, verificado por TEST): los 3 puntos que pidió SEG confirmados — tope de stream chunked aplica (413), el 200 pequeño es modo abierto R4 (sin bypass), y chunked no sortea la acreditación (401). Perpetuado en security-verify (casos 9/11, SEG) y en la suite e2e (TEST).
 
 ## En curso
 - Nada.
@@ -14,12 +13,14 @@
 ## Bloqueado
 - Nada.
 
+## Notas de verificación (para DIR/PUL)
+- Comportamiento correcto pero no obvio, documentado en la suite: en `/api/auth` el cortocircuito de modo abierto (400) corre ANTES de `readJsonBody` — un cuerpo gordo en modo abierto nunca se lee (bien); el 413 del tope 1 KB solo es alcanzable con ADMIN_TOKEN (verificado en fase B).
+
 ## Peticiones a otras zonas
-- SEG: H-001 (chunked activa el autopiloto saltándose el tope de cuerpo — evidencia reproducible para `cuerpo-chunked`).
-- IMP-1: H-002 (huérfanas: 409 ≥120 s y recuperación solo vía `/api/state`), H-003 (5/5 campañas DRAW), H-004 (scenarioId inválido y JSON malformado lanzan campañas en silencio).
-- IMP-2: H-005 (BD caída: portada 200 sin aviso; alimenta `estados-error-carga`).
-- PUL: el contenedor de prueba exporta `DATABASE_URL` global que gana al `.env` en la CLI de Prisma (R10); valora un aviso en la sección Instalación del README.
+- IMP-1: H-002 (huérfanas 409 ≥120 s), H-003 (5/5 DRAW), H-004 (validación de lanzamiento) siguen abiertos — sin cambios esta sesión.
+- IMP-2: H-005 (portada 200 con BD rota) sigue abierto — sin cambios esta sesión.
+- DIR: propuesta de siguiente tarea TEST — `e2e-historial-filtros` o `e2e-exportaciones` (ambas [M], sin dependencias).
 
 ## Propuestas para el roadmap
-- (TEST) `e2e-seguridad-http`: formalizar como suite lo ya probado a mano (CSRF 403, 413, SSRF metadata, rate limit 6/min, coerción del autopiloto).
-- (DIR) aprobar fixture de servidor OpenAI local para `e2e-model-studio-mock` (puerto del rango TEST).
+- (TEST) perpetuar en CI las suites e2e cuando PUL añada `ci-basico`: `bun tests/e2e/golden-path.e2e.mjs` etc. son deterministas y no necesitan red.
+- (TEST) `e2e-degradacion-llm` puede reutilizar el fixture del mock OpenAI de `e2e-model-studio-mock` si DIR lo aprueba (una sola pieza de arnés para dos tareas).

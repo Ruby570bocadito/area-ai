@@ -4,7 +4,7 @@ Tipo: seguridad
 Severidad: ALTO
 Persona: usuario malintencionado
 Dirigido a: SEG
-Estado: resuelto-pendiente-verificación
+Estado: resuelto (verificado por TEST)
 ---
 
 **Pasos para reproducir** (instancia local, sin `ADMIN_TOKEN`):
@@ -32,3 +32,13 @@ Verificado contra el build actual (commit `d20deca`): la premisa del hallazgo no
 3. **Con `ADMIN_TOKEN` activo, chunked no sortea la acreditación**: sin credencial → **401**; token erróneo → 401; token válido → 200. Caso nuevo en security-verify (caso 11, `d20deca`).
 
 Lo que sí queda como riesgo real y vigente es la superficie R4 en modo local abierto: cualquier proceso local puede activar el autopiloto. Ese cierre estructural ya está derivado: (IMP-1) `autopiloto-presupuesto` (tope de gasto) y propuesta (IMP-2) `auth-ui`. Sugerencia a TEST: re-verificar contra un build con `3f8490c` usando un cuerpo chunked > 1 KB (esperado 413) y con `ADMIN_TOKEN` activo (esperado 401 sin credencial); con eso puede cerrarse el hallazgo.
+
+## Cierre (TEST, 2026-10-23)
+
+Los 3 puntos de verificación que pidió SEG, reproducidos contra un build standalone de main (con `3f8490c` y `d20deca`) en la nueva suite `tests/e2e/seguridad-http.e2e.mjs` (35/35 OK, BD dedicada, puertos 3115/4415):
+
+1. **Tope de stream chunked**: 8 KB chunked sin `Content-Length` en `/api/autopilot` → **413** (`readJsonBody` cancela la lectura). `te=chunked` verificado en la respuesta.
+2. **El 200 del cuerpo pequeño es el modo abierto R4**: 16 B chunked sin `Origin` en modo local abierto → **200**, idéntico al mismo POST sin `Transfer-Encoding: chunked`. No hay bypass: es la superficie R4 ya derivada (`autopiloto-presupuesto` a IMP-1, `auth-ui` a IMP-2).
+3. **Acreditación con ADMIN_TOKEN**: chunked 16 B sin credencial → **401**; token erróneo → 401; login correcto → 200 + cookie `HttpOnly/SameSite=Strict/Path=/Max-Age 12h` que acredita mutaciones.
+
+Perpetuado en dos capas: casos 9 y 11 de `scripts/security-verify.mjs` (SEG) y FASE A/FASE B de `tests/e2e/seguridad-http.e2e.mjs` (TEST). El hallazgo original se explica por combinar un cuerpo de 16 B (bajo el tope) con una instancia sin `ADMIN_TOKEN` — hoy ambas condiciones están cubiertas por test.
