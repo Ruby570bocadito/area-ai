@@ -56,3 +56,31 @@ export function pickNodeForPhase(nodes: InfraNode[], phase: Phase): InfraNode {
   const list = pool.length > 0 ? pool : nodes
   return rand(list)
 }
+
+/**
+ * Resuelve el escenario de una campaña por el `scenarioId` del cliente.
+ *
+ * Contrato (H-004, molde acceptSeed — «no se silencia»): pedir un
+ * escenario CONCRETO y obtener otro al azar es la misma promesa rota
+ * que pedir una semilla concreta y recibir otra. El azar queda
+ * EXPLÍCITO y solo por las vías de siempre:
+ *
+ *   · sin `scenarioId`, cadena vacía o `scenarioId: 'random'` → azar
+ *     (comportamiento previo del POST {} y del autopiloto, que no pide
+ *     escenario; 'random' lo documenta en la propia petición).
+ *   · un id que NO existe lanza `SCENARIO_NOT_FOUND` — la ruta lo
+ *     convierte en 400 con el id recibido (la ruta decide el copy).
+ */
+export function resolverEscenario<T extends { id: string }>(scenarios: T[], scenarioId?: string): T {
+  if (!scenarioId || scenarioId === 'random') return rand(scenarios)
+  const encontrada = scenarios.find((s) => s.id === scenarioId)
+  if (!encontrada) {
+    // El id llega de JSON sin validar el tipo (molde del cuerpo del POST):
+    // String() blinda el eco — un scenarioId número u objeto responde 400
+    // legible, nunca un TypeError interno (que sería un 500 sin motivo).
+    const err = new Error(`Escenario inexistente: ${String(scenarioId).slice(0, 80)}`) as Error & { code?: string }
+    err.code = 'SCENARIO_NOT_FOUND'
+    throw err
+  }
+  return encontrada
+}

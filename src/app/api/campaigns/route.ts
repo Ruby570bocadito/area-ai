@@ -91,7 +91,13 @@ export async function POST(req: NextRequest) {
       if (parsed.reason === 'too-large') {
         return NextResponse.json({ ok: false, error: 'Cuerpo demasiado grande' }, { status: 413 })
       }
-      // sin cuerpo o JSON inválido → escenario aleatorio (comportamiento previo)
+      // H-004 (caso 2): un cuerpo que no parsea es un error del
+      // cliente, no una petición de azar — 400. Antes degradaba a
+      // escenario aleatorio EN SILENCIO. El azar sigue disponible y
+      // explícito: sin cuerpo ({} del reader vacío), {} o
+      // {scenarioId:'random'}. Orden canónico intacto: 413 aquí y 400
+      // después de 403→429→401.
+      return NextResponse.json({ ok: false, error: 'Cuerpo JSON inválido' }, { status: 400 })
     }
     // Cubo propio de lanzamientos (riesgo R4): tras acreditar al cliente,
     // acota el gasto LLM de campañas en bucle (6/min, más severo que el
@@ -104,7 +110,9 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const scenarioId = parsed.ok ? parsed.body?.scenarioId : undefined
+    // Tras el 400 de arriba, parsed.ok está garantizado: el sin cuerpo
+    // de readJsonBody ya llega como { ok: true, body: {} }.
+    const scenarioId = parsed.body?.scenarioId
 
     // Semilla opcional (seed-determinista): entero [0, 2^31-1] para
     // reproducir una campaña idéntica en modo determinista. Si el
@@ -182,6 +190,13 @@ export async function POST(req: NextRequest) {
     const err = error as Error & { code?: string }
     if (err.code === 'CAMPAIGN_RUNNING') {
       return NextResponse.json({ ok: false, error: 'Ya hay una campaña en curso' }, { status: 409 })
+    }
+    // H-004 (caso 1): el escenario pedido no existe — 400 con el id
+    // recibido (truncado por resolverEscenario) para que el despistado
+    // VEA qué id llegó mal copiado. Nada se lanzó: el rechazo ocurre
+    // antes del create, sin fila ni bucle en segundo plano.
+    if (err.code === 'SCENARIO_NOT_FOUND') {
+      return NextResponse.json({ ok: false, error: err.message }, { status: 400 })
     }
     console.error('[api/campaigns] error:', err)
     return NextResponse.json({ ok: false, error: 'No se pudo iniciar la campaña' }, { status: 500 })

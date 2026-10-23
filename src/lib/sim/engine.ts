@@ -67,7 +67,7 @@ import {
 import { SIGNATURE_LABEL, type LabCampaignState, type Signature } from '@/lib/lab/types'
 import { clampProgress } from '@/lib/victory'
 import { setEngineSeed, engineRoll, rand, newCampaignSeed } from './engine-rng'
-import { pickAgentForPhase, pickAgentForOp, pickNodeForPhase, type AgentRow } from './engine-select'
+import { pickAgentForPhase, pickAgentForOp, pickNodeForPhase, resolverEscenario, type AgentRow } from './engine-select'
 import {
   accumulateProgress,
   bestPatchTarget,
@@ -89,7 +89,7 @@ import { finalizeCampaign } from './engine-cierre'
 // importan de aquí; las implementaciones viven en los módulos.
 
 export { setEngineSeed, engineRollProbe, SEED_MAX, newCampaignSeed, acceptSeed, acceptDeterminista, acceptAdaptativa } from './engine-rng'
-export { pickAgentForPhase, pickAgentForOp, pickNodeForPhase } from './engine-select'
+export { pickAgentForPhase, pickAgentForOp, pickNodeForPhase, resolverEscenario } from './engine-select'
 export { accumulateProgress, redShouldChain, defaultSignatureFor, segmentForPhase, huntHypothesis, bestPatchTarget } from './engine-combate'
 
 // ─────────────────────────────────────────────────────────────
@@ -126,9 +126,11 @@ export async function startCampaign(scenarioId?: string, seed?: number, determin
 
     const scenarios = await db.scenario.findMany()
     if (scenarios.length === 0) throw new Error('No hay escenarios disponibles')
-    const scenario = scenarioId
-      ? scenarios.find((s) => s.id === scenarioId) ?? rand(scenarios)
-      : rand(scenarios)
+    // H-004 (caso 1, molde acceptSeed): un scenarioId pedido y no
+    // encontrado YA NO degrada a aleatorio en silencio —
+    // resolverEscenario lanza SCENARIO_NOT_FOUND y la ruta responde
+    // 400. El azar queda explícito (sin id, '' o 'random').
+    const scenario = resolverEscenario(scenarios, scenarioId)
 
     // ── Dificultad adaptativa (dificultad-adaptativa) ──────
     // Ajuste de la fuerza defensiva según el historial de victorias
