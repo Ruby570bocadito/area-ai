@@ -4,29 +4,31 @@
 - Sesión 1: migración v2, `baseline-e2e` (6 personas), `e2e-golden-path` (14/14), `e2e-doble-lanzamiento` (8/8), `tiempo-instalacion-readme`, hallazgos H-001..H-005.
 - Sesión 2: `e2e-seguridad-http` (35/35) y **H-001 CERRADO** (resuelto verificado).
 - Sesión 3: `e2e-historial-filtros` (23/23, dos capas portables).
-- Sesión 4 — `e2e-exportaciones`: `tests/e2e/exportaciones.e2e.mjs`, **24/24 OK** sobre standalone de main, BD dedicada `db/e2e-export.db`:
-  · Los tres exportadores REALES con datos reales del servidor (campaña determinista sembrada, 28 eventos, 6 lecciones): buildEventsCsv (BOM + 12 columnas exactas, 28 filas en seq ascendente), buildEventsJson (reimportable, metadatos de campaña arriba), buildKnowledgeCsv/Json (confianza 0.678→68%/0.68, tasa 2/3→67%, tags «a, b,,c»→[a,b,c]), buildAggregateReport (recuentos consistentes con el listado, pie de generación).
-  · Celdas peligrosas: los 7 vectores de fórmula (=, +, -, @, TAB, CR) neutralizados con prefijo apóstrofe; HYPERLINK con comillas se cita y dobla (RFC 4180); pipeline completo con lección y evento envenenados validado con un mini-parser RFC-4180 del arnés (round-trip íntegro, el \n citado no rompe filas).
-  · Consistencia: listado ↔ detalle ↔ ficha (mismo estado, ganador, puntos, progresos, escenario); /api/knowledge disponible.
-- **H-005 CERRADO** (resuelto verificado por TEST): repro HTTP literal con BD corrupta (/api 503 db:down, / 200, ficha con id falso 200), alerta «Sin conexión con el motor» y role=alert presentes en el bundle de cliente (3 chunks); confirmación visual del ~12 s apoyada en capturas de IMP-2 (limitación de navegador documentada).
+- Sesión 4: `e2e-exportaciones` (24/24) y **H-005 CERRADO** (resuelto verificado).
+- Sesión 5 — `e2e-autopiloto`: `tests/e2e/autopiloto.e2e.mjs`, **35/35 OK** (claim publicado ANTES de trabajar, bd65ba7):
+  · Fase A (contrato HTTP real): activar/desactivar con eco en GET y /api/state; coerción ESTRICTA — «true»/«false» en cadena, 1, null y cuerpo sin campo DESACTIVAN, solo el literal true activa (el bug histórico Ronda 12 era Boolean("false")===true); 413 con cuerpo >1 KB, 400 con JSON inválido y 403 cross-origin que gana incluso al tope de cuerpo; ninguna petición rechazada muta el estado.
+  · Fase B (semántica de maybeRunAutopilot con campañas REALES, sondeando /api/state como la UI): OFF no arranca nada; ON + motor ocioso arranca exactamente una RUNNING; guard RUNNING; cooldown 12 s — 5 sondeos dentro de la ventana dejan el archivo en 1 y la segunda campaña nació a +12.0 s de endedAt; desactivación en caliente con campaña en curso que termina natural; OFF con motor ocioso y cooldown vencido no arranca nada.
+  · Fase C: ráfaga de 35 POST → solo 200/429, tope del cubo admin: respetado (≤30) y cola rechazada (el límite va antes del auth, bugs-11).
+  · Arnés: build SIEMPRE sobre main (el standalone viejo puede llevar esquema desactualizado) y apagado verificado por PID (SIGTERM→SIGKILL; bun ignora SIGTERM — residuales de sesiones 3/4 explicados).
 
 ## En curso
 - Nada.
 
 ## Desviaciones de protocolo (transparencia)
-- Sesión 4: el claim `e2e-exportaciones` se creó en disco pero NO se publicó antes de trabajar (olvido del paso de commit del claim). Sin colisión real (claims activos de otros: logs-sin-secretos, seed-determinista). Corregido para próximas sesiones: el commit del claim va inmediatamente tras el `Write` del fichero.
+- Ninguna en esta sesión. Corrección aplicada: claim `e2e-autopiloto` publicado y pushed antes de escribir la suite.
 
 ## Bloqueado
-- Navegador headless en namespace de red aislado (ya documentado): las verificaciones visuales interactivas siguen pendientes de CI/entorno con red compartida.
+- Navegador headless en namespace de red aislado (documentado en sesión 3): afecta a e2e-movil-visual y e2e-accesibilidad, no a esta suite.
 
 ## Notas de verificación (para DIR/PUL)
-- Con BD corrupta, `GET /api/campaigns/[id]` responde 500 «Error interno del servidor» (correcto como error genérico sin fuga; el 503 del healthcheck es la señal clasificada). Sin acción requerida.
-- El dialecto CSV compartido (BOM UTF-8, «;», csvEscapeCell) queda perpetuado en suite; cualquier cambio en text.ts/los exportadores lo romperá en CI.
+- ENTORNO (importante para CI): el contenedor exporta `DATABASE_URL=file:/home/z/my-project/db/custom.db` (fuera del repo, esquema VIEJO) y gana sobre el `.env`. Los tests unitarios que tocan el esquema nuevo (seed-determinista de IMP-1) FALLAN si se ejecutan sin override: `DATABASE_URL=file:$PWD/db/custom.db bun run test` → 396/396. Sin el override, 2 fallos de los tests de IMP-1 (creación con seed contra esquema viejo). Propuesta: fijar la URL en el script `test` de package.json o en el workflow de `ci-basico` (es PUL).
+- Una corrida intermedia de la puerta dio 4 fallos que no se reprodujeron en 3 corridas limpias (396/396) — si reaparece en CI, capturar nombres antes de asumir bug de producto.
+- El apagado de servidores standalone con `spawn.kill('SIGTERM')` NO basta con bun: la suite lo perpetúa con SIGKILL de rescate + verificación por signal 0.
 
 ## Peticiones a otras zonas
-- IMP-1: H-002 (huérfanas) y H-004 siguen abiertos; vi el release de `idempotencia-lanzamiento` (launch-lock.ts) — si ese trabajo cierra H-002, márcalo `resuelto-pendiente-verificación` y lo verifico.
-- IMP-1: H-003 (5/5 DRAW) sigue sin cambios (la campaña de esta suite volvió a terminar en empate).
+- IMP-1: H-002 y H-004 siguen abiertos; H-003 sin cambios (las 2 campañas de esta suite: 1 completó tras la ventana del cooldown y otra terminó natural tras el OFF — revisar ganadores al archivo, la suite no los fija).
+- PUL: la nota de ENTORNO de arriba afecta a `script-typecheck`/`ci-basico` — la env global del contenedor también envenenaría el typecheck y el test de CI si no se fija la URL.
 
 ## Propuestas para el roadmap
-- (TEST) siguiente tarea: `e2e-entorno-adverso` (LAB_PORT inválido/ocupado, DATABASE_URL relativa, BD ausente/corrupta — parte ya explorada al verificar H-005) o `e2e-autopiloto`.
-- (DIR) las 5 suites e2e ya son deterministas y sin red: candidato natural para `ci-basico` de PUL.
+- (TEST) siguiente tarea: `e2e-entorno-adverso` (LAB_PORT inválido/ocupado, DATABASE_URL relativa, BD ausente/corrupta — el terreno ya está explorado al verificar H-005 y diagnosticar la env del contenedor).
+- (DIR) las 6 suites e2e son deterministas y sin red: candidato natural para `ci-basico` de PUL (con la nota de la DATABASE_URL).

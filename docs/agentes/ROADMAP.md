@@ -303,7 +303,7 @@ Cada sesión rota al menos 4 personas. Suites e2e a construir en `tests/e2e/` (`
 - [x] (TEST) e2e-doble-lanzamiento — [S] doble clic y peticiones simultáneas de `POST /api/campaigns` — tests/e2e/
 - [ ] (TEST) estados-vacios-e2e — [S] e2e del banner de desconexión, la tarjeta de reintento y los EmptyState (persona «usuario torpe» con el servidor parado; propuesta de IMP-2) — tests/e2e/
 - [ ] (TEST) e2e-reinicio-servidor — [M] matar el servidor a mitad de campaña y comprobar la recuperación de huérfanas — tests/e2e/
-- [ ] (TEST) e2e-autopiloto — [M] activar/desactivar, coerción del booleano, respeto de límites — tests/e2e/
+- [x] (TEST) e2e-autopiloto — [M] activar/desactivar, coerción del booleano, respeto de límites — tests/e2e/ (35/35: contrato HTTP con coerción estricta — solo `true` literal activa, «false» en cadena desactiva, bug Ronda 12 —, bucle real sondeando /api/state con cooldown 12 s medido y guard RUNNING, y tope del cubo admin: en ráfaga de 35) · evidencia: suite 5713bd3, claim bd65ba7, release posterior
 - [ ] (TEST) e2e-entorno-adverso — [M] `LAB_PORT` inválido u ocupado, `DATABASE_URL` relativa, BD ausente o corrupta — tests/e2e/ · siguiente candidato de TEST (sesión 4): la parte de BD ausente/corrupta ya quedó explorada al verificar H-005
 - [ ] (TEST) e2e-volumen — [M] 500-1 000 campañas sembradas: tiempos de historial, búsqueda y exportación — tests/e2e/
 - [ ] (TEST) e2e-actualizacion-bd — [M] abrir una BD de una versión anterior con el esquema nuevo — tests/e2e/
