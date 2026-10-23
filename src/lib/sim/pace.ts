@@ -209,3 +209,86 @@ export function gananciaAzulAjustada(verdict: string, ajuste: number): number {
  * tests/engine.test.ts («un nodo comprometido prioriza…»).
  */
 export const PATCH_BONUS_COMPROMETIDO = 10
+
+// ── Autotuning de balance (autotuning-balance) ─────────────
+
+/**
+ * Banda objetivo de la tasa de victoria de RED (el atacante) en el
+ * autotuning: por debajo de 0.4 la defensa domina, por encima de 0.6
+ * el ataque — fuera de banda abre la pregunta de recalibración formal
+ * de pace.ts (decisión de DIR, igual que el veredicto de
+ * balance-drift: este bloque MIDE, no recalibra).
+ */
+export const AUTOTUNING_TASA_MIN = 0.4
+export const AUTOTUNING_TASA_MAX = 0.6
+
+/**
+ * Muestra mínima por escenario para emitir un veredicto EN BANDA o
+ * FUERA de banda. Con menos, el informe es MUESTRA_CORTA: la tasa se
+ * publica igualmente (información, no veredicto) — con 2 campañas,
+ * cada resultado mueve la tasa 50 puntos y el «veredicto» sería ruido.
+ */
+export const AUTOTUNING_MUESTRA_MIN = 5
+
+export interface AutotuningCifras {
+  /** Campañas COMPLETED del escenario (la muestra real). */
+  total: number
+  /** Victorias de RED. */
+  red: number
+  /** Victorias de BLUE. */
+  blue: number
+  /** Empates (ni RED ni BLUE — señal de H-003, se expone siempre). */
+  empate: number
+}
+
+export type AutotuningEstado =
+  | 'SIN_DATOS' // 0 finalizadas
+  | 'MUESTRA_CORTA' // finalizadas < muestraMin — tasa informativa
+  | 'EQUILIBRIO' // tasaRed en [MIN, MAX]
+  | 'TASA_BAJA' // RED < MIN — la defensa domina
+  | 'TASA_ALTA' // RED > MAX — el ataque domina
+
+export interface AutotuningVeredicto {
+  finalizadas: number
+  /** Victorias RED / finalizadas (null sin muestra). */
+  tasaRed: number | null
+  /** Empates / finalizadas (H-003: todas empate = tasaEmpate 1). */
+  tasaEmpate: number
+  /** null solo con SIN_DATOS. */
+  enBanda: boolean | null
+  estado: AutotuningEstado
+}
+
+/**
+ * Veredicto de la tasa de victoria RED de una muestra de campañas
+ * (un escenario o el conjunto agrupado). Puro y sin reloj: las cifras
+ * llegan contadas — el script las levanta de las filas COMPLETED.
+ *
+ * Contrato fijado en tests/autotuning-balance.test.ts: los empates
+ * cuentan en el denominador (son campañas reales del sample — ocultar
+ * los empates inflaría la tasa y escondería la señal de H-003) y la
+ * banda es INCLUSIVA en los extremos [0.4, 0.6] (40 % y 60 % exactos
+ * son EQUILIBRIO: el objetivo orientativo del ROADMAP incluye el borde).
+ */
+export function veredictoAutotuning(
+  cifras: AutotuningCifras,
+  opciones?: { muestraMin?: number },
+): AutotuningVeredicto {
+  const muestraMin = opciones?.muestraMin ?? AUTOTUNING_MUESTRA_MIN
+  const { total, red, empate } = cifras
+  if (total <= 0) {
+    return { finalizadas: 0, tasaRed: null, tasaEmpate: 0, enBanda: null, estado: 'SIN_DATOS' }
+  }
+  const tasaRed = red / total
+  const tasaEmpate = empate / total
+  const enBanda = tasaRed >= AUTOTUNING_TASA_MIN && tasaRed <= AUTOTUNING_TASA_MAX
+  const estado: AutotuningEstado =
+    total < muestraMin
+      ? 'MUESTRA_CORTA'
+      : enBanda
+        ? 'EQUILIBRIO'
+        : tasaRed < AUTOTUNING_TASA_MIN
+          ? 'TASA_BAJA'
+          : 'TASA_ALTA'
+  return { finalizadas: total, tasaRed, tasaEmpate, enBanda, estado }
+}
