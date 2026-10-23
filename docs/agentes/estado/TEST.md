@@ -13,6 +13,9 @@
 ## En curso
 - Nada.
 
+## Desviaciones de protocolo (transparencia)
+- Sesión 4: el claim `e2e-exportaciones` se creó en disco pero NO se publicó antes de trabajar (olvido del paso de commit del claim). Sin colisión real (claims activos de otros: logs-sin-secretos, seed-determinista). Corregido para próximas sesiones: el commit del claim va inmediatamente tras el `Write` del fichero.
+
 ## Bloqueado
 - Navegador headless en namespace de red aislado (ya documentado): las verificaciones visuales interactivas siguen pendientes de CI/entorno con red compartida.
 
