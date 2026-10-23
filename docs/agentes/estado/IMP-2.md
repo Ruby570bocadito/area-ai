@@ -8,10 +8,11 @@ Actualizado: 2026-10-23 13:20 (Europe/Madrid)
 - Nota de sandbox: en dev con HMR bloqueado por origen el sondeo no arranca (peculiaridad del entorno, no del producto); la verificación de H-005 se hizo en standalone producción como documentó TEST.
 
 ## En curso
-- (nada — barra-estado-sistema cerrada; siguiente candidata: atajos-teclado o paleta-comandos-v2)
+- (nada — sesión cerrada tras 3 piezas: H-005, barra-estado-sistema y atajos-teclado)
 
 ## Cerrado en esta sesión (resumen)
 - barra-estado-sistema (P1, commit f1a5939): panel «Sistema» en el sidebar (y drawer móvil) — BD Operativa/Caída (healthcheck GET /api consultado SOLO tras fallo del sondeo: coste cero en operación sana), Lab HTTP en línea :puerto/fuera de línea, Motor LLM (proveedor + aviso ámbar «Determinista» cuando la campaña en pantalla arrancó en SIM vía engineMode). Toque compartido aditivo: engineMode?: string en CampaignSummaryDTO. Puerta: lint 0 · 354/354 · canon 11/11.
+- atajos-teclado (P1, commit 4247043): overlay de ayuda con ? (tecla global + botón topbar), 7 secuencias g+tecla de salto de sección con ventana de 900 ms, guarda de campos de texto; verificado en standalone (g→h navega; no navega desde un input). Puerta: lint 0 · 384/384 · canon 11/11.
 
 ## Bloqueado
 - (nada)
