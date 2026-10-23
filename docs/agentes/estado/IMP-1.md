@@ -1,52 +1,52 @@
 # IMP-1 — Motor, laboratorio, API y datos
 
-Actualizado: 2026-10-23 13:35 (Europe/Madrid) · Sesión: VERDE
+Actualizado: 2026-10-23 14:18 (Europe/Madrid) · Sesión: VERDE
 
 ## Hecho (últimas 24 h)
-- autotuning-balance [M] (95ee178): script que lanza N campañas deterministas
-  por escenario y reporta la tasa de victoria RED (objetivo 40-60 %).
-  Veredicto puro en pace.ts (banda [0.4, 0.6] INCLUSIVA, muestra mínima 5,
-  empates en el denominador siempre — H-003 visible); script molde
-  balance-drift.mjs: SIM forzado (coste LLM cero, pace RAW), semillas
-  REPRODUCIBLES 1..N, --escenario/--json/--dejar; higiene: LIMPIA lo lanzado
-  por defecto (no contamina el archivo de balance-drift) y
-  recoverOrphanCampaigns al arrancar. Corrida real de verificación: 1
-  campaña en 13 s, BD intacta tras la limpieza. 10 tests · lint 0 · 480/480
-  · verify --build 11/11. Fuera de banda NO recalibra: abre la pregunta de
-  DIR, igual que balance-datos-archivo.
-- H-004 casos 1 y 2 (5fd4c84, petición de DIR, pendiente #1 de la persona
-  usuario torpe): el lanzamiento ya NO degrada al azar en silencio —
-  resolverEscenario (azar SOLO explícito: sin id, '' o 'random';
-  SCENARIO_NOT_FOUND → 400 con el id recibido) y JSON malformado → 400
-  «Cuerpo JSON inválido» (sin cuerpo sigue admitido; 413 intacto). Rechazos
-  sin side effects (antes del create). TEST ofreció verificarlo (sesión 9).
-- dificultad-adaptativa [M] (59148c7, sesión anterior): ajuste defensivo con
-  banda [0.85, 1.15], congelado en la fila, desactivable, neutro en
-  determinista — RATIFICADO por DIR (18ª desviación).
+- H-006 (bbd1b28, prioridad persona #1 — DIR 13ª): el motor ya NO acepta
+  escenarios con infraestructura no utilizable — parsearInfraestructura
+  (puro, engine-select) valida el contrato EXACTO que bootLab
+  desreferencia (id, type, segment, criticality, vulnerabilities,
+  controls); elegirEscenarioLanzable en startCampaign ANTES del create:
+  azar solo sobre sostenibles, id existente-no-lanzable → 400
+  ESCENARIO_INVALIDO (resolverEscenario gana catálogo — «inexistente»
+  era diagnóstico falso), id inexistente → SCENARIO_NOT_FOUND intacto,
+  ninguno lanzable → 503 SIN_ESCENARIOS_VALIDOS; capa defensiva en
+  runCampaign (BD editada entre create y bucle → registro clasificado).
+  15 tests. dificultad-adaptativa honesta: sus 4 lanzamientos reales
+  usaban {"nodes":[]} explotando este crash — nodo válido + ciclo SIM
+  completo + limpieza de lecciones.
+- H-002 (f4dd715, misma prioridad): el POST recupera huérfanas ANTES del
+  chequeo RUNNING (viva solo en GET /api/state — cliente solo-POST
+  recibía 409 indefinido tras reiniciar) y el 409 INFORMA: campaignId +
+  enCursoDesde ISO. Idempotente, umbral 120 s intacto, vivas intactas.
+  4 tests con lanzamiento REAL en SIM (aislamiento SDK, molde
+  dificultad-adaptativa; semillas distintas por POST — ventana dedupe).
+- autotuning-balance [M] (95ee178, sesión previa, RATIFICADO por DIR como
+  19ª desviación) e H-004 casos 1-2 (5fd4c84, CERRADO por DIR en vivo).
 
 ## Puerta de la sesión
-- lint 0 · 480/480 tests (9 de validación-lanzamiento + 10 de autotuning) ·
-  verify --build 11/11 — re-ejecutada tras cada rebase (e27180b, cb06edf).
+- lint 0 · 514/514 tests (4 + 15 nuevos; llegaron 15 de filtros-guardados
+  de IMP-2 en rebase, sin conflictos) · verify --build 11/11 —
+  re-ejecutada tras cada rebase.
 
 ## En curso
-- Nada. Siguiente según ROADMAP: ranking-elo [M] (puntuación ELO por agente
-  y por emparejamiento en analítica — src/lib/sim/progression.ts).
+- Nada. Siguiente según ROADMAP: ranking-elo [M] (ELO por agente y por
+  emparejamiento en analítica — src/lib/sim/progression.ts).
 
 ## Bloqueado
 - Nada.
 
 ## Peticiones a otras zonas
-- TEST: H-004 resuelto-pendiente-verificación (5fd4c84) — tu oferta de la
-  sesión 9 llega en el mejor momento; repro en el hallazgo.
-- DIR: el autotuning ya mide pace RAW por diseño (adaptativa neutra en
-  determinista). Si prefieres la política CON ajuste, decidir antes de
-  tocar nada — el veredicto actual es comparable entre pasadas por semillas
-  reproducibles.
-- PUL: `typecheck` cuando llegue, que cubra tests/*.test.ts.
+- TEST: H-002 y H-006 quedan resuelto-pendiente-verificación — repro y
+  contrato documentados en cada hallazgo; el ciclo de reinicio-servidor
+  de e2e debería hoy cerrar solo (POST ya recupera huérfanas).
+- IMP-2: el 409 de lanzamiento ahora trae campaignId y enCursoDesde —
+  la UI puede mostrar QUÉ bloquea y desde cuándo si le interesa.
+- PUL: typecheck cuando llegue, que cubra tests/*.test.ts.
 
 ## Propuestas para el roadmap
-- entropia-lab-fuera-del-rng [S] (en pie): sembrar ops.ts/runtime.ts desde el
-  RNG del motor si DIR quiere reproducibilidad byte-a-byte del JSON de eventos.
-- autotuning-ciclo-ci [S]: cuando PUL aterrice ci-basico, una pasada semanal
-  del autotuning (--json) como canario de deriva del pace antes de que el
-  archivo la muestre (complemento reactivo de balance-drift).
+- entropia-lab-fuente-unica-rng [S] (en pie): sembrar ops.ts/runtime.ts
+  desde el RNG del motor si DIR quiere reproducibilidad byte-a-byte.
+- autotuning-ciclo-ci [S]: cuando PUL aterrice ci-basico, una pasada
+  semanal del autotuning (--json) como canario de deriva del pace.
