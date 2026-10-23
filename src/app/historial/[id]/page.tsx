@@ -1,8 +1,8 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
   ArrowLeft,
@@ -31,7 +31,41 @@ import type { CampaignDetailResponse } from '@/lib/api-types'
 // HTTP), resultado, lecciones que archivó esta campaña, la
 // evolución ronda a ronda y la comparativa con las demás
 // campañas del mismo escenario.
+//
+// enlace-permanente-ronda: acepta deep-links de foco —
+//   · ?evento=SEQ  centra y destaca ese evento exacto en el feed
+//   · ?ronda=N     centra la primera evento de esa ronda
+// (patrón D6 de deep-links-historial: useSearchParams en un
+// componente propio dentro de <Suspense> y validación por lista
+// blanca de enteros; ?evento= tiene precedencia y, si no
+// resuelve, se prueba ?ronda=). Las tarjetas de ronda de la
+// evolución centran su ronda en el feed y escriben ?ronda=N con
+// history.replaceState — la vista enfocada es compartible.
 // ─────────────────────────────────────────────────────────────
+
+type Focus = { seq?: number; round?: number }
+
+// Validación de listas blancas: solo enteros ≥ 1 (sin signos,
+// sin decimales, sin notación exponencial).
+const FOCUS_INT_RE = /^[1-9]\d*$/
+
+function parseFocus(rawSeq: string | null, rawRound: string | null): Focus | null {
+  const seq = rawSeq && FOCUS_INT_RE.test(rawSeq) ? Number(rawSeq) : null
+  const round = rawRound && FOCUS_INT_RE.test(rawRound) ? Number(rawRound) : null
+  if (seq == null && round == null) return null
+  return { seq: seq ?? undefined, round: round ?? undefined }
+}
+
+// Reescritura SIN navegación (window.history.replaceState, soportado
+// nativamente por el App Router) — mismo convenio que syncFiltersToUrl
+// de /historial. Solo un parámetro: el foco más preciso gana.
+function syncFocusToUrl(id: string, focus: Focus | null) {
+  const params = new URLSearchParams()
+  if (focus?.seq != null) params.set('evento', String(focus.seq))
+  else if (focus?.round != null) params.set('ronda', String(focus.round))
+  const qs = params.toString()
+  window.history.replaceState(null, '', qs !== '' ? `/historial/${id}?${qs}` : `/historial/${id}`)
+}
 
 const CATEGORY_LABEL: Record<string, string> = {
   TACTICA: 'Tactics',
@@ -42,13 +76,16 @@ const CATEGORY_LABEL: Record<string, string> = {
   INTELIGENCIA: 'Intelligence',
 }
 
-function DetailPage() {
+function DetailPage({ initialFocus }: { initialFocus: Focus | null }) {
   const { state } = useArena()
   const params = useParams<{ id: string }>()
   const id = params?.id
 
   const [detail, setDetail] = useState<CampaignDetailResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // enlace-permanente-ronda: foco activo (de la URL al montar, o del
+  // click del usuario en las tarjetas de ronda de la evolución).
+  const [focus, setFocus] = useState<Focus | null>(initialFocus)
 
   const load = useCallback(async () => {
     if (!id) return
@@ -66,6 +103,33 @@ function DetailPage() {
   useEffect(() => {
     void load()
   }, [load])
+
+  // Resolución del ancla como ESTADO DERIVADO (sin efectos): seq
+  // pedida → si existe, esa; ronda pedida → primer evento de la
+  // ronda; enlace manipulado o datos aún no cargados → null (el
+  // feed se queda en su comportamiento por defecto).
+  const anchorSeq = useMemo(() => {
+    if (!detail || !focus) return null
+    if (focus.seq != null) return detail.events.some((e) => e.seq === focus.seq) ? focus.seq : null
+    if (focus.round == null) return null
+    return detail.events.find((e) => e.round === focus.round)?.seq ?? null
+  }, [detail, focus])
+  const anchorEvent =
+    detail && anchorSeq != null ? (detail.events.find((e) => e.seq === anchorSeq) ?? null) : null
+  const activeRound = anchorEvent?.round ?? focus?.round ?? null
+
+  // Click en una tarjeta de ronda de la evolución: centra esa ronda en
+  // el feed y comparte la URL (?ronda=N). Segundo click sobre la misma
+  // ronda (sin evento concreto) desactiva el foco y limpia la URL.
+  const handleSelectRound = useCallback(
+    (round: number) => {
+      const isSameRoundOnly = focus != null && focus.seq == null && focus.round === round
+      const next: Focus | null = isSameRoundOnly ? null : { round }
+      setFocus(next)
+      if (id) syncFocusToUrl(id, next)
+    },
+    [focus, id]
+  )
 
   if (error) {
     return (
@@ -116,7 +180,7 @@ function DetailPage() {
   const durationLabel = campaign.endedAt
     ? formatDuration(new Date(campaign.endedAt).getTime() - new Date(campaign.startedAt).getTime())
     : isRunning
-      ? 'En curso'
+      ? 'In progress'
       : '—'
 
   // ── Exportación de la telemetría (implementaciones-13, backlog #2
@@ -220,10 +284,17 @@ function DetailPage() {
         agents={state?.agents ?? []}
         infraNodes={detail.infra?.nodes ?? []}
         running={isRunning}
+        anchorSeq={anchorSeq}
+        linkToEventBase={`/historial/${campaign.id}`}
       />
 
       {/* Evolución ronda a ronda (backlog 14h39 #4) + comparativa del escenario */}
-      <RoundEvolution events={detail.events} maxRounds={campaign.maxRounds} />
+      <RoundEvolution
+        events={detail.events}
+        maxRounds={campaign.maxRounds}
+        activeRound={activeRound}
+        onSelectRound={handleSelectRound}
+      />
       <ScenarioSiblings current={campaign} siblings={detail.siblings ?? []} />
 
       {/* Lecciones que archivó esta campaña */}
@@ -275,10 +346,38 @@ function DetailPage() {
   )
 }
 
+// D6 (deep-links-historial): useSearchParams exige frontera <Suspense>
+// propia — el árbol de la ficha NO se repliega a renderizado del
+// cliente completo; solo este wrapper espera a los searchParams.
+function AnchoredDetail() {
+  const searchParams = useSearchParams()
+  const initialFocus = useMemo(
+    () => parseFocus(searchParams.get('evento'), searchParams.get('ronda')),
+    [searchParams]
+  )
+  return <DetailPage initialFocus={initialFocus} />
+}
+
 export default function CampaignDetail() {
   return (
     <ArenaGate>
-      <DetailPage />
+      <Suspense
+        fallback={
+          <PageContainer>
+            <div className="flex min-h-[50vh] items-center justify-center">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2.4, repeat: Infinity, ease: 'linear' }}
+                className="flex h-14 w-14 items-center justify-center rounded-xl border border-[#e4e7ec] bg-white shadow-sm"
+              >
+                <Swords className="h-6 w-6 text-ink-500" />
+              </motion.div>
+            </div>
+          </PageContainer>
+        }
+      >
+        <AnchoredDetail />
+      </Suspense>
     </ArenaGate>
   )
 }

@@ -143,6 +143,8 @@ export function ArenaLive({
   infraNodes,
   running,
   liveLab,
+  anchorSeq = null,
+  linkToEventBase = null,
 }: {
   campaign: CampaignSummaryDTO
   events: EventDTO[]
@@ -150,6 +152,10 @@ export function ArenaLive({
   infraNodes: InfraNodeDTO[]
   running: boolean
   liveLab?: LiveLabDTO | null
+  /** enlace-permanente-ronda: seq del evento a centrar/distinguir en el feed (solo ficha). */
+  anchorSeq?: number | null
+  /** enlace-permanente-ronda: base de URL para «copiar enlace» por evento (solo ficha). */
+  linkToEventBase?: string | null
 }) {
   const redAgents = agents.filter((a) => a.team === 'RED')
   const blueAgents = agents.filter((a) => a.team === 'BLUE')
@@ -430,7 +436,12 @@ export function ArenaLive({
         ) : (
           <div className="panel rounded-xl p-6 text-sm text-ink-500">No map available.</div>
         )}
-        <EventFeed events={events} className="max-h-[420px] min-h-[280px]" />
+        <EventFeed
+          events={events}
+          className="max-h-[420px] min-h-[280px]"
+          anchorSeq={anchorSeq}
+          linkToEventBase={linkToEventBase}
+        />
       </div>
 
       {/* Resolución */}

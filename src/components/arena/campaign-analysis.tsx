@@ -31,7 +31,19 @@ function fmtDate(d: string): string {
 
 /* ---------- Evolución ronda a ronda ---------- */
 
-export function RoundEvolution({ events, maxRounds }: { events: EventDTO[]; maxRounds: number }) {
+export function RoundEvolution({
+  events,
+  maxRounds,
+  activeRound = null,
+  onSelectRound,
+}: {
+  events: EventDTO[]
+  maxRounds: number
+  /** enlace-permanente-ronda: ronda resaltada (deep-link o click del usuario). */
+  activeRound?: number | null
+  /** Si llega, cada tarjeta de ronda es un botón que centra esa ronda en el feed. */
+  onSelectRound?: (round: number) => void
+}) {
   const p = useMemo(() => buildRoundProgression(events, maxRounds), [events, maxRounds])
 
   const W = 340
@@ -197,26 +209,40 @@ export function RoundEvolution({ events, maxRounds }: { events: EventDTO[]; maxR
             ))}
           </svg>
 
-          {/* Desglose por ronda */}
+          {/* Desglose por ronda — con onSelectRound, cada tarjeta centra
+              su ronda en el feed de la ficha (enlace-permanente-ronda). */}
           <div className="mt-3 grid grid-cols-3 gap-1.5 sm:grid-cols-6">
-            {p.rows.map((r) => (
-              <div
-                key={r.round}
-                className={cn(
-                  'rounded-lg border px-2 py-1.5',
-                  r.leader === 'RED'
+            {p.rows.map((r) => {
+              const active = activeRound === r.round
+              const card = cn(
+                'rounded-lg border px-2 py-1.5 text-left transition-colors',
+                active
+                  ? 'border-ink-900 bg-white ring-2 ring-[#fec84b]/50'
+                  : r.leader === 'RED'
                     ? 'border-[#fecdca] bg-[#fef3f2]'
                     : r.leader === 'BLUE'
                       ? 'border-[#b2ddff] bg-[#f0f9ff]'
-                      : 'border-surface-200 bg-surface-50'
-                )}
-                title={`Round ${r.round}: RED ${r.redActions} actions (+${r.redImpact}) with ${r.redHits} hits · BLUE ${r.blueActions} actions (+${r.blueImpact}) with ${r.blueHits} hits`}
-              >
-                <p className="font-mono-tight text-[9px] font-bold uppercase tracking-wider text-ink-400">R{r.round}</p>
-                <p className="font-mono-tight text-[10.5px] font-bold text-[#b42318]">▲ {r.redImpact}</p>
-                <p className="font-mono-tight text-[10.5px] font-bold text-[#026aa2]">▼ {r.blueImpact}</p>
-              </div>
-            ))}
+                      : 'border-surface-200 bg-surface-50',
+                onSelectRound && !active && 'hover:border-ink-900'
+              )
+              const title = `Round ${r.round}: RED ${r.redActions} actions (+${r.redImpact}) with ${r.redHits} hits · BLUE ${r.blueActions} actions (+${r.blueImpact}) with ${r.blueHits} hits${onSelectRound ? ' · Click to jump to this round in the feed' : ''}`
+              const body = (
+                <>
+                  <p className="font-mono-tight text-[9px] font-bold uppercase tracking-wider text-ink-400">R{r.round}</p>
+                  <p className="font-mono-tight text-[10.5px] font-bold text-[#b42318]">▲ {r.redImpact}</p>
+                  <p className="font-mono-tight text-[10.5px] font-bold text-[#026aa2]">▼ {r.blueImpact}</p>
+                </>
+              )
+              return onSelectRound ? (
+                <button key={r.round} type="button" onClick={() => onSelectRound(r.round)} className={card} title={title} aria-pressed={active} aria-label={`Jump to round ${r.round} in the event feed`}>
+                  {body}
+                </button>
+              ) : (
+                <div key={r.round} className={card} title={title}>
+                  {body}
+                </div>
+              )
+            })}
           </div>
 
           <p className="mt-2.5 flex items-center gap-1.5 font-mono-tight text-[10px] text-ink-500">
@@ -224,7 +250,7 @@ export function RoundEvolution({ events, maxRounds }: { events: EventDTO[]; maxR
             {momentumNote}
           </p>
           <p className="mt-1 font-mono-tight text-[9px] text-surface-300">
-            impacto verificado contra el laboratorio (suma de impactos de eventos) · el ganador se decide por progreso de objetivos
+            Impact verified against the laboratory (sum of event impacts) · the winner is decided by objective progress
           </p>
         </div>
       )}
