@@ -7,14 +7,17 @@
 // Verifica el cerrojo de una campaña a la vez contra una instancia
 // local con BD dedicada (no toca db/custom.db):
 //   (1) POST /api/campaigns lanza una campaña (200)
-//   (2) POST simultáneos mientras corre → 409 (doble clic)
-//   (3) POST secuencial mientras corre → 409
-//   (4) al terminar la campaña, POST → 200 de nuevo
+//   (2) POST simultáneos mientras corre → NINGÚN segundo lanzamiento:
+//       409 (guard RUNNING del motor) o replay idempotente de la MISMA
+//       campaña (dedupe en servidor, ventana 5 s — idempotencia-
+//       lanzamiento: 200 + Idempotency-Replay + campaignId original)
+//   (3) POST secuencial mientras corre → igual: 409 o replay
+//   (4) al terminar la campaña, POST → 200 con NUEVA campaña (sin replay)
 // Exit 0 = todo verde.
 // ─────────────────────────────────────────────────────────────
 
 import { spawn, spawnSync } from 'node:child_process'
-import { cpSync, existsSync } from 'node:fs'
+import { cpSync, existsSync, rmSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const ROOT = resolve(import.meta.dir, '../..')
@@ -35,9 +38,17 @@ const post = (body) =>
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body ?? {}),
-  }).then(async (r) => ({ status: r.status, body: await r.json().catch(() => null) }))
+  }).then(async (r) => ({
+    status: r.status,
+    body: await r.json().catch(() => null),
+    replay: r.headers.get('Idempotency-Replay') === 'true',
+  }))
 
-// ── BD dedicada + standalone ─────────────────────────────────
+// ── BD dedicada + standalone ────────────────────────────────
+// BD determinista: restos de una corrida fallida previa no deben
+// envenenar la siguiente («exactamente 2 campañas» exige arranque limpio).
+rmSync(DB_PATH, { force: true })
+rmSync(`${DB_PATH}-journal`, { force: true })
 const push = spawnSync('bunx', ['prisma', 'db', 'push', '--skip-generate'], {
   cwd: ROOT,
   env: { ...process.env, DATABASE_URL: `file:${DB_PATH}` },
@@ -81,16 +92,29 @@ if (up) {
   if (id) {
     // ── (2) doble lanzamiento simultáneo ─────────────────────
     const [a, b] = await Promise.all([post({}), post({})])
-    const bothRejected = a.status === 409 && b.status === 409
-    record('doble POST simultáneo con campaña en curso → 409/409', bothRejected, `${a.status}/${b.status} ${a.body?.error ?? ''}`)
-    if (!bothRejected) {
-      const extra = [a, b].filter((x) => x.status === 200).length
-      record('ningún segundo lanzamiento aceptado', extra === 0, `lanzamientos aceptados: ${extra}`)
-    }
+    // Contrato ACTUAL (idempotencia-lanzamiento): el POST repetido con
+    // cuerpo idéntico en ventana corta (5 s) recibe el REPLAY de la
+    // respuesta original — 200 + Idempotency-Replay + la MISMA campaña —
+    // sin lanzar una segunda; fuera de ventana (o con otro cuerpo) cae
+    // en el guard RUNNING del motor (409). Invariante de la suite:
+    // NINGÚN segundo lanzamiento real.
+    const sinSegundo = (x) =>
+      x.status === 409 || (x.status === 200 && x.replay && x.body?.campaignId === id)
+    record(
+      'doble POST simultáneo: ningún segundo lanzamiento (409 o replay de la misma campaña)',
+      sinSegundo(a) && sinSegundo(b),
+      `${a.status}/${b.status}${a.replay ? ' replay' : ''}${b.replay ? ' replay' : ''}`
+    )
+    const replays = [a, b].filter((x) => x.status === 200 && x.replay && x.body?.campaignId === id).length
+    record('el doble clic recibe el replay de la MISMA campaña (Idempotency-Replay + id original)', replays === 2, `replays=${replays}/2`)
 
     // ── (3) POST secuencial mientras corre ───────────────────
     const seq = await post({})
-    record('POST secuencial con campaña en curso → 409', seq.status === 409, `${seq.status} ${seq.body?.error ?? ''}`)
+    record(
+      'POST secuencial mientras corre: 409 o replay de la misma campaña (sin 2º lanzamiento)',
+      sinSegundo(seq),
+      `${seq.status}${seq.replay ? ' replay' : ''}`
+    )
 
     // ── (4) tras terminar, se vuelve a poder lanzar ──────────
     const deadline = Date.now() + TIMEOUT_S * 1000
@@ -103,7 +127,11 @@ if (up) {
     record('campaña inicial COMPLETED', finished, `techo ${TIMEOUT_S}s`)
 
     const again = await post({})
-    record('POST tras finalizar → 200 con nueva campaña', again.status === 200 && !!again.body?.campaignId, `${again.status} ${again.body?.campaignId ?? ''}`)
+    record(
+      'POST tras finalizar → 200 con NUEVA campaña (fuera de ventana, sin replay)',
+      again.status === 200 && !!again.body?.campaignId && again.body?.campaignId !== id && !again.replay,
+      `${again.status} ${again.body?.campaignId ?? ''}`
+    )
 
     const archivo = await fetch(`${BASE}/api/campaigns`).then((r) => r.json()).catch(() => null)
     const total = Array.isArray(archivo?.campaigns) ? archivo.campaigns.length : -1

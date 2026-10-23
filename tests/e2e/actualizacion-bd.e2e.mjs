@@ -7,10 +7,13 @@
 // «Abrir una BD de una versión anterior con el esquema nuevo».
 // La BD anterior se construye de forma HONESTA desde git: se
 // extrae el schema.prisma de la revisión ANTERIOR al último commit
-// que tocó el schema (hoy: 29b661c, que añadió Campaign.seed y
-// Campaign.determinista — mañana será otro, la suite lo detecta
-// dinámicamente), se crea con prisma db push y se siembra por SQL
-// directo (bun:sqlite) con 5 campañas históricas y sus eventos.
+// que AÑADIÓ columnas a Campaign (hoy: 59148c7, que añadió
+// Campaign.adaptativa y Campaign.ajusteDefensa — mañana será otro,
+// la suite lo detecta dinámicamente recorriendo el historial; los
+// commits que solo tocan comentarios del schema no cuentan,
+// lección del workflow ci-basico con 8ef8309), se crea con prisma
+// db push y se siembra por SQL directo (bun:sqlite) con 5 campañas
+// históricas y sus eventos.
 //
 //   F1 · BD versión anterior — schema de git + siembra histórica
 //        verificando por PRAGMA que las columnas nuevas NO existen.
@@ -91,7 +94,33 @@ function sinFuga(body) {
 // la versión ANTERIOR (la suite sobrevive a futuros cambios de schema) ──
 
 function extraerSchemaAnterior() {
-  const ultimo = spawnSync('git', ['log', '-n1', '--format=%H', '--', 'prisma/schema.prisma'], { cwd: ROOT, encoding: 'utf8' }).stdout.trim()
+  // Recorrer el historial del schema y quedarse con el último commit que
+  // AÑADIÓ columnas al model Campaign — no basta con «el último que tocó
+  // el fichero»: 8ef8309 (paquete-nombre) lo tocó solo para renombrar un
+  // comentario y dejó la detección sin columnas nuevas (descubierto por
+  // la simulación del workflow ci-basico, sesión 11).
+  const candidatos = spawnSync('git', ['log', '-n20', '--format=%H', '--', 'prisma/schema.prisma'], { cwd: ROOT, encoding: 'utf8' }).stdout.trim().split('\n').filter(Boolean)
+  let ultimo = null
+  let nuevas = []
+  for (const c of candidatos) {
+    const diff = spawnSync('git', ['diff', `${c}~1`, c, '--', 'prisma/schema.prisma'], { cwd: ROOT, encoding: 'utf8' }).stdout
+    let modelo = ''
+    const cols = []
+    for (const linea of diff.split('\n')) {
+      const h = linea.match(/^@@\s+.*@@\s+model\s+(\w+)/)
+      if (h) { modelo = h[1]; continue }
+      if (modelo !== 'Campaign') continue
+      // líneas «+  campo Tipo…» (los comentarios «+  //» no casan:
+      // el tipo debe empezar por mayúscula)
+      const f = linea.match(/^\+\s+([a-zA-Z]\w*)\s+[A-Z]\w*/)
+      if (f && !cols.includes(f[1])) cols.push(f[1])
+    }
+    if (cols.length > 0) { ultimo = c; nuevas = cols; break }
+  }
+  if (!ultimo) {
+    record('F0 · extracción del schema anterior desde git', false, 'ningún commit de los últimos 20 añade columnas a Campaign')
+    return null
+  }
   const anterior = spawnSync('git', ['show', `${ultimo}~1:prisma/schema.prisma`], { cwd: ROOT, encoding: 'utf8' })
   if (anterior.status !== 0 || !anterior.stdout.includes('model Campaign')) {
     record('F0 · extracción del schema anterior desde git', false, `commit=${ultimo.slice(0, 8)} ${anterior.stderr?.slice(-150)}`)
@@ -99,22 +128,7 @@ function extraerSchemaAnterior() {
   }
   rmSync(SCHEMA_VIEJO, { force: true })
   writeFileSync(SCHEMA_VIEJO, anterior.stdout)
-
-  // Columnas NUEVAS del model Campaign: recorrer el diff manteniendo
-  // el modelo vigente según los hunk headers «@@ … @@ model X {» y
-  // capturar líneas «+  campo Tipo…» (los comentarios «+  //» no casan:
-  // el tipo debe empezar por mayúscula).
-  const diff = spawnSync('git', ['diff', `${ultimo}~1`, ultimo, '--', 'prisma/schema.prisma'], { cwd: ROOT, encoding: 'utf8' }).stdout
-  let modelo = ''
-  const nuevas = []
-  for (const linea of diff.split('\n')) {
-    const h = linea.match(/^@@\s+.*@@\s+model\s+(\w+)/)
-    if (h) { modelo = h[1]; continue }
-    if (modelo !== 'Campaign') continue
-    const f = linea.match(/^\+\s+([a-zA-Z]\w*)\s+[A-Z]\w*/)
-    if (f && !nuevas.includes(f[1])) nuevas.push(f[1])
-  }
-  record('F0 · schema anterior extraído desde git (revisión previa al último cambio) + columnas nuevas detectadas', nuevas.length > 0, `base=${ultimo.slice(0, 8)} columnas nuevas=[${nuevas.join(', ')}]`)
+  record('F0 · schema anterior extraído desde git (revisión previa al último commit que AÑADIÓ columnas) + columnas nuevas detectadas', nuevas.length > 0, `base=${ultimo.slice(0, 8)} columnas nuevas=[${nuevas.join(', ')}]`)
   if (nuevas.length === 0) return null
   return { base: ultimo.slice(0, 8), nuevas }
 }

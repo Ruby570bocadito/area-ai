@@ -231,8 +231,20 @@ if (upA) {
     post('/api/campaigns', {}),
     post('/api/campaigns', {}),
   ])
-  const all409 = rapid.every((r) => r.status === 409)
-  record('rate-limit · POST 2-6 rápidos con campaña en curso → 409 (y consumen ventana)', all409, rapid.map((r) => r.status).join('/'))
+  // Contrato actual (idempotencia-lanzamiento): los POST repetidos con
+  // cuerpo idéntico en ventana corta reciben el replay 200 de la MISMA
+  // campaña (Idempotency-Replay) — sin lanzar una segunda; consumen
+  // ventana de rate-limit igualmente (la 7ª petición cae al 429 de abajo).
+  // Fuera de ventana o con otro cuerpo: 409 del guard RUNNING.
+  const sinSegundo = (r) =>
+    r.status === 409 ||
+    (r.status === 200 && r.headers.get('Idempotency-Replay') === 'true' && r.json?.campaignId === campaignId)
+  const allGuarded = rapid.every(sinSegundo)
+  record(
+    'rate-limit · POST 2-6 rápidos con campaña en curso → 409 o replay (sin 2º lanzamiento, consumen ventana)',
+    allGuarded,
+    rapid.map((r) => `${r.status}${r.headers.get('Idempotency-Replay') === 'true' ? 'R' : ''}`).join('/')
+  )
 
   const sixth = await post('/api/campaigns', {})
   const limited = await post('/api/campaigns', {})
