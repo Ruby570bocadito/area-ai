@@ -1,30 +1,69 @@
+{
+	# Tiempos del servidor (tarea caddy-hardening del ROADMAP): acota cuánto
+	# puede retener un cliente lento cada socket y cada fase de la petición.
+	# Sin esto, conexiones semialertas y cuerpos goteantes (slowloris) pueden
+	# agotar los descriptores del proxy compartido con la app.
+	#   read_body   — tiempo total para recibir el cuerpo (tope por petición)
+	#   read_header — tiempo para recibir la línea de petición y cabeceras
+	#   write       — tiempo para emitir la respuesta
+	#   idle        — keep-alive sin tráfico antes de cerrar
+	servers {
+		timeouts {
+			read_body 10s
+			read_header 10s
+			write 30s
+			idle 2m
+		}
+	}
+}
+
 :81 {
-        # SEGURIDAD (hallazgo z_bugs, ronda 2026-09-25): este listener solo
-        # acepta desviar al puerto de la app (3000). Antes el matcher
-        # `XTransformPort=*` permitía a cualquier cliente remoto indicar un
-        # puerto arbitrario y alcanzar servicios locales (p. ej. el lab de
-        # 127.0.0.1:4403), saltándose de una vez el guard SSRF, el ADMIN_TOKEN
-        # y el rate limit, que viven dentro de la app. Con el valor fijado, un
-        # XTransformPort distinto no empareja y cae en el handle por defecto.
-        @transform_port_query {
-                query XTransformPort=3000
-        }
+	# Tope de cuerpo de petición en el borde (tarea caddy-hardening): la API
+	# de la app ya acota 1 KB por mutación dentro de Next, pero el proxy
+	# también sirve assets y rutas nuevas futuras; 1 MB es holgado para todo
+	# el producto y evita que un cuerpo gigante atraviese el proxy antes de
+	# que la app lo rechace (defensa en profundidad del DoS de memoria).
+	request_body {
+		max_size 1MB
+	}
 
-        handle @transform_port_query {
-                reverse_proxy localhost:3000 {
-                        header_up Host {host}
-                        header_up X-Forwarded-For {remote_host}
-                        header_up X-Forwarded-Proto {scheme}
-                        header_up X-Real-IP {remote_host}
-                }
-        }
+	# HSTS y retirada de huella (tarea caddy-hardening). HSTS es ignorado por
+	# los navegadores sobre http plano (RFC 6797 §7.2), de modo que es inocuo
+	# si este listener se sirve sin TLS; en el despliegue documentado un
+	# terminador TLS externo pasa las respuestas al navegador y entonces la
+	# cabecera sí se aplica. `-Server` retira la cabecera Server: Caddy
+	# (huella de versión).
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
 
-        handle {
-                reverse_proxy localhost:3000 {
-                        header_up Host {host}
-                        header_up X-Forwarded-For {remote_host}
-                        header_up X-Forwarded-Proto {scheme}
-                        header_up X-Real-IP {remote_host}
-                }
-        }
+	# SEGURIDAD (hallazgo z_bugs, ronda 2026-09-25): este listener solo
+	# acepta desviar al puerto de la app (3000). Antes el matcher
+	# `XTransformPort=*` permitía a cualquier cliente remoto indicar un
+	# puerto arbitrario y alcanzar servicios locales (p. ej. el lab de
+	# 127.0.0.1:4403), saltándose de una vez el guard SSRF, el ADMIN_TOKEN
+	# y el rate limit, que viven dentro de la app. Con el valor fijado, un
+	# XTransformPort distinto no empareja y cae en el handle por defecto.
+	@transform_port_query {
+		query XTransformPort=3000
+	}
+
+	handle @transform_port_query {
+		reverse_proxy localhost:3000 {
+			header_up Host {host}
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Forwarded-Proto {scheme}
+			header_up X-Real-IP {remote_host}
+		}
+	}
+
+	handle {
+		reverse_proxy localhost:3000 {
+			header_up Host {host}
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Forwarded-Proto {scheme}
+			header_up X-Real-IP {remote_host}
+		}
+	}
 }
