@@ -185,7 +185,63 @@ const dnsLookup: LookupFn = lookup as unknown as LookupFn
 // ningún otro plazo. Contrato idéntico al catch: DNS que no resuelve a
 // tiempo → 'public' (igual que hoy con NXDOMAIN) y el fallo de conexión
 // real lo maneja el fetch de turno con su propio plazo.
-const DNS_TIMEOUT_MS = 2500
+export const DNS_TIMEOUT_MS = 2500
+
+/**
+ * Clasificación agregada de un lote de direcciones resueltas (tarea
+ * ssrf-ip-pinning): el peor caso prevalece — metadata si CUALQUIER
+ * dirección es de metadata (bloqueo SIEMPRE, también vía DNS), private
+ * si alguna es privada y public solo cuando ninguna lo es. Fuente única
+ * de agregación: la usa classifyTarget y safe-fetch para la resolución
+ * que fija la IP de conexión.
+ */
+export function classifyAddresses(
+  addrs: ReadonlyArray<{ address: string }>
+): TargetKind {
+  let sawPrivate = false
+  for (const a of addrs) {
+    const kind = classifyIp(a.address)
+    if (kind === 'metadata') return 'metadata'
+    if (kind === 'private') sawPrivate = true
+  }
+  return sawPrivate ? 'private' : 'public'
+}
+
+/**
+ * Normalización canónica del hostname (hallazgo Ronda 11 de bugs):
+ *   · URL.hostname devuelve los literales IPv6 CON corchetes (`[::1]`),
+ *     que isIP() no parsea → el intento de DNS falla y degradaba a
+ *     'public', BYPASS del guard para `[::1]`, `[fc00::1]` y
+ *     `[::ffff:a9fe:a9fe]` (metadata vía IPv4-mapped, que URL normaliza
+ *     a hexadecimal).
+ *   · Se elimina también el sufijo de zone ID (`fe80::1%eth0`) porque
+ *     ninguna DNS name legítima lo contiene.
+ */
+export function normalizeHostname(hostname: string): string {
+  return hostname
+    .toLowerCase()
+    .trim()
+    .replace(/\.$/, '')
+    .replace(/^\[(.+)\]$/, '$1')
+    .split('%')[0]
+}
+
+/**
+ * Clasificación SIN DNS de un hostname ya normalizado (tarea
+ * ssrf-ip-pinning): hosts de metadata de nube bloqueados SIEMPRE,
+ * literales IP por rango y sufijos reservados (.localhost/.internal/
+ * .local) como privados. Devuelve 'dns' si el nombre exige resolución
+ * para decidir. Fuente única compartida por classifyTarget y safe-fetch
+ * (el pin reutiliza el mismo criterio ANTES de tocar la red).
+ */
+export function classifyHostname(host: string): TargetKind | 'dns' {
+  if (ALWAYS_BLOCKED_HOSTS.has(host)) return 'metadata'
+  if (isIP(host) !== 0) return classifyIp(host)
+  if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.internal') || host.endsWith('.local')) {
+    return 'private'
+  }
+  return 'dns'
+}
 
 /**
  * Clasifica el destino por hostname (literal o resuelto por DNS).
@@ -196,29 +252,9 @@ export async function classifyTarget(
   hostname: string,
   lookupFn: LookupFn = dnsLookup
 ): Promise<TargetKind> {
-  // Normalización de literales (hallazgo Ronda 11 de bugs):
-  //   · URL.hostname devuelve los literales IPv6 CON corchetes (`[::1]`),
-  //     que isIP() no parsea → el intento de DNS falla y degradaba a
-  //     'public', BYPASS del guard para `[::1]`, `[fc00::1]` y
-  //     `[::ffff:a9fe:a9fe]` (metadata vía IPv4-mapped, que URL normaliza
-  //     a hexadecimal).
-  //   · Se elimina también el sufijo de zone ID (`fe80::1%eth0`) porque
-  //     ninguna DNS name legítima lo contiene.
-  const host = hostname
-    .toLowerCase()
-    .trim()
-    .replace(/\.$/, '')
-    .replace(/^\[(.+)\]$/, '$1')
-    .split('%')[0]
-
-  if (ALWAYS_BLOCKED_HOSTS.has(host)) return 'metadata'
-
-  const literalVersion = isIP(host)
-  if (literalVersion !== 0) return classifyIp(host)
-
-  if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.internal') || host.endsWith('.local')) {
-    return 'private'
-  }
+  const host = normalizeHostname(hostname)
+  const literalKind = classifyHostname(host)
+  if (literalKind !== 'dns') return literalKind
 
   try {
     const addrs = await new Promise<Array<{ address: string; family: number }>>(
@@ -236,16 +272,7 @@ export async function classifyTarget(
         )
       }
     )
-    if (addrs.length > 0) {
-      let sawPrivate = false
-      for (const a of addrs) {
-        const kind = classifyIp(a.address)
-        if (kind === 'metadata') return 'metadata' // bloqueo SIEMPRE, también vía DNS
-        if (kind === 'private') sawPrivate = true
-      }
-      if (sawPrivate) return 'private'
-      return 'public'
-    }
+    if (addrs.length > 0) return classifyAddresses(addrs)
     return 'public'
   } catch {
     return 'public'
