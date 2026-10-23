@@ -278,6 +278,13 @@ body {
 }
 .anim-rise { animation: ai-rise-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 
+/* Transición de entrada entre rutas (page-transitions): el wrapper de
+   src/app/template.tsx se remonta en cada navegación y re-dispara esta
+   animación. fill-mode `backwards` — a diferencia de `both`, al terminar
+   NO deja transform persistente en el contenedor de página, de modo que
+   no se convierte en bloque contenedor de elementos position:fixed. */
+.anim-route { animation: ai-rise-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
+
 /* ───────── Anillo cónico animado (agente activo) ───────── */
 @property --ring-angle {
   syntax: '<angle>';
@@ -447,7 +454,7 @@ h1, h2, h3 { text-wrap: balance; }
   .anim-float, .pulse-dot, .conic-ring,
   .attack-beam, .flow-line, .svg-pulse-soft { animation: none !important; }
   .scan-sweep::before, .marquee-track, .radar-sweep,
-  .map-scan, .shine-sweep::after, .anim-rise { animation: none !important; }
+  .map-scan, .shine-sweep::after, .anim-rise, .anim-route { animation: none !important; }
   /* transiciones de desplazamiento decorativas: se quedan instantáneas */
   .shine-sweep::after { transition: none !important; }
   .scenario-media svg,
