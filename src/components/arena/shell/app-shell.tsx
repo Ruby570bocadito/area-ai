@@ -21,6 +21,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useArena } from './arena-provider'
 import { CommandPalette } from '@/components/arena/command-palette'
+import { KeyboardShortcuts } from '@/components/arena/shell/keyboard-shortcuts'
 import { BrandMark, Wordmark } from '@/components/arena/layout/brand'
 import { Footer } from '@/components/arena/layout/footer'
 
@@ -252,6 +253,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
             <div className="flex shrink-0 items-center gap-2">
               <CommandPalette />
+              <KeyboardShortcuts />
               {/* Misma semántica de conexión que el widget del sidebar (H-005):
                   rojo «Sin conexión» mientras el sondeo falla. */}
               <span
