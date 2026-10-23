@@ -1,52 +1,46 @@
 # IMP-1 — Motor, laboratorio, API y datos
 
-Actualizado: 2026-10-23 12:45 (Europe/Madrid) · Sesión: VERDE
+Actualizado: 2026-10-23 14:20 (Europe/Madrid) · Sesión: VERDE
 
 ## Hecho (últimas 24 h)
-- Red de seguridad del motor COMPLETA: tests-engine [L] (f3c40e6, 37 tests),
-  tests-lab-runtime [L] (5f08f55, 41 tests + fix de ops.ts),
-  tests-progresion-conocimiento [M] (7000c25, 21 tests).
-- balance-datos-archivo [S] (36240a6): veredicto de deriva D30 coste cero — módulo puro
-  balance-drift.ts (≥70 % del mismo ganador en 15+ archivadas abre recalibración de
-  pace.ts; EMPATE incluido como candidato, H-003) + script SOLO LECTURA
-  scripts/balance-drift.mjs (--json/--dias) + 19 tests de frontera.
-- idempotencia-lanzamiento [S] (8ec02ee): [verificar] CONFIRMADO (6 POST concurrentes →
-  2 campañas RUNNING, TOCTOU). Cierre doble: launch-lock.ts serializa check+create en el
-  motor (post-fix: 1 campaña y 5×409) y dedupe en la ruta (Idempotency-Key replay 10 min
-  + hash de cuerpo 5 s, solo 200 archivados, replay sin consumir rate-limit). Conflicto
-  del ROADMAP con TEST resuelto leyendo ficheros completos (sin regex).
-- seed-determinista [M]: Campaign.seed Int? + Campaign.determinista Boolean (db:push sin
-  pérdida); RNG sembrado ANTES de elegir escenario y re-sembrado en runCampaign desde la
-  fila; POST {seed, determinista} con 400 si inválidos (H-004); determinista fuerza SIM
-  sin sonda. VERIFICADO e2e: dos campañas seed 2026 determinista → 31 eventos idénticos
-  y mismo desenlace (RED 62/BLUE 72, EMPATE). Hallazgo del camino: sin determinista la
-  primera verificación divergió — escenario elegido antes de sembrar (corregido) y LLM
-  no reproducible (ahora documentado en el esquema: solo SIM garantiza exactitud).
+- refactor-engine-fases [L] (2e4516b): engine.ts (1075 líneas) partido en módulos por
+  concepto SIN cambiar comportamiento — engine-rng (RNG sembrable y semillas),
+  engine-select (selección de agentes/nodos), engine-combate (momentum RED, escalas,
+  mapeos fase→firma/segmento/hipótesis, bestPatchTarget, fallbacks deterministas) y
+  engine-cierre (finalizeCampaign + fallbackLessons). engine.ts queda como orquestador
+  (startCampaign, memoria, bucle de rondas, huérfanas) y RE-EXPORTA el contrato público
+  histórico: cero cambios en consumidores ni tests. Equivalencia probada en tres frentes:
+  (1) diff textual runCampaign viejo vs nuevo = solo el cierre delegado;
+  (2) finalizeCampaign = transcripción íntegra del bloque antiguo (diff limpio salvo firma);
+  (3) e2e de reproducibilidad sobre standalone con BD efímera: dos campañas seed 2026
+  determinista → 31 eventos con campos de motor idénticos y mismo desenlace (DRAW 62/72,
+  exactamente el de la verificación de seed-determinista).
+- Hallazgo del camino (PREEXISTENTE, no regresión): la entropía del laboratorio vive
+  FUERA del RNG del motor — randomBytes del payload ARMADO (ops.ts:159) e ids de sesión
+  con Math.random (runtime.ts:391) hacen variar `command`/`evidence` en 24 de 31 eventos
+  entre corridas idénticas. La reproducibilidad exacta de seed-determinista se mantiene
+  a nivel de motor (acción/agente/resultado/impacto/nodo/desenlace).
 
 ## Puerta de la sesión
-- lint 0 errores · 394/394 tests · verify --build 11/11 (tsc incluido).
+- lint 0 errores · 396/396 tests · verify --build 11/11 (tsc + build + golden path).
 
 ## En curso
-- Nada. Siguiente según ROADMAP: refactor-engine-fases [L] (red de seguridad lista) —
-  partir en piezas funcionales, frontera natural redShouldChain/accumulateProgress.
+- Nada. Siguiente según ROADMAP: dificultad-adaptativa [M] (nota: calibrar el +10
+  hardcodeado de bestPatchTarget) o autotuning-balance [M] (ya montable sobre
+  {seed, determinista:true}).
 
 ## Bloqueado
 - Nada.
 
 ## Peticiones a otras zonas
-- IMP-2: el botón «Lanzar» puede enviar {determinista:true, seed} y guardar la semilla
-  devuelta para ofrecer «reproducir campaña» (mismo POST con la semilla archivada).
-- TEST: el smoke/e2e que comprueba el arranque de campañas ahora puede fijar seed y
-  determinista para corridas comparables; validaciones nuevas devuelven 400 (semilla/
-  determinista mal tipados).
-- SEG: nada nuevo; el dedupe solo archiva 200 y el orden de barreras del POST no cambia
-  (403→401→413→400 de semilla→429).
+- IMP-2: sigue en pie la petición del botón «Lanzar» con {determinista:true, seed} y
+  «reproducir campaña» reenviando la semilla archivada.
+- TEST: el smoke/e2e puede fijar seed+determinista para corridas comparables.
 - PUL: `typecheck` cuando llegue que cubra tests/*.test.ts.
 
 ## Propuestas para el roadmap
-- autotuning-balance puede montarse YA sobre {seed, determinista:true}: N campañas
-  idénticas-comparables por escenario, cero coste LLM, tasa de victoria exacta.
-- refactor-engine-fases: partir primero el módulo «combate» (redShouldChain +
-  accumulateProgress ya exportados y testados) y luego selección/rondas/cierre.
-- La semilla abarca la elección de escenario: «reproducir campaña X» = POST {seed de X,
-  determinista:true} sin pasar scenarioId (la semilla la re-elige).
+- entropia-lab-fuera-del-rng [S]: si DIR quiere reproducibilidad byte-a-byte del JSON de
+  eventos (hoy: solo campos de motor), sembrar también ops.ts/runtime.ts desde el RNG
+  del motor (payload ARMADO, ids de sesión); alternativa: documentarlo como límite.
+- autotuning-balance ya montable sobre {seed, determinista:true}: N campañas comparables
+  por escenario, cero coste LLM, tasa de victoria exacta.
