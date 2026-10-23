@@ -7,7 +7,7 @@ Actualizado: 2026-10-23 10:05 (Europe/Madrid)
 - estados-error-carga: loading.tsx global (esqueleto genérico de página) y por rutas principales (arena, historial, ficha de campaña), error.tsx con reintento y digest, not-found.tsx con salidas al panel/historial; primitivas compartidas en src/components/arena/skeletons.tsx. Puerta: lint 0, 215/215, canon 11/11 con build (SMOKE_PORT 3112, LAB_PORT 4412).
 
 ## En curso
-- skeletons-polling: claim publicado.
+- skeletons-polling: esqueletos de primera carga en ArenaGate, status connecting/live/offline en el hook y banner de desconexión en el AppShell. Puerta: lint 0, 261/261, canon 11/11 con build.
 
 ## Bloqueado
 - (nada)
