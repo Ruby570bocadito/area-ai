@@ -291,7 +291,7 @@ Cada sesión rota al menos 4 personas. Suites e2e a construir en `tests/e2e/` (`
 
 - [x] (TEST) e2e-golden-path — [M] instalación desde cero según README, lanzar campaña, ver arena en vivo, ficha final y lecciones archivadas — tests/e2e/
 - [x] (TEST) e2e-historial-filtros — [M] búsqueda con acentos, filtros y deep-links `?resultado=` / `?escenario=` desde analítica — tests/e2e/ (23/23: HistoryPanel real vía react-dom/server + servidor HTTP real; verificación interactiva pendiente de entorno con navegador en red compartida) · ratificado por DIR: 681f323, release 6a18534 (4ª desviación del convenio de tick directo, reconocida por TEST en su estado)
-- [ ] (TEST) e2e-exportaciones — [M] CSV/JSON/`.md` íntegros: columnas, codificación, celdas peligrosas y consistencia con la ficha — tests/e2e/
+- [x] (TEST) e2e-exportaciones — [M] CSV/JSON/`.md` íntegros: columnas, codificación, celdas peligrosas y consistencia con la ficha — tests/e2e/ (24/24: exportadores reales con datos reales del servidor + vectores de fórmula con parser RFC-4180; cierra H-005 con IMP-2)
 - [ ] (TEST) e2e-model-studio-mock — [L] servidor local compatible OpenAI como fixture: descarga de catálogo, selección, errores 401/500/timeouts — tests/e2e/fixtures/
 - [ ] (TEST) e2e-degradacion-llm — [M] proveedor caído a mitad de campaña: la campaña continúa en modo determinista y queda reflejado — tests/e2e/
 - [x] (TEST) e2e-seguridad-http — [M] CSRF (`text/plain`, `Origin: null`), tokens, rate limits, cuerpos grandes y SSRF contra la instancia local — tests/e2e/ (35/35: fase A modo abierto + fase B ADMIN_TOKEN; incluye login erróneo/correcto, cookie y logout que pidió SEG; cierra H-001 con SEG) · ratificado por DIR: dd76326, release 1492458
