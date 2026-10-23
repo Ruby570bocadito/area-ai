@@ -22,6 +22,13 @@
 //      codificada `..%2f` es la que REALMENTE llega al clasificador del lab (el
 //      cliente WHATWG colapsa los `..` literales antes de enviar); cadena
 //      completa contra el laboratorio REAL con BD desechable y motor SIM.
+//  14. casos-nuevos (ROADMAP): fuerza bruta de token DIRECTA contra
+//      /api/campaigns — petición de DIR tras ratificar endurecimiento-hd (la
+//      original golpea /api/settings): el bucket `admin:` se agota ANTES de la
+//      comparación del token (401×30 → 429, sin oráculo de fuerza bruta).
+//  15. casos-nuevos (ROADMAP): errores-sin-fuga — las respuestas de error
+//      (404/400) llevan mensajes genéricos sin trazas, rutas ni dependencias
+//      internas.
 //
 // Uso: bun scripts/security-verify.mjs   (requiere .next/standalone ya construido)
 // Puerto: SECURITY_VERIFY_PORT (defecto 3105; tarea security-verify-puerto del
@@ -403,6 +410,7 @@ const labEnv = {
   LAB_PORT: String(LAB_PORT),
   NODE_ENV: 'production',
   ADMIN_TOKEN: TOKEN,
+  TRUST_PROXY: '1', // casos 14: clientKey respeta X-Forwarded-For (cliente de la ráfaga aislado del resto)
 }
 delete labEnv.OPENAI_API_KEY // motor determinista (SIM): la verificación no gasta LLM
 const server3 = spawn('bun', [resolve(ROOT, '.next/standalone/server.js')], {
@@ -446,6 +454,17 @@ try { cid = JSON.parse(launch.body)?.campaignId } catch { /* sin cuerpo JSON */ 
 check('campaña determinista lanzada para el caso lab (BD desechable, motor SIM)',
   launch.status === 200 && typeof cid === 'string' && cid.length > 0, `status=${launch.status} escenario=${fincorp?.key ?? '—'}`)
 
+// Cinturón: el lab debe estar ESCUCHando antes de golpearlo. ensureLabServer
+// se resuelve antes de que el POST devuelva el campaignId, pero bajo carga un
+// arranque lento se diagnostica aquí (una sola comprobación clara) en vez de
+// fallar en cascada los cinco chequeos de la cadena lab.
+let labUp = false
+for (let i = 0; i < 20 && !labUp; i++) {
+  labUp = await fetch(`http://127.0.0.1:${LAB_PORT}/lab-health`).then((r) => r.ok).catch(() => false)
+  if (!labUp) await new Promise((r) => setTimeout(r, 500))
+}
+check('laboratorio real a la escucha en su puerto (lab-health)', labUp, `lab_port=${LAB_PORT}`)
+
 if (typeof cid === 'string' && fincorp) {
   const ficha = await fetch(`${BASE}/api/campaigns/${cid}`).then((r) => r.json()).catch(() => null)
   const nodes = Array.isArray(ficha?.infra?.nodes) ? ficha.infra.nodes : []
@@ -474,6 +493,42 @@ if (typeof cid === 'string' && fincorp) {
 } else {
   check('caso lab completo', false, `launch=${launch.status} escenario=${fincorp?.key ?? '—'}`)
 }
+
+// 14 ── Fuerza bruta DIRECTA contra /api/campaigns (petición de DIR tras
+//      ratificar endurecimiento-hd): el bucket `admin:` compartido debe
+//      aplicarse ANTES de comparar el token (la variante original golpeaba
+//      /api/settings). Cliente distinto vía X-Forwarded-For (TRUST_PROXY=1 en
+//      este arranque) para partir de un bucket fresco: 401×30 → 429.
+const bruteCampaigns = []
+let saw429Campaigns = false
+for (let i = 0; i < 31; i++) {
+  const r = await rawPost('/api/campaigns', {
+    host: '127.0.0.1:' + PORT,
+    'content-type': 'application/json',
+    'x-forwarded-for': '198.51.100.77',
+    'x-admin-token': 'token-erróneo-' + i,
+  }, JSON.stringify({}))
+  bruteCampaigns.push(r.status)
+  if (r.status === 429) saw429Campaigns = true
+}
+check('fuerza bruta DIRECTA en /api/campaigns: 429 dentro de la ventana (bucket admin: antes del token)',
+  saw429Campaigns && bruteCampaigns.slice(0, 5).every((s) => s === 401),
+  `primeros=${bruteCampaigns.slice(0, 3).join(',')} últimos=${bruteCampaigns.slice(-3).join(',')}`)
+
+// 15 ── errores-sin-fuga (hallazgo cerrado del ROADMAP): las respuestas de
+//      error llevan mensajes genéricos — sin trazas de pila, rutas de ficheros
+//      ni nombres de dependencias internas.
+const noStack = /(node_modules|\.next[\\/]|prisma|Error:\s|at\s+\w+\s+\()/
+const err404 = await fetch(`${BASE}/api/campaigns/campaña-que-no-existe`)
+const err404Body = await err404.text().catch(() => '')
+check('404 de campaña inexistente: cuerpo genérico sin trazas internas',
+  err404.status === 404 && /"error"/.test(err404Body) && !noStack.test(err404Body),
+  `status=${err404.status} cuerpo=${err404Body.slice(0, 60)}`)
+const errTraversal = await fetch(`${BASE}/api/campaigns/..%2fetc%2fpasswd`)
+const errTraversalBody = await errTraversal.text().catch(() => '')
+check('id de campaña con traversal codificado: sin 500 y sin fugas internas',
+  (errTraversal.status === 404 || errTraversal.status === 400) && !noStack.test(errTraversalBody),
+  `status=${errTraversal.status} cuerpo=${errTraversalBody.slice(0, 60)}`)
 
 await stopServer(server3)
 
