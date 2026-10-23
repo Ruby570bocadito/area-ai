@@ -276,7 +276,7 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 Cada sesión rota al menos 4 personas. Suites e2e a construir en `tests/e2e/` (`*.e2e.mjs`):
 
 - [x] (TEST) e2e-golden-path — [M] instalación desde cero según README, lanzar campaña, ver arena en vivo, ficha final y lecciones archivadas — tests/e2e/
-- [ ] (TEST) e2e-historial-filtros — [M] búsqueda con acentos, filtros y deep-links `?resultado=` / `?escenario=` desde analítica — tests/e2e/
+- [x] (TEST) e2e-historial-filtros — [M] búsqueda con acentos, filtros y deep-links `?resultado=` / `?escenario=` desde analítica — tests/e2e/ (23/23: HistoryPanel real vía react-dom/server + servidor HTTP real; verificación interactiva pendiente de entorno con navegador en red compartida)
 - [ ] (TEST) e2e-exportaciones — [M] CSV/JSON/`.md` íntegros: columnas, codificación, celdas peligrosas y consistencia con la ficha — tests/e2e/
 - [ ] (TEST) e2e-model-studio-mock — [L] servidor local compatible OpenAI como fixture: descarga de catálogo, selección, errores 401/500/timeouts — tests/e2e/fixtures/
 - [ ] (TEST) e2e-degradacion-llm — [M] proveedor caído a mitad de campaña: la campaña continúa en modo determinista y queda reflejado — tests/e2e/
