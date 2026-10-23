@@ -1,0 +1,6 @@
+# claim: deep-links-historial
+
+- ID: IMP-2
+- Fecha: 2026-10-23 (Europe/Madrid)
+- Rutas: src/components/arena/history-panel.tsx, src/app/historial/page.tsx, docs/agentes/estado/IMP-2.md, docs/agentes/ROADMAP.md (solo tick de esta tarea)
+- Detalle: los filtros del historial viven en la URL — el panel notifica cada cambio del usuario vía nueva prop opcional onFiltersChange({result, scenario, query}) (efecto cliente con guarda de primer render para no reescribir los valores del deep-link con que se inicializó) y la página /historial los escribe con window.history.replaceState — soportado nativamente por el App Router (Next 14.1+), cero navegación/recarga/re-render de router. Parámetros: ?resultado= (lista blanca existente), ?escenario= (se escribe el valor EFECTIVO — con enlace caducado el estado interno no reviviría el valor inválido: la URL se auto-repara), ?q= nueva (recorte a 120 caracteres por lado). Vacío → URL limpia. Lectura ampliada a ?q= dentro del componente propio bajo <Suspense> ya existente (patrón D6). La prop es opcional y el efecto no corre en SSR: el e2e de TEST (historial-filtros.e2e.mjs, renderToStaticMarkup con initialResult/initialScenario) no se ve afectado y tests/e2e/ es zona de TEST — no se edita.
