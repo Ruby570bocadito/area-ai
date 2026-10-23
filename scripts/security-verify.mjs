@@ -15,6 +15,8 @@
 //  10. Login /api/auth (tarea cookie-admin-httponly del ROADMAP): token correcto
 //      fija cookie HttpOnly/SameSite=Strict; token erróneo → 401; cross-origin → 403;
 //      la cookie acreditada sirve para mutar (UI sin cabeceras); logout DELETE expira.
+//  11. H-001 (hallazgo TEST): Transfer-Encoding: chunked NO sortea ni el tope de
+//      stream (caso 9) ni la acreditación: sin credencial con ADMIN_TOKEN → 401.
 //
 // Uso: bun scripts/security-verify.mjs   (requiere .next/standalone ya construido)
 // Puerto: SECURITY_VERIFY_PORT (defecto 3105; tarea security-verify-puerto del
@@ -254,6 +256,17 @@ const badLogin = await rawPost('/api/auth', {
   'content-type': 'application/json',
 }, JSON.stringify({ token: 'token-erróneo' }))
 check('login con token erróneo → 401 (sin oráculo de existencia)', badLogin.status === 401, `status=${badLogin.status}`)
+
+// 11 ── H-001 (hallazgo TEST): el cuerpo chunked pequeño queda por debajo del
+//      tope (legítimo) pero NO sortea la acreditación: con ADMIN_TOKEN activo,
+//      sin cabecera ni cookie → 401. El 200 del modo local abierto (sin
+//      ADMIN_TOKEN) es la decisión R4, idéntica para chunked y no-chunked.
+const chunkedNoCreds = await chunkedPost('/api/autopilot', {
+  host: '127.0.0.1:' + PORT,
+  'content-type': 'application/json',
+}, ['{"enabled":', 'true}'])
+check('chunked sin credencial (ADMIN_TOKEN activo) → 401 (no sortea la barrera)',
+  chunkedNoCreds.status === 401, `status=${chunkedNoCreds.status}`)
 
 const login = await rawPost('/api/auth', {
   host: '127.0.0.1:' + PORT,
