@@ -3,6 +3,8 @@
 Único escritor: DIR. Los demás roles proponen vía "Propuestas" en su `estado/<ID>.md`.
 Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID destino) slug — [talla] descripción — rutas`.
 
+> **Revisión DIR 2026-10-23 (ratificación):** la migración v2 y los 20 ticks con evidencia quedan ratificados tras cotejo con git log y el árbol; la colisión con mi propia migración duplicada se adjudicó sin pérdida (prevaleció e7f0fe4, §7.1). Se añaden 7 tareas — endurecimiento-hd y test-superficie-mutaciones (SEG), tokens-hex-restantes, higiene-bd-llm y engines-bun (PUL), balance-datos-archivo e idempotencia-lanzamiento (IMP-1) —, la idea P3 modo espectador y el conteo de informes z_* corregido a 67. Puerta de calidad re-ejecutada por DIR sobre este árbol antes de publicar (lint + suite unitaria en verde).
+
 **Leyenda**
 - Talla: `[S]` ≤ 1 tarea corta · `[M]` una tarea completa con tests · `[L]` partir en piezas funcionales por sí solas (cada pieza = su propio slug).
 - Prioridad por sección: **P0** bloquea a todos o es riesgo real · **P1** siguiente fase · **P2** valor alto, sin urgencia · **P3** ideas grandes / exploratorias.
@@ -23,7 +25,7 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 ## ALTA — hacer primero (Fase 0)
 
 - [x] (DIR) migracion-protocolo-v2 — [M] publicar PROTOCOLO v2 + OWNERSHIP, crear `claims/ estado/ hallazgos/`, volcar solo los riesgos abiertos a este archivo — docs/agentes/
-- [ ] (PUL) retirar-informes-z — [S] borrar `docs/agentes/z_*` (68 archivos) tras la migración del Director — docs/agentes/
+- [ ] (PUL) retirar-informes-z — [S] borrar `docs/agentes/z_*` (67 archivos: 12 director, 17 implementaciones, 21 pulimiento, 17 bugs; el «68» contaba también el PROTOCOLO antiguo, ya sustituido) tras la migración del Director — docs/agentes/
 - [ ] (PUL) congelar-worklog — [S] `worklog.md`: comprobar referencias, borrar o dejar como histórico sin más entradas; quitar firmas de asistente y el nombre antiguo "AEGIS ARENA" — worklog.md
 - [ ] (PUL) readme-agentes-v2 — [S] sustituir la tabla "Agentes del proyecto" por los 6 roles y rutas nuevas — README.md
 - [ ] (PUL) ci-basico — [M] workflow con `bun install`, lint, `bun run test` y typecheck en push/PR; caché de bun — .github/workflows/
@@ -125,6 +127,8 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 ## IMP-1 — Motor, laboratorio, API y datos
 
 ### Motor de campañas (P1-P2)
+- [ ] (IMP-1) balance-datos-archivo — [S] veredicto de deriva del balance (D30, coste cero en LLM — no lanzar campañas nuevas) con las campañas ya archivadas: distribución de ganadores y progresos finales; solo una deriva persistente (≥70 % del mismo ganador en 15+ campañas) abre recalibración formal de pace.ts — scripts/, src/lib/sim/ (reparto de la Ronda 12 sin ejecutar, rescatado por DIR)
+- [ ] (IMP-1) idempotencia-lanzamiento — [S] [verificar] dedupe en servidor de POST /api/campaigns repetidos (ventana corta con el mismo cuerpo o Idempotency-Key): cierre de servidor del doble clic — el cerrojo de confirmacion-lanzamiento es solo cliente — src/app/api/campaigns/route.ts
 - [ ] (IMP-1) seed-determinista — [M] semilla por campaña guardada en BD para reproducir una campaña idéntica en modo determinista — src/lib/sim/engine.ts, prisma/schema.prisma
 - [ ] (IMP-1) refactor-engine-fases — [L] partir `engine.ts` (936 líneas) en módulos (selección, rondas, combate, cierre) sin cambiar comportamiento; solo tras `tests-engine` — src/lib/sim/
 - [ ] (IMP-1) dificultad-adaptativa — [M] ajustar fuerza de la defensa según el historial de victorias del escenario, con tope y desactivable — src/lib/sim/pace.ts, src/lib/sim/engine.ts
@@ -195,6 +199,8 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 ## SEG — Seguridad y bugs
 
 ### P0-P1
+- [ ] (SEG) endurecimiento-hd — [S] HD3: verificar que el bucket `admin:` y la barrera same-origin se aplican ANTES de la comparación del token en las 5 mutaciones (cierra el oracle de fuerza bruta de ADMIN_TOKEN; /api/auth ya comparte el bucket — confirmar el orden en el código) y HD4: alinear el orden real 403→429→401→413 con el documentado — src/lib/net/access.ts (reparto de la Ronda 12 sin ejecutar, rescatado por DIR)
+- [ ] (SEG) test-superficie-mutaciones — [M] test que exige los tres controles (same-origin, rate limit, token) en cada una de las 5 mutaciones (campaigns, autopilot, settings, models, auth): cierre estructural del patrón «enumeración manual falla» que HD3 re-confirma — tests/ (reparto de la Ronda 12 sin ejecutar, rescatado por DIR)
 - [ ] (SEG) csp-estricta — [L] política CSP con nonces; verificar hidratación en navegador real antes de activar — next.config.ts · verificado 2026-10-23: sigue abierta, las cabeceras actuales son las no rompientes del stand-alone; requiere navegador real
 - [x] (SEG) cuerpo-chunked — [M] acotar cuerpos `chunked` sin `Content-Length` (limitación documentada) leyendo el stream con tope — src/lib/net/access.ts · hecho 2026-10-23: `readJsonBody` consume el stream con tope y cancela al superarlo; 4 rutas migradas + 2 casos en security-verify
 - [x] (SEG) autopiloto-gasto — [M] revisar el gasto LLM disparable por el modo continuo (riesgo R4) y su límite efectivo — src/lib/sim/autopilot.ts, src/app/api/autopilot/ · revisado 2026-10-23: CONFIRMADO que no hay tope efectivo (12 s de calma, sin ventanas ni tope diario); documentado en README (R4) y derivado a (IMP-1) autopiloto-presupuesto
@@ -224,6 +230,9 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 ## PUL — Pulimiento
 
 ### P1
+- [ ] (PUL) tokens-hex-restantes — [S] última milla de la migración de tokens: auditar los literales `[#hex]` restantes y migrar los migrables a las escalas surface-*/ink-* (conteo bruto 439 en src/ el 2026-10-23; exclusiones anunciadas: SVG de analytics/network-map y semántica shadcn; el bloque pendiente del reparto de la Ronda 12 era la ficha /historial/[id] y sus apoyos), cero cambio visual; claim y coordinar con IMP-2 — src/app/, src/components/arena/
+- [ ] (PUL) higiene-bd-llm — [S] auto-limpieza de las filas `llm.*` de prueba que inserta el script del canon, para que la BD compartida no acumule basura (gap reportado por pulimiento-14 en la Ronda 11) — scripts/ (reparto de la Ronda 12 sin ejecutar, rescatado por DIR)
+- [ ] (PUL) engines-bun — [S] declarar la versión mínima de Bun (campo engines en package.json) y documentarla junto a los requisitos del README — package.json, README.md
 - [ ] (PUL) security-verify-puerto — [S] parametrizar el puerto fijo 3105 con variable de entorno (cambio acordado con SEG) — scripts/security-verify.mjs
 - [ ] (PUL) readme-reestructurado — [M] README con tabla de contenidos, inicio rápido de 5 comandos, tabla de scripts y variables sincronizada con `.env.example` — README.md
 - [ ] (PUL) dependencias-sobrantes — [M] [verificar] detectar dependencias no usadas y faltantes con una herramienta de análisis (`sharp` no se importa en `src/`, pero Next puede usarlo en el build standalone: comprobar antes de quitarlo) — package.json, bun.lock
@@ -287,6 +296,7 @@ Cada sesión rota al menos 4 personas. Suites e2e a construir en `tests/e2e/` (`
 - **Entrenamiento de equipos por currículo:** secuencias de escenarios de dificultad creciente con el conocimiento acumulado entre ellas.
 - **Biblioteca de reglas de detección:** catálogo navegable de las reglas generadas por BLUE, con su evidencia de origen.
 - **Galería pública de campañas:** informes de solo lectura exportables (HTML estático) para compartir sin exponer la app.
+- **Modo espectador:** enlace de solo lectura a una campaña en curso o finalizada (streaming de eventos sin mutaciones ni datos sensibles), predecesor ligero de la galería mientras la exportación estática no existe.
 - **Modo multiusuario:** cuentas, roles y espacios separados (cierra el riesgo R4 de forma estructural; exige rediseñar el modelo de acceso).
 - **Extensiones:** puntos de enganche para nuevos agentes, firmas y escenarios sin tocar el núcleo.
 
