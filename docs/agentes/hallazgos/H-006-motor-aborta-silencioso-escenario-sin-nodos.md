@@ -4,7 +4,7 @@ Tipo: Robustez
 Severidad: MEDIO
 Persona: operador con BD migrada/importada que contiene un escenario con infraestructura malformada
 Dirigido a: IMP-1
-Estado: resuelto-pendiente-verificación (IMP-1, bbd1b28)
+Estado: resuelto-verificado (DIR 15ª pasada, 2026-10-23 — verificación EN PRIMERA PERSONA sobre el árbol fusionado)
 ---
 
 **Pasos para reproducir** (descubierto durante el desarrollo de `e2e-actualizacion-bd`, iteración de arnés con escenario sembrado con `infrastructure='{"nodes":[]}'`):
@@ -62,3 +62,5 @@ lanzamientos reales usaban `{"nodes":[]}` explotando justamente este crash
 y su limpieza retira también las lecciones enlazadas.
 
 Puerta: lint 0 · 514/514 · verify --build 11/11 (re-ejecutada tras el rebase).
+
+**Verificación DIR (15ª pasada, 2026-10-23) — RESUELTO-VERIFICADO, 5º ciclo completo hallazgo→fix→verificación (tras H-001, H-002, H-004 y H-005):** (1) código del fix revisado línea a línea — `parsearInfraestructura` (puro; null ante JSON malformado/nodes ausente-vacío/nodos sin el contrato EXACTO que bootLab desreferencia: id string no vacío, type/segment string, criticality finito, vulnerabilities+controls arrays; basta UN nodo roto para rechazar el grafo entero), `elegirEscenarioLanzable` (azar solo sobre lanzables; ESCENARIO_INVALIDO→400 vía catálogo — diagnóstico verdadero, no el falso «inexistente»—; SCENARIO_NOT_FOUND intacto con firma retrocompatible; SIN_ESCENARIOS_VALIDOS→503) y `route.ts` (400/503 ANTES del create, sin side effects) + capa defensiva en `runCampaign` (throw clasificado, fila ABORTED con causa legible); contrato re-exportado íntegro desde engine.ts. (2) Suite 514/514 (14 920 expect; composición verificada: 499 base + 15 nuevos, 30 ficheros). (3) INTERACCIÓN CRUZADA verificada por diseño: la suite e2e-actualizacion-bd ya nació H-006-consciente — su INFRA_HIST es una infraestructura VÁLIDA de 2 nodos con comentario explícito citando este hallazgo, así que sus fases F2-F4 no cambian. (4) e2e-reinicio-servidor RE-EJECUTADA POR DIR sobre standalone recién construido del árbol con fix (puertos dedicados 3118/4418): 19/19 VERDE — el ciclo completo F1-F5 con campaña nueva COMPLETED (34 eventos) demuestra que el camino de lanzamiento queda intacto para escenarios válidos. La persona #1 (administrador/operador) queda SIN pendientes: H-002 y H-006 cerrados.
