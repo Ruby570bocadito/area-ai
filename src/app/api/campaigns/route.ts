@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { startCampaign, acceptSeed, acceptDeterminista, acceptAdaptativa } from '@/lib/sim/engine'
+import { startCampaign, acceptSeed, acceptDeterminista, acceptAdaptativa, recoverOrphanCampaigns } from '@/lib/sim/engine'
 import { db } from '@/lib/db'
 import {
   isMutationAuthorized,
@@ -182,14 +182,35 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // H-002: la recuperación de huérfanas vivía SOLO en GET /api/state —
+    // un cliente que solo hace POST (curl/script tras reiniciar el servidor
+    // con la misma BD) recibía 409 indefinido: la RUNNING huérfana nunca
+    // se cerraba y el lanzamiento no llegaba. Se recupera aquí, ANTES del
+    // chequeo RUNNING; es idempotente y conservador — solo toca campañas
+    // RUNNING con >120 s sin eventos (las vivas, no; el umbral es el mismo
+    // que ya gobierna /api/state).
+    await recoverOrphanCampaigns()
+
     const campaign = await startCampaign(scenarioId, seed, determinista, adaptativa)
     const respuesta = { ok: true, campaignId: campaign.id, seed: campaign.seed, determinista: campaign.determinista, adaptativa: campaign.adaptativa, ajusteDefensa: campaign.ajusteDefensa }
     if (dedupeKey) recordLaunch(dedupeKey, 200, respuesta)
     return NextResponse.json(respuesta)
   } catch (error) {
-    const err = error as Error & { code?: string }
+    const err = error as Error & { code?: string; campaignId?: string; enCursoDesde?: string }
     if (err.code === 'CAMPAIGN_RUNNING') {
-      return NextResponse.json({ ok: false, error: 'Ya hay una campaña en curso' }, { status: 409 })
+      // H-002: el 409 ya no es un muro sin datos — identifica la campaña
+      // en curso (id + arranque ISO) para que el operador sepa QUÉ la
+      // bloquea y DESDE CUÁNDO: si es huérfana de un reinicio, la próxima
+      // petición tras 120 s la aborta y lanza; si es viva, mide su edad.
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'Ya hay una campaña en curso',
+          campaignId: err.campaignId,
+          enCursoDesde: err.enCursoDesde,
+        },
+        { status: 409 }
+      )
     }
     // H-004 (caso 1): el escenario pedido no existe — 400 con el id
     // recibido (truncado por resolverEscenario) para que el despistado

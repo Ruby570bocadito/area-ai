@@ -119,8 +119,14 @@ export async function startCampaign(scenarioId?: string, seed?: number, determin
 
     const running = await db.campaign.findFirst({ where: { status: 'RUNNING' } })
     if (running) {
-      const err = new Error('Ya existe una campaña en curso') as Error & { code?: string }
+      // H-002: el 409 identifica QUÉ bloquea — el id y el arranque de la
+      // campaña en curso viajan en el error para que la ruta los devuelva
+      // (antes era un muro sin datos: «Ya hay una campaña en curso» sin
+      // pista de cuál, desde cuándo, ni si era una huérfana de un reinicio).
+      const err = new Error('Ya existe una campaña en curso') as Error & { code?: string; campaignId?: string; enCursoDesde?: string }
       err.code = 'CAMPAIGN_RUNNING'
+      err.campaignId = running.id
+      err.enCursoDesde = new Date(running.startedAt).toISOString()
       throw err
     }
 
