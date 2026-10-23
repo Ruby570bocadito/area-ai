@@ -58,6 +58,8 @@ prompt
 /tool-results/
 # agent/environment artifacts (not part of the product)
 /.zscripts/
+# borradores y volcados de los agentes (protocolo v2 §4)
+/.agent-tmp/
 /download/
 /scripts/*.png
 *.pid
