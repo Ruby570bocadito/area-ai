@@ -37,7 +37,7 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 - [ ] (IMP-1) tests-lab-runtime — [L] tests del runtime del lab (política de red por niveles, sesiones, firewall, parcheo, clasificación de firmas) con servidor efímero en puerto libre — src/lib/lab/runtime.ts, src/lib/lab/ops.ts, tests/
 - [ ] (IMP-1) tests-progresion-conocimiento — [M] tests de `progression.ts`, `knowledge-score.ts` y `provider-config.ts` — src/lib/sim/, tests/
 - [x] (IMP-2) estados-error-carga — [M] añadir `loading.tsx`, `error.tsx` y `not-found.tsx` (global y por ruta principal) con estilo coherente — src/app/
-- [ ] (IMP-2) skeletons-polling — [M] esqueletos mientras `/api/state` carga por primera vez y estado "sin conexión / reintentando" cuando el sondeo falla — src/hooks/use-arena-state.tsx, src/components/arena/
+- [x] (IMP-2) skeletons-polling — [M] esqueletos mientras `/api/state` carga por primera vez y estado "sin conexión / reintentando" cuando el sondeo falla — src/hooks/use-arena-state.tsx, src/components/arena/
 - [ ] (TEST) baseline-e2e — [M] primera pasada completa por las 4 personas mínimas y primeros hallazgos; fijar la línea base de tiempos del README en frío — tests/e2e/, docs/agentes/hallazgos/
 
 ---
