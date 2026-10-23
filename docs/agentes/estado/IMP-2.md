@@ -1,24 +1,19 @@
 # estado IMP-2 — informe vivo
 
-Actualizado: 2026-10-23 (Europe/Madrid) — sesión 5 cerrada
+Actualizado: 2026-10-23 (Europe/Madrid) — sesión 6 en curso
 
 ## Hecho (últimas 24 h)
-- ingles-readme-dashboard (5feb1d4 + 1ae408a + 4638599): ORDEN DIRECTA DEL PROPIETARIO («README en inglés y contenido del dashboard también en inglés») — cross-zone de README (precedente readme-visual-v2). (1) README íntegro EN con contador de tests REAL 411 en badges y scripts (corrige el 386 que DIR ya había señalado a PUL). (2) UI completa EN (~25 ficheros): shell/nav/Sistema, panel de mando, arena (fases ARMING/ESCALATION…, resultados SUCCESS/BLOCKED…), historial + CSV EN + badges RED WINS/DRAW, ficha + comparativa, conocimiento, analítica, agentes, Model Studio, atajos, paleta ⌘K, toasts, error/404; `html lang=en` + metadatos OG/Twitter EN. (3) banner.svg y og.png regeneradas EN (HTML→captura 1440×704, sin IA). (4) Galería y GIF re-hechos con 2 campañas reales sobre standalone 3112 (GIF 50 s → 8 fps/760 px, 1,2 MB). Verificación visual con navegador real en las 11 capturas. Puerta x2: lint 0 · tsc 0 · 411/411 · canon 11/11.
-- Contenido obsoleto corregido al traducir: el diálogo de lanzamiento decía «8 rondas» — el motor ejecuta 12 (PHASE_ORDER = 6 fases × 2); ahora dice 12 en ambos textos.
-- Decisión documentada: NO es i18n-es-en — se fija el idioma de producto a EN sin sistema de diccionarios; esa tarea [L] del ROADMAP sigue abierta (extractar textos y ofrecer ambos idiomas) y su premisa cambió: DIR decide si la re-acota o la marca obsoleta.
-- text.ts (compartida) intacta: su fecha es numérica (neutra) y sus tests fijan el contrato — el mes EN del archivo se logra con locale en-GB local al componente. Cero churn de tests: 411/411 sin tocar tests/.
+- filtros-guardados (2309c5f): [S] del ROADMAP — guardar y nombrar combinaciones de filtros del historial con persistencia local. Tienda en src/hooks/use-saved-filters.ts: helpers PUROS exportados (sanitizar/parsear-validar/upsert/sugerir nombre; tope 8 presets, nombre ≤ 40, query ≤ 120 como el deep-link ?q=, dedupe por combinación — 15 tests NUEVOS en tests/filtros-guardados.test.ts) + useSyncExternalStore con getServerSnapshot vacío (hidratación sin mismatch ni setState-en-efecto; listener storage entre pestañas gratis). Panel: botón Save (deshabilitado sin filtros activos), formulario inline con nombre sugerido (etiqueta de resultado + escenario + búsqueda), chips aplicar/borrar con aria-label. Aplicar recorre las vías normales de estado, así que la URL se reescribe vía onFiltersChange (deep-links-historial) y el escenario caducado degrada a All con el patrón anti-enlace-caducado. hasFilters usa ahora el escenario EFECTIVO (deep-link caducado ya no marca la barra). Verificación real con navegador sobre standalone 3112: guardar/nombrar, recarga persiste, aplicar restaura filtros+URL, dedupe in situ, borrar — sin errores de consola. Puerta: lint 0 · tsc 0 · 495/495 (480+15) · verify --build 11/11 (SMOKE 3112/LAB 4412, DATABASE_URL absoluta).
+- Confirma en local el aviso de TEST (ci-basico): la DATABASE_URL GLOBAL del contenedor (file:/home/z/my-project/db/custom.db, esquema viejo) gana al .env y envenenó 10 tests al llegar dificultad-adaptativa (59148c7, columnas adaptativa/ajusteDefensa) — resuelto exportando DATABASE_URL absoluta del clone antes de test/verify/prisma db push. Sin cambios de repo: la petición a PUL de fijarla en scripts sigue en pie.
 
 ## En curso
-- Nada (sesión cerrada).
+- enlace-permanente-ronda [S]: claim a continuación (segunda tarea de la sesión).
 
 ## Bloqueado
 - Nada.
 
 ## Peticiones
-- A DIR/IMP-1: quedan en español los DATOS DEL MOTOR fuera de mi zona — seed (roles/especialidades de agentes, nombres/descripciones de escenarios y objetivos, codenames «OPERACIÓN …»), textos generados por el motor (action/detail de eventos, lecciones, narrativa), victory.ts (explainWinner, VICTORY_RULE_SHORT/DETAIL, decisiveProgressLabel — visibles en badges y resolution) y los mensajes de error de src/app/api/* (surfacen en toasts). Si el propietario quiere el producto 100 % EN, eso requiere tarea cross-zone de IMP-1 (seed.ts, engine, victory.ts, api) — el UI ya no muestra español propio.
-- A PUL (vigía de contadores): el README ahora dice 411 (real de hoy); recordar mantener badges/contador sincronizados en futuras rondas.
-- A TEST: re-verificar H-005 y los e2e existentes contra la UI EN (los selectores por texto en español de e2e si los hubiera quedarán rotos — no toqué tests/, suite 411/411 verde).
+- A PUL (reenvío con evidencia local): fijar DATABASE_URL en el script test o workflow — reproducido hoy en sandbox (ver Hecho); hasta entonces, cualquier agente debe exportarla a mano.
 
 ## Propuestas
-- si DIR ratifica el EN como idioma de producto: renombrar rutas visibles (/historial→/history, /agentes→/agents…) en v0.4 con redirects, y traducir seed+motor (petición de arriba).
-- filtros-guardados y enlace-permanente-ronda siguen como siguientes candidatas [S] de zona.
+- Sin cambios: cerrado filtros-guardados; marcador-sparkline y pwa-og-iconos siguen como siguientes [S] si DIR no reordena.
