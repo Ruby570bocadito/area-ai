@@ -9,6 +9,8 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 
 > **Revisión DIR 2026-10-23 (3ª pasada):** ratificado el tick directo de `balance-datos-archivo` de IMP-1 (36240a6: módulo puro + script SOLO LECTURA + 19 tests de frontera; DIR verificó `bun scripts/balance-drift.mjs --json` sobre BD local: veredicto SIN_DATOS limpio y salida 0 — el veredicto de H-003 lo emitirá el script al alcanzar 15+ archivadas en D30). `idempotencia-lanzamiento` en curso (claim 0341dc4). Cerrada la tarea DIR `definicion-de-hecho`: bloque «Qué significa [x]» tras la leyenda — desde esta revisión, un tick sin evidencia no se ratifica. Nueva idea P3: panel de gobernanza en vivo.
 
+> **Revisión DIR 2026-10-23 (4ª pasada):** endurecimiento-hd ratificado (7eb5a1d: orden canónico 403→429→401→413 y bucket `admin:` antes del token en campaigns/settings/models — fin del oráculo de fuerza bruta; perpetuado por el caso 3 de security-verify contra el bucket compartido, con variante directa contra /api/campaigns sugerida). security-verify-puerto hecho por SEG en su zona (convenio OWNERSHIP respetado) y ratificado; §6 del PROTOCOLO actualizada (puerto ya no fijo). Ratificados el tick de e2e-historial-filtros de TEST (23/23, 4ª desviación documentada) y el cierre de H-005 (resuelto-pendiente-verificación). Entraron 2 tareas desde propuestas de SEG (caddy-validate-ci, allowlist-e2e-standalone) y notas de limitación headless en las e2e visuales. Cerrada la tarea DIR metricas-semanales.
+
 **Leyenda**
 - Talla: `[S]` ≤ 1 tarea corta · `[M]` una tarea completa con tests · `[L]` partir en piezas funcionales por sí solas (cada pieza = su propio slug).
 - Prioridad por sección: **P0** bloquea a todos o es riesgo real · **P1** siguiente fase · **P2** valor alto, sin urgencia · **P3** ideas grandes / exploratorias.
@@ -41,6 +43,7 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 - [ ] (PUL) congelar-worklog — [S] `worklog.md`: comprobar referencias, borrar o dejar como histórico sin más entradas; quitar firmas de asistente y el nombre antiguo "AEGIS ARENA" — worklog.md
 - [ ] (PUL) readme-agentes-v2 — [S] sustituir la tabla "Agentes del proyecto" por los 6 roles y rutas nuevas — README.md
 - [ ] (PUL) ci-basico — [M] workflow con `bun install`, lint, `bun run test` y typecheck en push/PR; caché de bun — .github/workflows/
+- [ ] (PUL) caddy-validate-ci — [S] validar el Caddyfile con `caddy validate` en cada PR; la sintaxis actual va solo avalada por los docs de Caddy v2 (el sandbox no ejecuta el binario; propuesta de SEG que cierra la púa pendiente del despliegue) — .github/workflows/, Caddyfile
 - [ ] (PUL) script-typecheck — [S] añadir `typecheck` (`tsc --noEmit`) a `package.json` para CI y agentes — package.json · nota IMP-1: que el tsconfig cubra también `tests/*.test.ts`
 - [ ] (PUL) paquete-nombre — [S] renombrar `nextjs_tailwind_shadcn_ts` a `area-ai` y buscar restos de nombres antiguos con grep — package.json, src/
 - [ ] (PUL) license-decision — [S] el repo se presenta como open source pero no hay `LICENSE` en la raíz: pedir al dueño qué licencia y añadirla — LICENSE, README.md
@@ -213,7 +216,7 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 ## SEG — Seguridad y bugs
 
 ### P0-P1
-- [ ] (SEG) endurecimiento-hd — [S] HD3: verificar que el bucket `admin:` y la barrera same-origin se aplican ANTES de la comparación del token en las 5 mutaciones (cierra el oracle de fuerza bruta de ADMIN_TOKEN; /api/auth ya comparte el bucket — confirmar el orden en el código) y HD4: alinear el orden real 403→429→401→413 con el documentado — src/lib/net/access.ts (reparto de la Ronda 12 sin ejecutar, rescatado por DIR)
+- [x] (SEG) endurecimiento-hd — [S] HD3: verificar que el bucket `admin:` y la barrera same-origin se aplican ANTES de la comparación del token en las 5 mutaciones (cierra el oracle de fuerza bruta de ADMIN_TOKEN; /api/auth ya comparte el bucket — confirmar el orden en el código) y HD4: alinear el orden real 403→429→401→413 con el documentado — src/lib/net/access.ts (reparto de la Ronda 12 sin ejecutar, rescatado por DIR) · hecho 2026-10-23: orden canónico en campaigns (same-origin → admin: 30/min → token → tope → cubo 6/min), settings y models parsean tras el 401, auth conserva 413 antes del 401 por inherencia; orden documentado en access.ts — 7eb5a1d · perpetuación: caso 3 de security-verify (31 intentos → 429 incluso con token válido, bucket admin: compartido); sugerible añadir la variante directa contra /api/campaigns
 - [ ] (SEG) test-superficie-mutaciones — [M] test que exige los tres controles (same-origin, rate limit, token) en cada una de las 5 mutaciones (campaigns, autopilot, settings, models, auth): cierre estructural del patrón «enumeración manual falla» que HD3 re-confirma — tests/ (reparto de la Ronda 12 sin ejecutar, rescatado por DIR)
 - [ ] (SEG) csp-estricta — [L] política CSP con nonces; verificar hidratación en navegador real antes de activar — next.config.ts · verificado 2026-10-23: sigue abierta, las cabeceras actuales son las no rompientes del stand-alone; requiere navegador real
 - [x] (SEG) cuerpo-chunked — [M] acotar cuerpos `chunked` sin `Content-Length` (limitación documentada) leyendo el stream con tope — src/lib/net/access.ts · hecho 2026-10-23: `readJsonBody` consume el stream con tope y cancela al superarlo; 4 rutas migradas + 2 casos en security-verify
@@ -238,6 +241,7 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 - [ ] (SEG) sbom-y-lockfile — [S] generar SBOM y verificar integridad del `bun.lock` en CI — .github/workflows/
 - [ ] (SEG) logs-sin-secretos — [S] comprobar que ningún log ni informe contiene claves, tokens ni cabeceras sensibles — src/lib/
 - [x] (SEG) origin-allowlist-env — [S] validar el `Origin` también contra `NEXT_PUBLIC_SITE_URL` cuando esté definida, para despliegues tras proxies que reescriben el Host (complementa isSameOrigin) — src/lib/net/access.ts · hecho 2026-10-23: allowlist en isSameOrigin; sin la variable el comportamiento es exactamente el anterior y una URL malformada no relaja nada; 7 tests nuevos (334→341) — 407c7aa, release 5688039
+- [ ] (SEG) allowlist-e2e-standalone — [S] caso e2e de la allowlist de origen arrancando el standalone con `NEXT_PUBLIC_SITE_URL` (hoy cubierta solo por unit tests; propuesta de SEG) — scripts/, tests/e2e/
 - [ ] (SEG) gitleaks-ci — [S] fijar el escaneo de secretos en CI (`gitleaks protect` en cada push/PR); el barrido manual del 2026-10-23 quedó limpio y debe perpetuarse — .github/workflows/ (con PUL)
 - [ ] (IMP-2) auth-ui — [M] formulario de login y estado de sesión cuando `ADMIN_TOKEN` está definido, usando `POST /api/auth` / `DELETE /api/auth` (cookie ya HttpOnly); sin guardar el token en localStorage — src/components/arena/, src/hooks/
 
@@ -249,7 +253,7 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 - [ ] (PUL) tokens-hex-restantes — [S] última milla de la migración de tokens: auditar los literales `[#hex]` restantes y migrar los migrables a las escalas surface-*/ink-* (conteo bruto 439 en src/ el 2026-10-23; exclusiones anunciadas: SVG de analytics/network-map y semántica shadcn; el bloque pendiente del reparto de la Ronda 12 era la ficha /historial/[id] y sus apoyos), cero cambio visual; claim y coordinar con IMP-2 — src/app/, src/components/arena/
 - [ ] (PUL) higiene-bd-llm — [S] auto-limpieza de las filas `llm.*` de prueba que inserta el script del canon, para que la BD compartida no acumule basura (gap reportado por pulimiento-14 en la Ronda 11) — scripts/ (reparto de la Ronda 12 sin ejecutar, rescatado por DIR)
 - [ ] (PUL) engines-bun — [S] declarar la versión mínima de Bun (campo engines en package.json) y documentarla junto a los requisitos del README — package.json, README.md
-- [ ] (PUL) security-verify-puerto — [S] parametrizar el puerto fijo 3105 con variable de entorno (cambio acordado con SEG) — scripts/security-verify.mjs
+- [x] (PUL) security-verify-puerto — [S] parametrizar el puerto fijo 3105 con variable de entorno (cambio acordado con SEG) — scripts/security-verify.mjs · hecho 2026-10-23 por SEG en su zona (el fichero es de SEG según OWNERSHIP; la asignación PUL queda sin efecto): `SECURITY_VERIFY_PORT` con defecto 3105, documentado en la salida del script · ratificado por DIR
 - [ ] (PUL) readme-reestructurado — [M] README con tabla de contenidos, inicio rápido de 5 comandos, tabla de scripts y variables sincronizada con `.env.example` — README.md
 - [ ] (PUL) dependencias-sobrantes — [M] [verificar] detectar dependencias no usadas y faltantes con una herramienta de análisis (`sharp` no se importa en `src/`, pero Next puede usarlo en el build standalone: comprobar antes de quitarlo) — package.json, bun.lock
 - [ ] (PUL) lint-estricto — [M] endurecer ESLint (hooks, imports no usados, orden) y dejar 0 avisos en todo el repo — eslint.config.mjs, src/
@@ -276,7 +280,7 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 Cada sesión rota al menos 4 personas. Suites e2e a construir en `tests/e2e/` (`*.e2e.mjs`):
 
 - [x] (TEST) e2e-golden-path — [M] instalación desde cero según README, lanzar campaña, ver arena en vivo, ficha final y lecciones archivadas — tests/e2e/
-- [x] (TEST) e2e-historial-filtros — [M] búsqueda con acentos, filtros y deep-links `?resultado=` / `?escenario=` desde analítica — tests/e2e/ (23/23: HistoryPanel real vía react-dom/server + servidor HTTP real; verificación interactiva pendiente de entorno con navegador en red compartida)
+- [x] (TEST) e2e-historial-filtros — [M] búsqueda con acentos, filtros y deep-links `?resultado=` / `?escenario=` desde analítica — tests/e2e/ (23/23: HistoryPanel real vía react-dom/server + servidor HTTP real; verificación interactiva pendiente de entorno con navegador en red compartida) · ratificado por DIR: 681f323, release 6a18534 (4ª desviación del convenio de tick directo, reconocida por TEST en su estado)
 - [ ] (TEST) e2e-exportaciones — [M] CSV/JSON/`.md` íntegros: columnas, codificación, celdas peligrosas y consistencia con la ficha — tests/e2e/
 - [ ] (TEST) e2e-model-studio-mock — [L] servidor local compatible OpenAI como fixture: descarga de catálogo, selección, errores 401/500/timeouts — tests/e2e/fixtures/
 - [ ] (TEST) e2e-degradacion-llm — [M] proveedor caído a mitad de campaña: la campaña continúa en modo determinista y queda reflejado — tests/e2e/
@@ -288,8 +292,8 @@ Cada sesión rota al menos 4 personas. Suites e2e a construir en `tests/e2e/` (`
 - [ ] (TEST) e2e-entorno-adverso — [M] `LAB_PORT` inválido u ocupado, `DATABASE_URL` relativa, BD ausente o corrupta — tests/e2e/
 - [ ] (TEST) e2e-volumen — [M] 500-1 000 campañas sembradas: tiempos de historial, búsqueda y exportación — tests/e2e/
 - [ ] (TEST) e2e-actualizacion-bd — [M] abrir una BD de una versión anterior con el esquema nuevo — tests/e2e/
-- [ ] (TEST) e2e-movil-visual — [M] capturas a 390 px de todas las páginas y comparación con la línea base — tests/e2e/
-- [ ] (TEST) e2e-accesibilidad — [M] pasada automatizada con herramienta de accesibilidad sobre las páginas principales y registro de hallazgos — tests/e2e/
+- [ ] (TEST) e2e-movil-visual — [M] capturas a 390 px de todas las páginas y comparación con la línea base — tests/e2e/ · nota TEST: limitación de red del navegador headless documentada en estado TEST sesión 3 — leer antes de planificar
+- [ ] (TEST) e2e-accesibilidad — [M] pasada automatizada con herramienta de accesibilidad sobre las páginas principales y registro de hallazgos — tests/e2e/ · nota TEST: misma limitación headless — valorar herramienta que no dependa de red del navegador
 - [ ] (TEST) e2e-soak-autopiloto — [M] ejecución prolongada con autopiloto: memoria, crecimiento de BD, errores acumulados — tests/e2e/
 - [x] (TEST) tiempo-instalacion-readme — [S] medir el tiempo y los fallos de la instalación en frío y registrarlo en el estado — docs/agentes/estado/TEST.md
 
@@ -298,7 +302,7 @@ Cada sesión rota al menos 4 personas. Suites e2e a construir en `tests/e2e/` (`
 ## DIR — Gobierno
 
 - [x] (DIR) definicion-de-hecho — [S] criterio único por tipo de tarea (feature, fix, refactor, UI, seguridad) y comprobarlo en cada revisión — docs/agentes/ROADMAP.md · hecho 2026-10-23 (3ª pasada): bloque «Qué significa [x]» tras la leyenda; aplica desde esta revisión
-- [ ] (DIR) metricas-semanales — [S] resumen en `estado/DIR.md`: duración del verify, nº de tests, hallazgos abiertos por destinatario, tareas cerradas — docs/agentes/estado/DIR.md
+- [ ] (DIR) metricas-semanales — [S] resumen en `estado/DIR.md`: duración del verify, nº de tests, hallazgos abiertos por destinatario, tareas cerradas — docs/agentes/estado/DIR.md · hecho 2026-10-23 (4ª pasada): sección «Métricas» estructurada en estado/DIR.md; se alimenta de las puertas declaradas por cada zona y, si se construye, del JSON del panel de gobernanza
 - [ ] (DIR) hitos-versiones — [S] fijar qué entra en v0.3, v0.4 y v1.0 y recortar tareas que no caben — docs/agentes/ROADMAP.md
 - [ ] (DIR) revisar-zonas — [S] cada ~3 sesiones comprobar que OWNERSHIP sigue encajando con `src/` (tras refactors y nuevas carpetas) — docs/agentes/OWNERSHIP.md
 - [ ] (DIR) aprobar-docs-nuevos — [S] decidir si procede `ARQUITECTURA.md`, `CONTRIBUTING.md` y `CHANGELOG.md` (el protocolo prohíbe documentos nuevos sin su visto bueno) — docs/agentes/ROADMAP.md

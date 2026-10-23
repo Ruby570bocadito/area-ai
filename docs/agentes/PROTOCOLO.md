@@ -76,7 +76,8 @@ Cada agente en su propio `git worktree` (ver "Cómo lanzarlos") con su propio `b
 | TEST | 3115 | 4415 | 3215 |
 
 Servidor de desarrollo: `bunx next dev -p <puerto de dev>` (el script `bun run dev` fija el 3000). `scripts/security-verify.mjs`
-usa el puerto fijo 3105: solo SEG lo ejecuta hasta que PUL lo parametrice (tarea en el ROADMAP).
+usa `SECURITY_VERIFY_PORT` (defecto 3105): fija tu puerto del rango antes de ejecutarlo (p. ej. `SECURITY_VERIFY_PORT=3113`
+para SEG) para no pisar a nadie — parametrizado por SEG, ratificado por DIR (revisión 4ª).
 
 ## 7. Informe vivo: `docs/agentes/estado/<ID>.md` (máx. 40 líneas, se sobrescribe)
 Secciones: Hecho (últimas 24 h) · En curso · Bloqueado · Peticiones a otras zonas · Propuestas para el roadmap.
