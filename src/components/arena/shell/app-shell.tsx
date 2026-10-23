@@ -16,6 +16,7 @@ import {
   X,
   Cpu,
   Infinity as InfinityIcon,
+  WifiOff,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useArena } from './arena-provider'
@@ -136,7 +137,7 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const { running } = useArena()
+  const { running, status, state } = useArena()
   const meta = pageMeta(pathname)
 
   return (
@@ -197,6 +198,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </header>
+
+        {status === 'offline' && state != null && (
+          /* Datos en pantalla pero el sondeo está fallando: aviso persistente
+             de desconexión (sin tapar el contenido, reintentando en fondo). */
+          <div role="status" aria-live="polite" className="sticky top-14 z-20 border-b border-[#fedf89] bg-[#fffaeb]">
+            <p className="mx-auto flex h-9 w-full max-w-[1240px] items-center justify-center gap-2 px-4 font-mono-tight text-[11px] font-semibold text-[#b54708] sm:px-6 lg:px-8">
+              <WifiOff className="h-3.5 w-3.5 shrink-0" />
+              Sin conexión con el motor — los datos pueden estar desactualizados; reintentando…
+            </p>
+          </div>
+        )}
 
         <main className="flex-1">{children}</main>
 

@@ -18,9 +18,16 @@ import type { StateResponse } from '@/lib/api-types'
 // el usuario esté ya viendo la arena en directo.
 // ─────────────────────────────────────────────────────────────
 
+// Estado de conexión del sondeo:
+// · connecting — primera carga de /api/state todavía pendiente
+// · live       — último sondeo correcto (datos frescos)
+// · offline    — dos o más sondeos fallidos seguidos
+export type ArenaConnectionStatus = 'connecting' | 'live' | 'offline'
+
 export function useArenaState() {
   const [state, setState] = useState<StateResponse | null>(null)
   const [loadError, setLoadError] = useState(false)
+  const [failStreak, setFailStreak] = useState(0)
   const stateRef = useRef<StateResponse | null>(null)
   const { toast } = useToast()
   const router = useRouter()
@@ -92,21 +99,22 @@ export function useArenaState() {
     try {
       const res = await fetch('/api/state', { cache: 'no-store' })
       const data = (await res.json()) as StateResponse
-      if (data.ok) {
-        // Detección de fin de campaña: la activa anterior ya no lo es
-        const prevActiveId = prevActiveIdRef.current
-        const currentActiveId = data.activeCampaign?.id ?? null
-        if (prevActiveId && prevActiveId !== currentActiveId) {
-          announceFinished(prevActiveId, data)
-        }
-        prevActiveIdRef.current = currentActiveId
-
-        setState(data)
-        stateRef.current = data
-        setLoadError(false)
+      if (!res.ok || !data.ok) throw new Error('estado no disponible')
+      // Detección de fin de campaña: la activa anterior ya no lo es
+      const prevActiveId = prevActiveIdRef.current
+      const currentActiveId = data.activeCampaign?.id ?? null
+      if (prevActiveId && prevActiveId !== currentActiveId) {
+        announceFinished(prevActiveId, data)
       }
+      prevActiveIdRef.current = currentActiveId
+
+      setState(data)
+      stateRef.current = data
+      setLoadError(false)
+      setFailStreak(0)
     } catch {
       setLoadError(true)
+      setFailStreak((n) => n + 1)
     }
   }, [announceFinished])
 
@@ -176,5 +184,10 @@ export function useArenaState() {
     [load, toast]
   )
 
-  return { state, loadError, running: state?.activeCampaign != null, handleStart, toggleAutopilot, refresh: load }
+  // Derivado del último par (state, racha de fallos): la UI de conexión
+  // se lee de aquí; loadError se mantiene por compatibilidad.
+  const offline = loadError && failStreak >= 2
+  const status: ArenaConnectionStatus = offline ? 'offline' : state ? 'live' : 'connecting'
+
+  return { state, loadError, status, running: state?.activeCampaign != null, handleStart, toggleAutopilot, refresh: load }
 }

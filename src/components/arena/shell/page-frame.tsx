@@ -1,8 +1,9 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Swords, WifiOff } from 'lucide-react'
+import { RefreshCw, WifiOff } from 'lucide-react'
 import { useArena } from './arena-provider'
+import { PageSkeleton } from '../skeletons'
 
 // ─────────────────────────────────────────────────────────────
 // Frame común de página: contenedor con ancho máx., cabecera
@@ -55,23 +56,44 @@ export function PageHeader({
 }
 
 export function ArenaGate({ children }: { children: React.ReactNode }) {
-  const { state, loadError } = useArena()
+  const { state, status, refresh } = useArena()
 
   if (!state) {
+    if (status === 'offline') {
+      // El primer sondeo ha fallado de forma consistente: en lugar de un
+      // esqueleto eterno, explicarlo y ofrecer reintento manual.
+      return (
+        <PageContainer>
+          <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center" role="alert">
+            <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#fecdca] bg-[#fef3f2]">
+              <WifiOff className="h-5 w-5 text-[#b42318]" />
+            </span>
+            <div>
+              <h2 className="font-display text-base font-bold text-ink-900">Sin conexión con el motor</h2>
+              <p className="mx-auto mt-1 max-w-md text-[12.5px] leading-relaxed text-ink-500">
+                No hay respuesta del servidor. Seguimos reintentando automáticamente cada pocos segundos;
+                también puedes probar de nuevo de forma manual.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => void refresh()}
+              className="flex items-center gap-2 rounded-lg bg-ink-900 px-4 py-2 text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-[#182230]"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Reintentar ahora
+            </button>
+          </div>
+        </PageContainer>
+      )
+    }
+    // Primera carga de /api/state pendiente: esqueleto con la forma
+    // de página en lugar del vacío anterior (spinner + texto).
     return (
       <PageContainer>
-        <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: 'linear' }}
-            className="flex h-14 w-14 items-center justify-center rounded-xl border border-surface-200 bg-white shadow-sm"
-          >
-            <Swords className="h-6 w-6 text-ink-500" />
-          </motion.div>
-          <p className="flex items-center gap-2 font-mono-tight text-xs text-ink-500">
-            {loadError && <WifiOff className="h-3.5 w-3.5 text-[#d92d20]" />}
-            {loadError ? 'Error de conexión con el motor — reintentando…' : 'Conectando con el motor…'}
-          </p>
+        <div role="status" aria-live="polite">
+          <p className="sr-only">Conectando con el motor…</p>
+          <PageSkeleton />
         </div>
       </PageContainer>
     )
