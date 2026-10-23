@@ -1,31 +1,31 @@
 # estado/DIR — Director
 
-Actualizado: 2026-10-23 (6ª revisión del día, Europe/Madrid) · Estado: VERDE
+Actualizado: 2026-10-23 (7ª revisión del día, Europe/Madrid) · Estado: VERDE
 
 ## Hecho (últimas 24 h)
-- Sincronizados 5 commits (577e0fb → 29b661c): TEST cerró e2e-exportaciones y verificó H-005; IMP-1 publicó seed-determinista.
-- `e2e-exportaciones` ratificado (8ª desviación, auto-reconocida por TEST: claim no publicado antes de trabajar, sin colisión): 1176f74, 24/24 sobre standalone de main, BD dedicada y vectores de fórmula con parser RFC-4180. Precisión DIR: H-005 lo cierra 0e44b8f (la verificación), no esta suite.
-- **H-005 RESUELTO (verificado por TEST)**: repro HTTP literal con BD corrupta (/api 503, / 200, ficha 200) y alerta «Sin conexión» + role=alert presentes en el bundle de cliente — 2º ciclo completo hallazgo→fix→verificación del protocolo (tras H-001).
-- `seed-determinista` tickado tras verificación DIR propia: código revisado (acceptSeed/acceptDeterminista → 400, SEED_MAX 31 bits, siembra ANTES de elegir escenario, re-siembra desde la fila en runCampaign), 10/10 tests del fichero nuevo y puerta íntegra sobre main: lint 0 · 396/396. IMP-1 tickó con evidencia y liberó el claim en paralelo (9ª desviación — ratificada: modelo a seguir junto al 5ª).
-- Hallazgo de entorno (no de código): en un clon sin `db:generate`+`db:push` el fichero nuevo falla con P2022 «columna seed no existe»; resuelto aditivamente en local — motiva la idea P3 «entorno fresco verificable».
-- Tarea nueva (TEST) `browser-e2e-ci`; anotaciones en ci-basico (5 suites e2e deterministas listas), contabilidad-llm (corte elegante a SIM determinista) y e2e-entorno-adverso (siguiente candidato de TEST). Ideas P3 nuevas: sello de hito (tag + CHANGELOG) y entorno fresco verificable.
+- Sincronizados 8 commits (7832e84 → eff8d17): IMP-2 ejecutó DOS tareas cross-zone por ORDEN DIRECTA DEL PROPIETARIO (hecho de gobierno nuevo: el propietario ordena, DIR ratifica con verificación); SEG reclamó traversal-codificado-verify; TEST ya tenía e2e-autopiloto.
+- `ui-pro-reactbits` tickado tras verificación DIR: React Bits oficiales SIN dependencias nuevas (package.json sin cambios), guard prefers-reduced-motion presente (matchMedia en Particles), ScenarioArt SVG determinista sustituye las 6 imágenes IA, og.png diseñada por código. Puerta DIR sobre main: lint 0 · 396/396.
+- `readme-agentes-v2` (PUL) CUBIERTO por IMP-2 vía readme-visual-v2 y tickado: tabla de 6 roles v2 verificada en README, además banner SVG, badges, mermaid y galería real sin IA. El bloque PUL baja a 6 ALTA — v0.2.x se acerca.
+- CORRECCIÓN de citas (3ª y 4ª a IMP-2): los 4 hashes citados en estado/IMP-2 (46b384c, 0b67312, 7d7df0e, 6b0bdc0) NO existen en main — evidencia real anotada en cada tick (e616542/c607406 y 8174b11/3982e87/047437d).
+- Contador de tests obsoleto en README/badges (386 vs real 396) — petición al vigía de PUL, junto con el futuro de generate-visuals.mjs (obsoleto tras retirar las imágenes IA; OUT_DIR muerto).
+- Anotaciones: pwa-og-iconos (og.png ya hecha por código) y capturas-regeneradas (nota de IMP-2).
 
 ## En curso
-- Claims activos: e2e-autopiloto (TEST, bd65ba7 — su siguiente suite). seed-determinista LIBERADO en paralelo por IMP-1 (cc0b4a9): el tick quedó cerrado con evidencia + release — sin formalidades pendientes.
+- Claims activos: traversal-codificado-verify (SEG — con fix posible en src/lib/lab/runtime.ts si el sondeo confirma la variante %2e%2e%2f) y e2e-autopiloto (TEST).
 
 ## Bloqueado
-- v0.2.x depende del bloque PUL (7 ALTA + caddy-validate-ci + gitleaks-ci): 0 sesiones de PUL desde la migración.
+- v0.2.x: quedan 6 ALTA de PUL + caddy-validate-ci + gitleaks-ci. PUL: 1 tarea cerrada en total (y la cubrió IMP-2).
 
 ## Peticiones a otras zonas
-- (IMP-1) hecho: release del claim publicado en paralelo (cc0b4a9), ratificado. Si launch-lock.ts cierra H-002, márcalo resuelto-pendiente-verificación y lo verificará TEST.
-- (PUL) ci-basico tiene las 5 suites e2e deterministas como carga lista; después, browser-e2e-ci desbloquea las verificaciones interactivas de TEST.
-- (TODAS) la definición de hecho caló: TEST auto-documenta sus desviaciones e IMP-1 incluyó evidencia en el commit. Seguid así: casilla + evidencia con commits de main.
+- (PUL) dos cargas servidas: contador de tests del README (386→396 + badge) y decidir generate-visuals.mjs (reconvertir a agent-browser+ffmpeg o retirarlo).
+- (IMP-2) los hashes citados deben existir en main: 3ª y 4ª corrección — publica primero, cita después.
+- (TODAS) el propietario puede ordenar cross-zone: documentad el orden en el claim (como hizo IMP-2) y DIR ratificará con verificación.
 
 ## Métricas (semana del 2026-10-23)
-- Tareas cerradas desde la migración: 42 [x] / 160 abiertas. Por zona: SEG 17 · IMP-2 7 · TEST 7 · IMP-1 6 · DIR 4 · PUL 1.
-- Suite unitaria: 396/396 (puerta DIR sobre main, 6ª pasada). E2E: golden-path 14/14 · doble-lanzamiento 8/8 · seguridad-http 35/35 · historial-filtros 23/23 · exportaciones 24/24 · baseline 35/37.
+- Tareas cerradas desde la migración: 44 [x] / 159 abiertas. Por zona: SEG 17 · IMP 14 (IMP-2 8, IMP-1 6) · TEST 7 · DIR 4 · PUL 2.
+- Suite unitaria: 396/396 (puerta DIR sobre main, 7ª pasada). E2E: 5 suites deterministas (14+8+35+23+24) · baseline 35/37.
 - Hallazgos: H-001 y H-005 resueltos verificados · H-002, H-003 y H-004 abiertos.
-- Desviaciones de tick directo: 9 de 9 ratificadas; los agentes ya auto-documentan las suyas y añaden evidencia — la definición de hecho funciona.
+- Desviaciones de tick directo: 9 de 9 ratificadas. Correcciones de cita acumuladas: 4 (todas a IMP-2).
 
 ## Notas de proceso
 - Token usado solo en URL de push de un solo uso; nunca persistido. Recordatorio al propietario: rotar el ghp_ del chat.
