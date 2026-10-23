@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProviderConfig } from '@/lib/sim/provider-config'
 import { classifyTarget, isLocalRequest } from '@/lib/net/target-guard'
+import { SafeFetchError, safeFetch } from '@/lib/net/safe-fetch'
 import { isMutationAuthorized, isSameOrigin, readJsonBody, rateLimit, clientKey } from '@/lib/net/access'
 
 export const dynamic = 'force-dynamic'
@@ -104,19 +105,19 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), 15000)
-
-    const res = await fetch(`${baseUrl}/models`, {
+    // ── Fetch con pin de IP (tarea ssrf-ip-pinning) ── Las pre-barreras de
+    // arriba fijan la política con mensajes 400/403 precisos; safeFetch es el
+    // punto de CUMPLIMIENTO: resuelve UNA vez, reclasifica ese mismo lote y
+    // conecta a esa IP exacta (el fetch histórico re-resolvía DNS y un
+    // rebinding podía colar otra IP en la conexión). Política: los privados
+    // solo desde petición local, los públicos en cualquier caso; metadata
+    // queda bloqueada SIEMPRE dentro de safeFetch.
+    const res = await safeFetch(`${baseUrl}/models`, {
       method: 'GET',
       headers: { Authorization: `Bearer ${apiKey}` },
-      signal: controller.signal,
-      // El guard clasifica el destino INICIAL; seguir redirects permitiría
-      // evadirlo (un servidor público con 302 hacia metadata o red interna).
-      // Los proveedores OpenAI-compatibles no redirigen legítimamente.
-      redirect: 'error',
+      timeoutMs: 15000,
+      allowedKinds: local ? ['private', 'public'] : ['public'],
     })
-    clearTimeout(timer)
 
     if (!res.ok) {
       const detail = await res.text().catch(() => '')
@@ -143,10 +144,12 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true, count: models.length, models })
   } catch (error) {
-    const msg =
-      error instanceof Error && error.name === 'AbortError'
-        ? 'Tiempo de espera agotado al contactar con el proveedor'
-        : 'No se pudo conectar con el proveedor'
+    const timedOut =
+      error instanceof Error &&
+      (error.name === 'AbortError' || error.name === 'TimeoutError' || (error instanceof SafeFetchError && error.code === 'timeout'))
+    const msg = timedOut
+      ? 'Tiempo de espera agotado al contactar con el proveedor'
+      : 'No se pudo conectar con el proveedor'
     console.error('[api/models] error:', error)
     return NextResponse.json({ ok: false, error: msg }, { status: 502 })
   }

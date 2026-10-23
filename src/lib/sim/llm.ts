@@ -95,37 +95,22 @@ async function callOpenAICompatible(
   const cfg = await getProviderConfig()
   if (cfg.source === 'zai' || !cfg.apiKey) return null
 
-  // ── Defensa en profundidad SSRF (protocolo §6) ──
-  // La baseUrl pudo guardarse en BD antes de que existiera el guard de
-  // /api/settings (o venir de env). El motor NUNCA debe alcanzar endpoints
-  // de metadata de nube. Los destinos privados se permiten (caso legítimo:
-  // Ollama en localhost configurado desde la máquina local; el guard de
-  // guardado es la barrera contra conexiones remotas).
-  try {
-    const { classifyTarget } = await import('@/lib/net/target-guard')
-    let url: URL
-    try {
-      url = new URL(cfg.baseUrl)
-    } catch {
-      return null
-    }
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null
-    if (await classifyTarget(url.hostname) === 'metadata') {
-      console.error('[llm] baseUrl del proveedor apunta a metadata de nube — petición bloqueada')
-      return null
-    }
-  } catch (e) {
-    console.error('[llm] validación SSRF falló — bloqueando llamada al proveedor:', e)
-    return null
-  }
+  // ── Defensa en profundidad SSRF (protocolo §6) ── La baseUrl pudo guardarse
+  // en BD antes de que existiera el guard de /api/settings (o venir de env).
+  // El punto de CUMPLIMIENTO es safeFetch (tarea ssrf-ip-pinning): resuelve UNA
+  // vez, clasifica ese mismo lote (metadata SIEMPRE bloqueada, incluida vía
+  // DNS; privados permitidos — caso legítimo: Ollama en localhost —) y conecta
+  // a la IP fijada con Host/SNI originales; el fetch histórico re-resolvía DNS
+  // y un rebinding podía colar otra IP en la conexión.
 
   // Sin try/catch global, un fallo de red del proveedor (ECONNREFUSED, DNS,
   // TLS o timeout del AbortSignal) subiría por llmText → llmJson → motor y
   // ABORTARÍA la campaña entera; el contrato de esta función es devolver
   // null y que el motor degrade a modo determinista (igual que callZai).
   try {
+    const { safeFetch } = await import('@/lib/net/safe-fetch')
     const res = await withTimeout(
-      fetch(`${cfg.baseUrl}/chat/completions`, {
+      safeFetch(`${cfg.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -139,19 +124,20 @@ async function callOpenAICompatible(
             { role: 'user', content: user },
           ],
         }),
-        // Un proveedor legítimo no redirige a otro destino; seguir redirects
-        // permitiría evadir el guard (302 hacia metadata/red interna).
-        redirect: 'error',
-        // Aborta la conexión real al vencer el plazo (withTimeout solo
-        // abandona la promesa; sin signal el socket quedaría colgado).
-        signal: AbortSignal.timeout(timeoutMs),
+        timeoutMs,
+        allowedKinds: ['private', 'public'],
       }),
       timeoutMs
     )
     if (!res.ok) return null
     const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> }
     return data.choices?.[0]?.message?.content ?? null
-  } catch {
+  } catch (e) {
+    // Sin instanceof (el módulo se importa dinámicamente dentro del try):
+    // el nombre y el código del error bastan y no acoplan este fichero
+    if (e instanceof Error && e.name === 'SafeFetchError' && (e as { code?: string }).code === 'metadata-blocked') {
+      console.error('[llm] baseUrl del proveedor apunta a metadata de nube — petición bloqueada')
+    }
     return null
   }
 }
