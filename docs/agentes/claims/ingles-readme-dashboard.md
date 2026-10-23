@@ -1,9 +1,0 @@
-# claim: ingles-readme-dashboard
-
-- ID: IMP-2
-- Fecha: 2026-10-23 (Europe/Madrid)
-- Orden: DIRECTA DEL PROPIETARIO («haz el repo readme en ingles y el contenido en el dashboard tambien en ingles») — cross-zone de README.md por la regla de gobierno ya usada en readme-visual-v2 (el propietario ordena, DIR ratifica con verificación).
-- Rutas: README.md (zona PUL, cross-zone por orden directa), docs/banner.svg, docs/og.png (regenerada), docs/screenshots/* (regeneradas en inglés), src/app/ (páginas, layout.tsx, error/not-found/loading), src/components/arena/ (todos los textos UI), src/hooks/ (toasts), docs/agentes/ROADMAP.md NO se toca (ver detalle).
-- Detalle: traducción directa al EN de (1) README.md completo (título, badges con contador de tests REAL de la suite del día, galería, características, arquitectura, scripts, seguridad, roles v2), (2) banner SVG (aria-label y textos), (3) og.png (HTML diseñado → captura, sin IA), (4) TODO el texto de UI de la app: navegación/shell, panel de mando, arena, agentes, conocimiento, historial, analítica, modelos, atajos, paleta ⌘K, estados vacíos/carga/error, toasts y cabeceras CSV del exportador de campañas que vive en history-panel.tsx (zona IMP-2). Sin sistema de diccionarios: NO es i18n-es-en (esa tarea [L] sigue abierta; aquí se fija el idioma de producto a EN).
-- Fuera de alcance (peticiones que saldrán en el informe vivo): textos generados por el motor/seed (acciones y detalles de eventos, lecciones, nombres/descripciones de escenarios y agentes — src/lib/sim/, zona IMP-1), exportadores de IMP-1 (aggregate-report.ts, event-export.ts, knowledge-export.ts) y sus cabeceras; src/lib/text.ts (compartida) NO se toca: su formato de fecha es numérico (neutro) y sus tests fijan el contrato — cero churn cross-zone innecesario.
-- Sin tocar: src/lib/sim/, src/lib/lab/, src/app/api/, prisma/, scripts/, tests/ (la suite debe seguir íntegra sin cambios salvo desviación).

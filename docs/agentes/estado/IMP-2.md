@@ -1,24 +1,24 @@
 # estado IMP-2 — informe vivo
 
-Actualizado: 2026-10-23 (Europe/Madrid) — sesión 4 cerrada
+Actualizado: 2026-10-23 (Europe/Madrid) — sesión 5 cerrada
 
 ## Hecho (últimas 24 h)
-- deep-links-historial (28e5f98): filtros del historial vivos en la URL — el panel notifica cada cambio vía `onFiltersChange` (primer render excluido; escenario EFECTIVO, un enlace caducado no revive su valor) y /historial reescribe `?resultado=&escenario=&q=` con `history.replaceState` (nativo del App Router, cero navegación). `?q=` nueva (tope 120). Verificado en standalone con navegador real: click/tecla/select actualizan la URL, recarga restaura la vista filtrada (ida y vuelta) y limpiar deja la URL sin parámetros. Puerta: lint 0 · 411/411 · canon 11/11.
-- page-transitions (debc9ba): transición compartida entre rutas — template.tsx server component (cero JS cliente) con utilidad CSS `.anim-route` (curva propia ai-rise-in 0,45 s, fill-mode `backwards` para no dejar transform persistente); desactivada con prefers-reduced-motion a nivel CSS. Puerta: lint 0 · 396/396 · canon 11/11.
-- toasts-coherentes (d7eb4ba): política única de avisos — auto-cierre por tipo (6 s aviso / 9 s error / 12 s resultado; los sin `duration` vivían indefinidamente), puerta única `toastError()` para los 6 destructivos, copys «No se pudo …» y aviso de «exportación lista» cuando el portapapeles está bloqueado. Puerta: lint 0 · 396/396 · canon 11/11.
+- ingles-readme-dashboard (ac4b982 + b140fe3 + 5de82fa): ORDEN DIRECTA DEL PROPIETARIO («README en inglés y contenido del dashboard también en inglés») — cross-zone de README (precedente readme-visual-v2). (1) README íntegro EN con contador de tests REAL 411 en badges y scripts (corrige el 386 que DIR ya había señalado a PUL). (2) UI completa EN (~25 ficheros): shell/nav/Sistema, panel de mando, arena (fases ARMING/ESCALATION…, resultados SUCCESS/BLOCKED…), historial + CSV EN + badges RED WINS/DRAW, ficha + comparativa, conocimiento, analítica, agentes, Model Studio, atajos, paleta ⌘K, toasts, error/404; `html lang=en` + metadatos OG/Twitter EN. (3) banner.svg y og.png regeneradas EN (HTML→captura 1440×704, sin IA). (4) Galería y GIF re-hechos con 2 campañas reales sobre standalone 3112 (GIF 50 s → 8 fps/760 px, 1,2 MB). Verificación visual con navegador real en las 11 capturas. Puerta x2: lint 0 · tsc 0 · 411/411 · canon 11/11.
+- Contenido obsoleto corregido al traducir: el diálogo de lanzamiento decía «8 rondas» — el motor ejecuta 12 (PHASE_ORDER = 6 fases × 2); ahora dice 12 en ambos textos.
+- Decisión documentada: NO es i18n-es-en — se fija el idioma de producto a EN sin sistema de diccionarios; esa tarea [L] del ROADMAP sigue abierta (extractar textos y ofrecer ambos idiomas) y su premisa cambió: DIR decide si la re-acota o la marca obsoleta.
+- text.ts (compartida) intacta: su fecha es numérica (neutra) y sus tests fijan el contrato — el mes EN del archivo se logra con locale en-GB local al componente. Cero churn de tests: 411/411 sin tocar tests/.
 
 ## En curso
-- (nada — sesión cerrada a 3 tareas de zona según protocolo §1.8)
+- Nada (sesión cerrada).
 
 ## Bloqueado
-- (nada) — nota de entorno: el contenedor exporta DATABASE_URL global fuera del repo (riesgo R10); esta sesión la solapó con la ruta absoluta del repo tras regenerar el cliente Prisma (el campo `seed` de IMP-1 faltaba en la BD local: 2 fallos de seed-determinista resueltos sin tocar código).
+- Nada.
 
-## Peticiones a otras zonas
-- PUL: pendientes de la sesión anterior (retirar z_*, ratificar readme-agentes-v2 como cubierto, reconvertir o retirar generate-visuals.mjs).
-- TEST: el e2e historial-filtros no cubre la escritura en URL (sin navegador); la verificación interactiva queda documentada en el commit 28e5f98 y en el claim liberado — ampliable en su zona si lo considera.
-- DIR: ratificar los 3 ticks de la sesión (toasts-coherentes, page-transitions, deep-links-historial).
+## Peticiones
+- A DIR/IMP-1: quedan en español los DATOS DEL MOTOR fuera de mi zona — seed (roles/especialidades de agentes, nombres/descripciones de escenarios y objetivos, codenames «OPERACIÓN …»), textos generados por el motor (action/detail de eventos, lecciones, narrativa), victory.ts (explainWinner, VICTORY_RULE_SHORT/DETAIL, decisiveProgressLabel — visibles en badges y resolution) y los mensajes de error de src/app/api/* (surfacen en toasts). Si el propietario quiere el producto 100 % EN, eso requiere tarea cross-zone de IMP-1 (seed.ts, engine, victory.ts, api) — el UI ya no muestra español propio.
+- A PUL (vigía de contadores): el README ahora dice 411 (real de hoy); recordar mantener badges/contador sincronizados en futuras rondas.
+- A TEST: re-verificar H-005 y los e2e existentes contra la UI EN (los selectores por texto en español de e2e si los hubiera quedarán rotos — no toqué tests/, suite 411/411 verde).
 
-## Propuestas para el roadmap (para DIR)
-- (IMP-2) toasts-acción-deshacer: dar accionable el aviso de autopiloto activado (deshacer → desactivar) — src/hooks/use-arena-state.tsx
-- (IMP-2) deep-links-analitica: mismo patrón replaceState para los filtros de /analitica — src/components/arena/analytics.tsx
-- (PUL) sembrar en .env.example la DATABASE_URL absoluta como comentario de aviso para otros agentes (R10 les afecta igual) — .env.example
+## Propuestas
+- si DIR ratifica el EN como idioma de producto: renombrar rutas visibles (/historial→/history, /agentes→/agents…) en v0.4 con redirects, y traducir seed+motor (petición de arriba).
+- filtros-guardados y enlace-permanente-ronda siguen como siguientes candidatas [S] de zona.
