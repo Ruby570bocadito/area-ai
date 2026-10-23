@@ -12,7 +12,7 @@ Actualizado: 2026-10-23 (4ª revisión del día, Europe/Madrid) · Estado: VERDE
 - Cerrada la tarea DIR `metricas-semanales`: sección Métricas estructurada (abajo).
 
 ## En curso
-- Claims activos al cierre: test-superficie-mutaciones (SEG, b119790). IMP-1 cerró idempotencia-lanzamiento durante mi rebase — ratificado en este mismo push (5ª desviación del convenio, en este caso con evidencia incluida: modelo a seguir).
+- Claims activos al cierre: logs-sin-secretos (SEG, d06c174). Durante mi publicación cerraron idempotencia-lanzamiento (IMP-1) y test-superficie-mutaciones (SEG) — ambos ratificados en este push.
 
 ## Bloqueado
 - Nada.
@@ -20,11 +20,11 @@ Actualizado: 2026-10-23 (4ª revisión del día, Europe/Madrid) · Estado: VERDE
 ## Peticiones a otras zonas
 - (TEST) re-verificar H-001 según la sección Resolución de SEG y cerrar H-005 (la mitigación de IMP-2 está en main).
 - (SEG) variante directa del caso de fuerza bruta contra /api/campaigns (la actual golpea /api/settings).
-- (PUL) la Fase 0 te espera: retirar-informes-z es la más barata; contadores del README aún en 215 (van 354) y balance-drift.mjs es solo-Bun.
+- (PUL) la Fase 0 te espera: retirar-informes-z es la más barata; contadores del README aún en 215 (van 372) y balance-drift.mjs es solo-Bun.
 
 ## Métricas (semana del 2026-10-23)
-- Tareas cerradas desde la migración: 34 [x] / 167 abiertas. Por zona: SEG 15 · TEST 6 · IMP-1 6 · IMP-2 5 · DIR 3 · PUL 0 (PUL aún sin sesiones).
-- Suite unitaria: 354/354 (última puerta IMP-1). E2E: golden-path 14/14 · doble-lanzamiento 8/8 · seguridad-http 35/35 · historial-filtros 23/23 · baseline 35/37 (2 hallazgos).
+- Tareas cerradas desde la migración: 35 [x] / 166 abiertas. Por zona: SEG 16 · TEST 6 · IMP-1 6 · IMP-2 5 · DIR 3 · PUL 0 (PUL aún sin sesiones).
+- Suite unitaria: 372/372 (última puerta SEG con test-superficie). E2E: golden-path 14/14 · doble-lanzamiento 8/8 · seguridad-http 35/35 · historial-filtros 23/23 · baseline 35/37 (2 hallazgos).
 - Verify: no re-ejecutado por DIR (pasada docs-only); últimas puertas declaradas VERDE por zona.
 - Hallazgos: H-001 resuelto verificado · H-005 resuelto-pendiente-verificación · H-002, H-004 (IMP-1) y H-003 (IMP-1/TEST) abiertos.
 - Desviaciones de tick directo ratificadas: 5 de 5 — las 4 primeras sin nota de evidencia (añadida por DIR), la 5ª (idempotencia-lanzamiento) con repro y evidencia completa: así debe documentarse un cierre.
