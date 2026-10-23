@@ -20,6 +20,7 @@ import {
   isMutationAuthorized,
   isSameOrigin,
   rateLimit,
+  readJsonBody,
 } from '../src/lib/net/access'
 
 const TOKEN = 'secreto-de-prueba-1234'
@@ -260,5 +261,71 @@ describe('contentLengthExceeds — tope pre-parse (Ronda 12)', () => {
 
   test('Content-Length no numérico → false sin lanzar', () => {
     expect(contentLengthExceeds(new Headers({ 'content-length': 'abc' }), 1024)).toBe(false)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────
+// readJsonBody — tope aplicado al STREAM (tarea cuerpo-chunked).
+// Cierra la limitación que contentLengthExceeds documentaba: un
+// cuerpo chunked sin Content-Length ya no se parsea íntegro.
+// ─────────────────────────────────────────────────────────────
+
+function requestWithStreamBody(chunks: string[], headers: Record<string, string> = {}): Request {
+  const encoder = new TextEncoder()
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      for (const c of chunks) controller.enqueue(encoder.encode(c))
+      controller.close()
+    },
+  })
+  return new Request('http://localhost/api/test', {
+    method: 'POST',
+    body: stream,
+    duplex: 'half',
+    headers,
+  } as RequestInit)
+}
+
+describe('readJsonBody — tope de stream (cuerpo-chunked)', () => {
+  test('chunked dentro del tope → parsea el JSON completo', async () => {
+    const req = requestWithStreamBody(['{"a":', '1}'])
+    const res = await readJsonBody<{ a: number }>(req, 1024)
+    expect(res.ok).toBe(true)
+    if (res.ok) expect(res.body.a).toBe(1)
+  })
+
+  test('chunked que supera el tope → too-large SIN parsear todo', async () => {
+    const big = 'x'.repeat(600)
+    const req = requestWithStreamBody([big, big, big], { 'transfer-encoding': 'chunked' }) // 1800 B > 1024
+    const res = await readJsonBody<unknown>(req, 1024)
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.reason).toBe('too-large')
+  })
+
+  test('Content-Length declarado sobre el tope → too-large vía rápida', async () => {
+    const req = requestWithStreamBody(['{"a":1}'], { 'content-length': '99999' })
+    const res = await readJsonBody<unknown>(req, 1024)
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.reason).toBe('too-large')
+  })
+
+  test('JSON inválido → invalid sin lanzar', async () => {
+    const req = requestWithStreamBody(['{"a":'])
+    const res = await readJsonBody<unknown>(req, 1024)
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.reason).toBe('invalid')
+  })
+
+  test('sin cuerpo → objeto vacío sin lanzar', async () => {
+    const res = await readJsonBody<Record<string, never>>(new Request('http://localhost/api/test', { method: 'POST' }), 1024)
+    expect(res.ok).toBe(true)
+    if (res.ok) expect(Object.keys(res.body).length).toBe(0)
+  })
+
+  test('exactamente en el tope → permitido (el corte es al superarlo)', async () => {
+    const payload = JSON.stringify({ a: 'y'.repeat(1014) }) // 1024 bytes exactos aprox.
+    const req = requestWithStreamBody([payload])
+    const res = await readJsonBody<{ a: string }>(req, payload.length)
+    expect(res.ok).toBe(true)
   })
 })

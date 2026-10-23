@@ -4,7 +4,7 @@ import { db } from '@/lib/db'
 import {
   isMutationAuthorized,
   isSameOrigin,
-  contentLengthExceeds,
+  readJsonBody,
   rateLimit,
   clientKey,
 } from '@/lib/net/access'
@@ -60,9 +60,15 @@ export async function POST(req: NextRequest) {
       )
     }
     // Tope de cuerpo pre-parse (hallazgo Ronda 12): el payload legítimo es
-    // { scenarioId } — 4 KB es un orden de magnitud holgado.
-    if (contentLengthExceeds(req.headers, 4096)) {
-      return NextResponse.json({ ok: false, error: 'Cuerpo demasiado grande' }, { status: 413 })
+    // { scenarioId } — 4 KB es un orden de magnitud holgado. readJsonBody
+    // acota TAMBIÉN las peticiones chunked sin Content-Length (tarea
+    // cuerpo-chunked del ROADMAP), leyendo el stream con tope.
+    const parsed = await readJsonBody<{ scenarioId?: string }>(req, 4096)
+    if (!parsed.ok) {
+      if (parsed.reason === 'too-large') {
+        return NextResponse.json({ ok: false, error: 'Cuerpo demasiado grande' }, { status: 413 })
+      }
+      // sin cuerpo o JSON inválido → escenario aleatorio (comportamiento previo)
     }
     if (!isMutationAuthorized(req.headers)) {
       return NextResponse.json(
@@ -78,13 +84,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    let scenarioId: string | undefined
-    try {
-      const body = (await req.json()) as { scenarioId?: string }
-      scenarioId = body?.scenarioId
-    } catch {
-      // sin body → escenario aleatorio
-    }
+    const scenarioId = parsed.ok ? parsed.body?.scenarioId : undefined
 
     const campaign = await startCampaign(scenarioId)
     return NextResponse.json({ ok: true, campaignId: campaign.id })

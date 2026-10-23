@@ -117,9 +117,9 @@ export function isSameOrigin(headers: Headers): boolean {
 // completo en memoria (`req.json()`) antes de cualquier validación de
 // tamaño: un cliente podía POSTear cientos de MB/GB y agotar la memoria
 // del proceso único. Con Content-Length presente se rechaza de entrada;
-// limitación documentada: peticiones chunked sin Content-Length no se
-// pueden acotar sin consumir el stream, desproporcionado para el modelo
-// de despliegue de proceso único del proyecto.
+// las peticiones chunked sin Content-Length se acotan al consumir el
+// stream con `readJsonBody` (abajo), que cierra la limitación que este
+// módulo tenía documentada.
 // ─────────────────────────────────────────────────────────────
 
 export function contentLengthExceeds(headers: Headers, maxBytes: number): boolean {
@@ -127,6 +127,62 @@ export function contentLengthExceeds(headers: Headers, maxBytes: number): boolea
   if (!raw) return false // chunked / sin longitud: se acota tras el parseo
   const n = Number(raw)
   return Number.isFinite(n) && n > maxBytes
+}
+
+// ─────────────────────────────────────────────────────────────
+// Lectura del cuerpo JSON con tope APLICADO AL STREAM.
+//
+// (Tarea cuerpo-chunked del ROADMAP) `contentLengthExceeds` acota
+// solo cuando el cliente declara Content-Length; las peticiones
+// `chunked` (Transfer-Encoding: chunked, sin esa cabecera) se
+// parseaban íntegras en memoria, y la limitación quedó documentada
+// en el README como no acotable "sin consumir el stream". Este
+// ayudante consume el stream EXACTAMENTE con ese tope: acumula
+// trozos hasta maxBytes y, al superarlo, cancela la lectura y
+// rechaza — un cuerpo chunked de gigas ya no puede agotar la
+// memoria del proceso único. El chequeo de Content-Length se
+// mantiene como vía rápida (rechaza antes de tocar el stream).
+// ─────────────────────────────────────────────────────────────
+
+export type BodyParseResult<T> =
+  | { ok: true; body: T }
+  | { ok: false; reason: 'too-large' | 'invalid' }
+
+export async function readJsonBody<T>(req: Request, maxBytes: number): Promise<BodyParseResult<T>> {
+  // Vía rápida: Content-Length presente y por encima del tope.
+  if (contentLengthExceeds(req.headers, maxBytes)) return { ok: false, reason: 'too-large' }
+
+  const reader = req.body?.getReader()
+  if (!reader) return { ok: true, body: {} as T } // sin cuerpo → objeto vacío
+
+  const chunks: Uint8Array[] = []
+  let total = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    total += value.byteLength
+    if (total > maxBytes) {
+      try {
+        await reader.cancel() // deja de consumir: el socket no acumula más
+      } catch {
+        // cancel puede rechazar si el cliente ya cortó; indiferente aquí
+      }
+      return { ok: false, reason: 'too-large' }
+    }
+    chunks.push(value)
+  }
+
+  const buf = new Uint8Array(total)
+  let offset = 0
+  for (const c of chunks) {
+    buf.set(c, offset)
+    offset += c.byteLength
+  }
+  try {
+    return { ok: true, body: JSON.parse(new TextDecoder().decode(buf)) as T }
+  } catch {
+    return { ok: false, reason: 'invalid' }
+  }
 }
 
 // ─────────────────────────────────────────────────────────────

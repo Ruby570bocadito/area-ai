@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProviderConfig } from '@/lib/sim/provider-config'
 import { classifyTarget, isLocalRequest } from '@/lib/net/target-guard'
-import { isMutationAuthorized, isSameOrigin, contentLengthExceeds, rateLimit, clientKey } from '@/lib/net/access'
+import { isMutationAuthorized, isSameOrigin, readJsonBody, rateLimit, clientKey } from '@/lib/net/access'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,10 +29,14 @@ export async function POST(req: NextRequest) {
       )
     }
     // Tope de cuerpo pre-parse (hallazgo Ronda 12): 16 KB holgados para
-    // baseUrl + apiKey.
-    if (contentLengthExceeds(req.headers, 16384)) {
+    // baseUrl + apiKey. readJsonBody acota TAMBIÉN las peticiones chunked
+    // sin Content-Length (tarea cuerpo-chunked del ROADMAP), leyendo el
+    // stream con tope. JSON inválido → {} como antes (campos opcionales).
+    const parsed = await readJsonBody<{ baseUrl?: string; apiKey?: string }>(req, 16384)
+    if (!parsed.ok && parsed.reason === 'too-large') {
       return NextResponse.json({ ok: false, error: 'Cuerpo demasiado grande' }, { status: 413 })
     }
+    const body = parsed.ok ? parsed.body : {}
     // Rate limit antes de la verificación del token (hallazgo Ronda 11:
     // fuerza bruta de ADMIN_TOKEN sin techo en este endpoint). Mismo
     // bucket `admin:` que /api/settings — los intentos se comparten.
@@ -48,11 +52,6 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       )
     }
-    const body = (await req.json().catch(() => ({}))) as {
-      baseUrl?: string
-      apiKey?: string
-    }
-
     let baseUrl = body.baseUrl?.replace(/\/$/, '')
     let apiKey = body.apiKey
 

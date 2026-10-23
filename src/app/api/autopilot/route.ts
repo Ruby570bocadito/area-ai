@@ -3,7 +3,7 @@ import { getAutopilot, setAutopilot } from '@/lib/sim/autopilot'
 import {
   isMutationAuthorized,
   isSameOrigin,
-  contentLengthExceeds,
+  readJsonBody,
   rateLimit,
   clientKey,
 } from '@/lib/net/access'
@@ -47,14 +47,18 @@ export async function POST(req: NextRequest) {
     }
     // Tope de cuerpo pre-parse (hallazgo Ronda 12): el payload legítimo es
     // un booleano JSON; cualquier cuerpo mayor se rechaza antes de parsear.
-    if (contentLengthExceeds(req.headers, 1024)) {
-      return NextResponse.json({ ok: false, error: 'Cuerpo demasiado grande' }, { status: 413 })
+    // readJsonBody acota TAMBIÉN las peticiones chunked sin Content-Length
+    // (tarea cuerpo-chunked del ROADMAP), leyendo el stream con tope.
+    const parsed = await readJsonBody<{ enabled?: unknown }>(req, 1024)
+    if (!parsed.ok) {
+      const status = parsed.reason === 'too-large' ? 413 : 400
+      return NextResponse.json({ ok: false, error: parsed.reason === 'too-large' ? 'Cuerpo demasiado grande' : 'Cuerpo JSON inválido' }, { status })
     }
-    const body = (await req.json().catch(() => ({}))) as { enabled?: unknown }
+    const body = parsed.body
     // Coerción estricta (hallazgo Ronda 12): Boolean('false') era true —
     // la cadena "false" ACTIVABA el modo continuo. La UI envía booleanos
     // reales, así que solo el literal true activa.
-    const enabled = await setAutopilot(body.enabled === true)
+    const enabled = await setAutopilot(body?.enabled === true)
     return NextResponse.json({ ok: true, enabled })
   } catch (error) {
     console.error('[api/autopilot] POST:', error)

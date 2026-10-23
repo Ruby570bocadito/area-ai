@@ -10,6 +10,8 @@
 //      las 4 mutaciones; Origin: null → 403; same-origin y sin Origin pasan.
 //   7. Coerción estricta del autopiloto (Ronda 12): enabled:"false" NO activa.
 //   8. Tope de cuerpo pre-parse (Ronda 12): Content-Length > 1KB en autopilot → 413.
+//   9. Tope de cuerpo CHUNKED (tarea cuerpo-chunked del ROADMAP): 8KB chunked sin
+//      Content-Length en autopilot → 413; chunked pequeño → 200 (legítimo intacto).
 //
 // Uso: bun scripts/security-verify.mjs   (requiere .next/standalone ya construido)
 import { spawn } from 'node:child_process'
@@ -187,6 +189,38 @@ const fatBody = await rawPost('/api/autopilot', {
   'x-admin-token': TOKEN,
 }, JSON.stringify({ enabled: false, junk: 'x'.repeat(3000) }))
 check('cuerpo > 1KB en autopilot → 413 pre-parse', fatBody.status === 413, `status=${fatBody.status}`)
+
+// 9 ── Tope de cuerpo CHUNKED (tarea cuerpo-chunked del ROADMAP): sin
+// Content-Length (node:http aplica Transfer-Encoding: chunked al escribir
+// trozos), 8 KB en autopilot (tope 1 KB) → 413 al consumir el stream con tope.
+const chunkedPost = (path, headers, chunks) =>
+  new Promise((resolveP) => {
+    const req = httpRequest(
+      { host: '127.0.0.1', port: PORT, path, method: 'POST', headers },
+      (res) => {
+        let data = ''
+        res.on('data', (c) => (data += c))
+        res.on('end', () => resolveP({ status: res.statusCode, body: data, te: res.headers['transfer-encoding'] }))
+      }
+    )
+    req.on('error', (e) => resolveP({ status: 0, body: String(e) }))
+    for (const c of chunks) req.write(c)
+    req.end()
+  })
+const chunkedFat = await chunkedPost('/api/autopilot', {
+  host: '127.0.0.1:' + PORT,
+  'content-type': 'application/json',
+  'x-admin-token': TOKEN,
+}, ['{"enabled":false,"junk":"', 'x'.repeat(4096), 'x'.repeat(4096), '"}'])
+check('cuerpo chunked 8KB sin Content-Length en autopilot → 413 (tope de stream)',
+  chunkedFat.status === 413, `status=${chunkedFat.status} te=${chunkedFat.te}`)
+const chunkedOk = await chunkedPost('/api/autopilot', {
+  host: '127.0.0.1:' + PORT,
+  'content-type': 'application/json',
+  'x-admin-token': TOKEN,
+}, ['{"enabled":', 'false}'])
+check('cuerpo chunked pequeño → 200 (cliente legítimo intacto)',
+  chunkedOk.status === 200 && /"enabled":false/.test(chunkedOk.body), `status=${chunkedOk.status}`)
 
 // 4 ── Tope de tamaño → 413
 const huge = 'x'.repeat(3000)

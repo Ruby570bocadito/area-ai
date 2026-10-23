@@ -5,7 +5,7 @@ import {
   maskKey,
 } from '@/lib/sim/provider-config'
 import { classifyTarget, isLocalRequest } from '@/lib/net/target-guard'
-import { isMutationAuthorized, isSameOrigin, contentLengthExceeds, rateLimit, clientKey } from '@/lib/net/access'
+import { isMutationAuthorized, isSameOrigin, readJsonBody, rateLimit, clientKey } from '@/lib/net/access'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,12 +45,20 @@ export async function POST(req: NextRequest) {
       )
     }
     // Tope de cuerpo pre-parse (hallazgo Ronda 12): los topes de campo
-    // (413 abajo) actúan DESPUÉS de req.json() — sin este control, un
-    // cuerpo de cientos de MB se parseaba íntegro en memoria. 16 KB cubre
-    // con holgura los máximos de baseUrl+apiKey+model.
-    if (contentLengthExceeds(req.headers, 16384)) {
-      return NextResponse.json({ ok: false, error: 'Cuerpo demasiado grande' }, { status: 413 })
+    // (413 abajo) actúan DESPUÉS de parsear — sin este control, un cuerpo
+    // de cientos de MB se parseaba íntegro en memoria. 16 KB cubre con
+    // holgura los máximos de baseUrl+apiKey+model. readJsonBody acota
+    // TAMBIÉN las peticiones chunked sin Content-Length (tarea
+    // cuerpo-chunked del ROADMAP), leyendo el stream con tope.
+    const parsed = await readJsonBody<{ baseUrl?: string; apiKey?: string; model?: string }>(req, 16384)
+    if (!parsed.ok) {
+      const tooLarge = parsed.reason === 'too-large'
+      return NextResponse.json(
+        { ok: false, error: tooLarge ? 'Cuerpo demasiado grande' : 'Cuerpo JSON inválido' },
+        { status: tooLarge ? 413 : 400 }
+      )
     }
+    const body = parsed.body
     // Rate limit ANTES de la verificación del token (hallazgo Ronda 11):
     // con ADMIN_TOKEN definido, este endpoint era el único de mutación sin
     // límite — un atacante podía probar tokens sin techo. 30/min es
@@ -67,12 +75,6 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       )
     }
-    const body = (await req.json()) as {
-      baseUrl?: string
-      apiKey?: string
-      model?: string
-    }
-
     if (!body.baseUrl || !body.model) {
       return NextResponse.json(
         { ok: false, error: 'baseUrl y model son obligatorios' },
