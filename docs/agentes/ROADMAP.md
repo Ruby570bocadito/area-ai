@@ -40,7 +40,7 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 - [x] (IMP-1) tests-progresion-conocimiento — [M] tests de `progression.ts`, `knowledge-score.ts` y `provider-config.ts` — src/lib/sim/, tests/
 - [x] (IMP-2) estados-error-carga — [M] añadir `loading.tsx`, `error.tsx` y `not-found.tsx` (global y por ruta principal) con estilo coherente — src/app/
 - [x] (IMP-2) skeletons-polling — [M] esqueletos mientras `/api/state` carga por primera vez y estado "sin conexión / reintentando" cuando el sondeo falla — src/hooks/use-arena-state.tsx, src/components/arena/
-- [ ] (TEST) baseline-e2e — [M] primera pasada completa por las 4 personas mínimas y primeros hallazgos; fijar la línea base de tiempos del README en frío — tests/e2e/, docs/agentes/hallazgos/
+- [x] (TEST) baseline-e2e — [M] primera pasada completa por las 4 personas mínimas y primeros hallazgos; fijar la línea base de tiempos del README en frío — tests/e2e/, docs/agentes/hallazgos/
 
 ---
 
@@ -259,13 +259,13 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 
 Cada sesión rota al menos 4 personas. Suites e2e a construir en `tests/e2e/` (`*.e2e.mjs`):
 
-- [ ] (TEST) e2e-golden-path — [M] instalación desde cero según README, lanzar campaña, ver arena en vivo, ficha final y lecciones archivadas — tests/e2e/
+- [x] (TEST) e2e-golden-path — [M] instalación desde cero según README, lanzar campaña, ver arena en vivo, ficha final y lecciones archivadas — tests/e2e/
 - [ ] (TEST) e2e-historial-filtros — [M] búsqueda con acentos, filtros y deep-links `?resultado=` / `?escenario=` desde analítica — tests/e2e/
 - [ ] (TEST) e2e-exportaciones — [M] CSV/JSON/`.md` íntegros: columnas, codificación, celdas peligrosas y consistencia con la ficha — tests/e2e/
 - [ ] (TEST) e2e-model-studio-mock — [L] servidor local compatible OpenAI como fixture: descarga de catálogo, selección, errores 401/500/timeouts — tests/e2e/fixtures/
 - [ ] (TEST) e2e-degradacion-llm — [M] proveedor caído a mitad de campaña: la campaña continúa en modo determinista y queda reflejado — tests/e2e/
 - [ ] (TEST) e2e-seguridad-http — [M] CSRF (`text/plain`, `Origin: null`), tokens, rate limits, cuerpos grandes y SSRF contra la instancia local — tests/e2e/
-- [ ] (TEST) e2e-doble-lanzamiento — [S] doble clic y peticiones simultáneas de `POST /api/campaigns` — tests/e2e/
+- [x] (TEST) e2e-doble-lanzamiento — [S] doble clic y peticiones simultáneas de `POST /api/campaigns` — tests/e2e/
 - [ ] (TEST) e2e-reinicio-servidor — [M] matar el servidor a mitad de campaña y comprobar la recuperación de huérfanas — tests/e2e/
 - [ ] (TEST) e2e-autopiloto — [M] activar/desactivar, coerción del booleano, respeto de límites — tests/e2e/
 - [ ] (TEST) e2e-entorno-adverso — [M] `LAB_PORT` inválido u ocupado, `DATABASE_URL` relativa, BD ausente o corrupta — tests/e2e/
@@ -274,7 +274,7 @@ Cada sesión rota al menos 4 personas. Suites e2e a construir en `tests/e2e/` (`
 - [ ] (TEST) e2e-movil-visual — [M] capturas a 390 px de todas las páginas y comparación con la línea base — tests/e2e/
 - [ ] (TEST) e2e-accesibilidad — [M] pasada automatizada con herramienta de accesibilidad sobre las páginas principales y registro de hallazgos — tests/e2e/
 - [ ] (TEST) e2e-soak-autopiloto — [M] ejecución prolongada con autopiloto: memoria, crecimiento de BD, errores acumulados — tests/e2e/
-- [ ] (TEST) tiempo-instalacion-readme — [S] medir el tiempo y los fallos de la instalación en frío y registrarlo en el estado — docs/agentes/estado/TEST.md
+- [x] (TEST) tiempo-instalacion-readme — [S] medir el tiempo y los fallos de la instalación en frío y registrarlo en el estado — docs/agentes/estado/TEST.md
 
 ---
 
