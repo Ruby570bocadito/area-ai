@@ -248,8 +248,8 @@ const login = await rawPost('/api/auth', {
 }, JSON.stringify({ token: TOKEN }))
 const setCookie = Array.isArray(login.headers?.['set-cookie']) ? login.headers['set-cookie'][0] : (login.headers?.['set-cookie'] ?? '')
 check('login correcto → 200 + cookie HttpOnly SameSite=Strict Path=/',
-  login.status === 200 && setCookie.includes('admin_token=') && setCookie.includes('HttpOnly') && setCookie.includes('SameSite=Strict') && setCookie.includes('Path=/'),
-  `status=${login.status} cookie=${setCookie.split(';').slice(0, 4).join(';')}`)
+  login.status === 200 && setCookie.includes('admin_token=') && setCookie.includes('HttpOnly') && /samesite=strict/i.test(setCookie) && setCookie.includes('Path=/'),
+  `status=${login.status} cookie=${setCookie.split(';').slice(0, 6).join(';')}`)
 check('cookie local (http) sin Secure — Secure solo en https', !setCookie.includes('Secure'), setCookie.includes('Secure') ? 'contiene Secure (no esperado en http)' : 'sin Secure')
 
 // La cookie fijada por el servidor acredita mutaciones sin cabeceras (camino de la UI)
