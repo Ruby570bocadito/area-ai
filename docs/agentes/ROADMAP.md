@@ -22,7 +22,7 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 
 ## ALTA — hacer primero (Fase 0)
 
-- [ ] (DIR) migracion-protocolo-v2 — [M] publicar PROTOCOLO v2 + OWNERSHIP, crear `claims/ estado/ hallazgos/`, volcar solo los riesgos abiertos a este archivo — docs/agentes/
+- [x] (DIR) migracion-protocolo-v2 — [M] publicar PROTOCOLO v2 + OWNERSHIP, crear `claims/ estado/ hallazgos/`, volcar solo los riesgos abiertos a este archivo — docs/agentes/
 - [ ] (PUL) retirar-informes-z — [S] borrar `docs/agentes/z_*` (68 archivos) tras la migración del Director — docs/agentes/
 - [ ] (PUL) congelar-worklog — [S] `worklog.md`: comprobar referencias, borrar o dejar como histórico sin más entradas; quitar firmas de asistente y el nombre antiguo "AEGIS ARENA" — worklog.md
 - [ ] (PUL) readme-agentes-v2 — [S] sustituir la tabla "Agentes del proyecto" por los 6 roles y rutas nuevas — README.md
