@@ -58,16 +58,23 @@ const check = (name, ok, extra = '') => {
 
 console.log('puerto de verificación:', PORT, PORT === 3105 ? '(defecto)' : '(SECURITY_VERIFY_PORT)')
 
-// 1 ── Cabeceras de seguridad
+// 1 ── Cabeceras de seguridad (tarea cabeceras-extra: COOP/CORP en todas las
+//      respuestas y Cache-Control: no-store en la API de datos)
 for (const path of ['/', '/api/state']) {
   const res = await fetch(`${BASE}${path}`)
   const xcto = res.headers.get('x-content-type-options')
   const xfo = res.headers.get('x-frame-options')
   const rp = res.headers.get('referrer-policy')
   const pp = res.headers.get('permissions-policy')
-  check(`cabeceras en ${path}`, xcto === 'nosniff' && xfo === 'SAMEORIGIN' && rp === 'strict-origin-when-cross-origin' && Boolean(pp),
-    `nosniff=${xcto} xfo=${xfo} rp=${rp} pp=${pp ? 'sí' : 'no'}`)
+  const coop = res.headers.get('cross-origin-opener-policy')
+  const corp = res.headers.get('cross-origin-resource-policy')
+  check(`cabeceras en ${path}`, xcto === 'nosniff' && xfo === 'SAMEORIGIN' && rp === 'strict-origin-when-cross-origin' && Boolean(pp)
+    && coop === 'same-origin' && corp === 'same-origin',
+    `nosniff=${xcto} xfo=${xfo} rp=${rp} pp=${pp ? 'sí' : 'no'} coop=${coop} corp=${corp}`)
 }
+const apiCache = await fetch(`${BASE}/api/state`)
+check('Cache-Control: no-store en /api/state (datos vivos sin caché)',
+  /no-store/.test(apiCache.headers.get('cache-control') ?? ''), `cache-control=${apiCache.headers.get('cache-control')}`)
 
 const authHeaders = (extra = {}) => ({ 'x-admin-token': TOKEN, ...extra })
 
