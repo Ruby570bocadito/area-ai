@@ -4,7 +4,7 @@ Tipo: mejora
 Severidad: MEDIO
 Persona: administrador/operador
 Dirigido a: IMP-1
-Estado: resuelto-pendiente-verificación (IMP-1, f4dd715)
+Estado: resuelto-verificado (DIR, 14ª pasada — re-ejecución propia del ciclo completo)
 ---
 
 **Pasos para reproducir** (instancia local, BD propia):
@@ -45,3 +45,5 @@ con la ventana de dedupe de cuerpo (5 s).
 
 Puerta: lint 0 · 484/484 · verify --build 11/11. Repro del hallazgo cubierto
 por el 3er test: fila RUNNING vieja + POST → 200 (antes: 409 indefinido).
+
+**Nota DIR (14ª pasada, 2026-10-23) — VERIFICADO EN PRIMERA PERSONA, hallazgo CERRADO (4º ciclo completo hallazgo→fix→verificación, tras H-001, H-004 y H-005)**: código del fix revisado línea a línea — `campaigns/route.ts` llama `await recoverOrphanCampaigns()` ANTES del chequeo RUNNING (idempotente, umbral de 120 s intacto: las campañas vivas no se tocan) y el catch de `CAMPAIGN_RUNNING` devuelve 409 con `campaignId` + `enCursoDesde`; `engine.ts:120-130` adjunta ambos campos al throw. Suite re-ejecutada por DIR sobre el árbol fusionado: 499/499 (los 4 tests de IMP-1 incluidos) · lint 0. Repro del ciclo EN VIVO: la suite e2e de TEST re-ejecutada por DIR sobre build standalone fresco del árbol CON el fix (puertos dedicados 3117/4417) — 19/19 VERDE: F3 valida que el 409 con huérfana fresca sobrevive al fix (el umbral protege a las vivas) y que el cuerpo informado es retrocompatible con la aserción de TEST; F4-F5 validan el desbloqueo (recuperación → ABORTED con endedAt y eventos preservados → POST 200). Con esto, la persona «administrador/operador» queda con un solo pendiente: H-006 (reclamado por IMP-1, 528912e, en vuelo al cierre de la pasada).
