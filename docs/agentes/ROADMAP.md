@@ -65,7 +65,7 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 ### Panel de mando — `src/app/page.tsx`, `control-center.tsx`
 - [ ] (IMP-2) tarjetas-escenario-ricas — [M] cada escenario muestra dificultad, duración estimada, objetivos y un mini-mapa de su red antes de lanzar — src/components/arena/control-center.tsx
 - [ ] (IMP-2) configurar-campana — [L] configuración avanzada previa al lanzamiento: preset de rondas (rápida 6 / estándar 12), selección de agentes por equipo, semilla, motor LLM o determinista — src/components/arena/control-center.tsx (requiere API de IMP-1)
-- [ ] (IMP-2) confirmacion-lanzamiento — [S] confirmación ligera y protección contra doble clic al lanzar campaña — src/components/arena/control-center.tsx
+- [x] (IMP-2) confirmacion-lanzamiento — [S] confirmación ligera y protección contra doble clic al lanzar campaña — src/components/arena/control-center.tsx
 - [ ] (IMP-2) kpis-panel — [M] KPIs clicables (victorias RED/BLUE, racha, conocimiento nuevo 14 d, tiempo medio) con deep-links a historial/analítica — src/app/page.tsx
 - [ ] (IMP-2) atajo-ultima-campana — [S] tarjeta "continuar donde lo dejaste" con la última campaña y su resultado — src/app/page.tsx
 
