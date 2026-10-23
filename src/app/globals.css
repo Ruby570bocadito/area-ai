@@ -447,5 +447,9 @@ h1, h2, h3 { text-wrap: balance; }
   .anim-float, .pulse-dot, .conic-ring,
   .attack-beam, .flow-line, .svg-pulse-soft { animation: none !important; }
   .scan-sweep::before, .marquee-track, .radar-sweep,
-  .map-scan, .shine-sweep::after { animation: none !important; }
+  .map-scan, .shine-sweep::after, .anim-rise { animation: none !important; }
+  /* transiciones de desplazamiento decorativas: se quedan instantáneas */
+  .shine-sweep::after { transition: none !important; }
+  .scenario-media img,
+  .group:hover .scenario-media img { transition: none !important; }
 }

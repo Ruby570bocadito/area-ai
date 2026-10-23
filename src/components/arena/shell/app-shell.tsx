@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, MotionConfig } from 'framer-motion'
 import {
   LayoutDashboard,
   Radio,
@@ -141,7 +141,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const meta = pageMeta(pathname)
 
   return (
-    <div className="flex min-h-screen">
+    /* reducedMotion="user": todas las animaciones de framer-motion (layoutId,
+       entradas, paneles deslizantes) respetan prefers-reduced-motion del
+       sistema; los fundidos de opacidad se mantienen. Los haces, partículas,
+       barridos y NumberFlow se cubren en globals.css y por defecto en NumberFlow. */
+    <MotionConfig reducedMotion="user">
+      <div className="flex min-h-screen">
       {/* Sidebar de escritorio */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[246px] flex-col border-r border-surface-200 bg-white lg:flex">
         <SideNav />
@@ -249,6 +254,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </>
         )}
       </AnimatePresence>
-    </div>
+      </div>
+    </MotionConfig>
   )
 }
