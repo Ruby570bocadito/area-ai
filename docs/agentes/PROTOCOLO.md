@@ -14,7 +14,7 @@ Este documento sustituye al protocolo por rondas anterior. Ante cualquier discre
 4. RECLAMA la tarea (cerrojo):
    - Crea `docs/agentes/claims/<slug-de-la-tarea>.md` con: tu ID, fecha/hora (Europe/Madrid), rutas que vas a tocar.
    - Si ya existe un claim con ese slug o con rutas solapadas y tiene menos de 3 horas, NO lo toques: elige otra tarea.
-   - `git add` solo ese archivo, commit `chore(claim): <slug> (<ID>)`, `git push`.
+   - `git add` solo ese archivo, commit `chore(claim): <slug> (ID)`, `git push`.
    - Si el push es rechazado: `git pull --rebase`, vuelve a mirar claims. Si alguien reclamó antes, elige otra tarea.
 5. Trabaja solo en las rutas reclamadas. Commits pequeños y atómicos, `tipo(ámbito): descripción`
    (tipos: feat, fix, chore, docs, test, refactor). Un commit por ámbito; nunca mezcles feature + limpieza + docs.

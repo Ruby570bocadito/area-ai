@@ -40,6 +40,8 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 - [ ] (IMP-2) skeletons-polling — [M] esqueletos mientras `/api/state` carga por primera vez y estado "sin conexión / reintentando" cuando el sondeo falla — src/hooks/use-arena-state.tsx, src/components/arena/
 - [ ] (TEST) baseline-e2e — [M] primera pasada completa por las 4 personas mínimas y primeros hallazgos; fijar la línea base de tiempos del README en frío — tests/e2e/, docs/agentes/hallazgos/
 
+---
+
 ## IMP-2 — Frontend / UX
 
 ### Global y shell (P1)
@@ -292,6 +294,7 @@ Cada sesión rota al menos 4 personas. Suites e2e a construir en `tests/e2e/` (`
 - **R4 — Acceso:** sin autenticación por defecto (`ADMIN_TOKEN` opt-in) y autopiloto con gasto LLM. No exponer la app a Internet sin proxy con autenticación. Cierre total: modo multiusuario.
 - **R7 — Historia git:** `.env` y BD antiguos en el historial, sin secretos reales conocidos. Cerrar con `escaneo-secretos-historial`.
 - **R10 — `DATABASE_URL`:** variable global del contenedor frente a `.env`; usar siempre ruta absoluta.
+- **R13 — TOCTOU de DNS rebinding en el guard SSRF (riesgo aceptado documentado):** el guard resuelve y valida, pero `fetch` re-resuelve después; la mitigación completa exige fijar la IP resuelta en el punto de uso. No afecta al modelo de despliegue vigente (no expuesto); ver tarea `dns-rebinding-guard`.
 - **R11 / D27 — Artefactos de verificación obsoletos:** build limpio (`rm -rf .next/cache`) en cambios masivos de UI y `security-verify` sobre standalone recién construido (ya recogido en PROTOCOLO §3).
 - **Nuevo — Migraciones:** `db:push --accept-data-loss` puede perder datos; cualquier cambio de esquema con datos reales pasa por migración (`db-push-accept-data-loss`).
 - **Nuevo — Licencia:** falta `LICENSE` (`license-decision`, decide el dueño).
