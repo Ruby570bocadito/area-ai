@@ -47,7 +47,7 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 ### Global y shell (P1)
 - [ ] (IMP-2) tema-claro-oscuro — [L] tema claro además del oscuro con tokens en `globals.css` y `arena-colors.ts`, conmutador persistido, respetar `prefers-color-scheme` — src/app/globals.css, src/lib/arena-colors.ts, src/components/arena/shell/
 - [ ] (IMP-2) accesibilidad-base — [L] auditoría y arreglos: `aria-label` en controles icónicos, foco visible, orden de tabulación, contraste AA, landmarks, `aria-live="polite"` en el feed de eventos — src/components/arena/
-- [ ] (IMP-2) reduced-motion — [M] respetar `prefers-reduced-motion` en framer-motion, partículas, haces del mapa y NumberFlow — src/components/arena/, src/app/globals.css
+- [x] (IMP-2) reduced-motion — [M] respetar `prefers-reduced-motion` en framer-motion, partículas, haces del mapa y NumberFlow — src/components/arena/, src/app/globals.css
 - [ ] (IMP-2) i18n-es-en — [L] extraer textos de UI a diccionarios y ofrecer inglés (los textos están en español en los componentes); `lang` dinámico — src/components/, src/app/layout.tsx
 - [ ] (IMP-2) barra-estado-sistema — [M] indicador permanente de salud (BD, lab, proveedor LLM, modo determinista activo) usando el healthcheck `GET /api` — src/components/arena/shell/app-shell.tsx
 - [ ] (IMP-2) paleta-comandos-v2 — [M] ampliar `⌘K`: ir a campaña por id, lanzar escenario concreto, activar autopiloto, cambiar tema/idioma, buscar lecciones y agentes — src/components/arena/command-palette.tsx
