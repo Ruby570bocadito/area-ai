@@ -1,31 +1,31 @@
 # estado/DIR — Director
 
-Actualizado: 2026-10-23 (10ª revisión del día, Europe/Madrid) · Estado: VERDE
+Actualizado: 2026-10-23 (11ª revisión del día, Europe/Madrid) · Estado: VERDE
 
 ## Hecho (últimas 24 h)
-- Remoto SIN commits nuevos al ABRIR la ronda (0397994) — los 4 claims estaban en curso. Ronda dedicada a tareas propias de DIR (dos cerradas) + una ratificación sobre la marcha (ver abajo).
-- `revisar-zonas` CERRADA (10ª pasada): inventario completo de src/ tras el refactor del engine — los 4 módulos engine-* caen en src/lib/sim/ (IMP-1, sin cambio de zona); reactbits/shell/layout y scenario-art bajo src/components/ (IMP-2); único hueco detectado y cerrado en OWNERSHIP: docs/banner.svg → IMP-2 (productor; og.png ya vivía en public/). Regla aclarada: refactor de código propio = dueño de la zona (precedente refactor-engine-fases); limpieza transversal = PUL.
-- `aprobar-docs-nuevos` CERRADA: LOS TRES documentos proceden con condiciones, anotadas en sus tareas de PUL — ARQUITECTURA.md (momento idóneo tras el split del engine; contenido mínimo y verificable), CONTRIBUTING.md (alcance reducido, sin duplicar el protocolo multiagente), CHANGELOG.md (generado desde commits convencionales por tag de hito, conecta con sello-de-hito). El visto bueno desbloquea cuando PUL arranque; no crea urgencia.
-- Idea P3 nueva: contenido-motor-en-ingles — la orden del propietario fija el idioma de producto a EN en UI/README, pero el contenido generado por el motor sigue en ES (escenarios, agentes, eventos, lecciones): producto mezclado; alineación futura en zona IMP-1 con tests de contrato de idioma.
-- `e2e-volumen` (TEST) RATIFICADO en la misma ronda (16ª desviación — tick directo con evidencia completa): TEST aterrizó la suite en paralelo durante la publicación (75a769c) y DIR la re-ejecutó sobre main — 27/27 OK en primera persona (1 000 campañas y 12 000 eventos, latencias p95 dentro de umbral, exportadores reales, deep-links con conteo exacto, apagado por PID). Decisión de arnés destacable: siembra por createMany SIN depender del motor, justo cuando IMP-1 lo refactoriza — 8ª suite e2e determinista.
-- Higiene comprobada: al cierre quedan EXACTAMENTE los 3 claims activos en docs/agentes/claims/ (los liberados se retiran — correcto); .agent-tmp/ en .gitignore (entrada duplicada, menor — para PUL).
+- Remoto con 1 commit nuevo al abrir (905a44a): TEST reclamó `e2e-actualizacion-bd` — diseño de arnés SÓLIDO (schema anterior reconstruido DESDE GIT, 3 fases: arranque sin migrar → recuperación por el camino documentado → app actualizada; apagado por PID). Sin aterrizajes de los 3 claims en vuelo.
+- Ronda dedicada a la tarea permanente `cobertura-personas` con VERIFICACIÓN EN PRIMERA PERSONA del estado de H-004 (persona «usuario torpe»): sigue VIGENTE en 2 de 3 casos — `scenarioId` inexistente degrada a escenario aleatorio EN SILENCIO (engine.ts:141, `find(...) ?? rand(scenarios)`) y JSON malformado también degrada (campaigns/route.ts); solo seed/determinista devuelven 400 (seed-determinista). Nota DIR añadida al hallazgo: el argumento «promesa rota» que el propio código esgrime para la semilla aplica TEXTUAL al escenario.
+- Priorización de personas publicada (anotada en la tarea): 1º usuario torpe (H-004 restante — barato: el patrón acceptSeed ya existe) · 2º administrador/operador (H-002 + e2e-reinicio-servidor abierto) · 3º móvil/accesibilidad (bloqueadas por browser-e2e-ci → ci-basico de PUL).
+- Idea P3 nueva: healthcheck-esquema-bd — el ping de GET /api solo hace db.setting.count(): con BD de versión anterior reporta db:up VERDE (observado por TEST en la fase 1 de su claim, verificado por DIR en el código, src/app/api/route.ts); sonda barata contra columna reciente → P2022 = schema 'outdated'. Nace de evidencia de TEST — tercer ciclo propuesta de agent → idea DIR.
+- Puerta re-ejecutada por DIR sobre main: lint 0 · 411/411 (14 487 expect) — pulso VERDE sin aterrizajes.
 
 ## En curso
-- Claims activos (3, sin aterrizar): ssrf-ip-pinning (SEG, 5e3f0df) · ingles-readme-dashboard (IMP-2, 510f20d — ORDEN DIRECTA DEL PROPIETARIO) · dificultad-adaptativa (IMP-1, 6f9f07e).
-- Próxima pasada: eje = verificación de la traducción al inglés cuando aterrice (patrón de la 7ª: el propietario ordena, DIR ratifica con verificación — cuidar que el alcance respete el fuera-de-scope del claim: textos del motor y exportadores de IMP-1, text.ts intacto).
+- Claims activos (4): ssrf-ip-pinning (SEG, 5e3f0df) · ingles-readme-dashboard (IMP-2, 510f20d — ORDEN DIRECTA DEL PROPIETARIO) · dificultad-adaptativa (IMP-1, 6f9f07e) · e2e-actualizacion-bd (TEST, 905a44a).
+- Próxima pasada: eje = verificación de la traducción al inglés cuando aterrice (patrón de la 7ª: el propietario ordena, DIR ratifica con verificación — cuidar el fuera-de-scope del claim: textos del motor y exportadores de IMP-1, text.ts intacto, sin sistema de diccionarios).
 
 ## Bloqueado
-- v0.2.x: quedan 6 ALTA de PUL + caddy-validate-ci + gitleaks-ci. PUL: 1 tarea cerrada en total (y la cubrió IMP-2). Los 3 documentos aprobados hoy se suman a su cola.
+- v0.2.x: quedan 6 ALTA de PUL + caddy-validate-ci + gitleaks-ci. PUL: 1 tarea cerrada en total (y la cubrió IMP-2). Los 3 documentos aprobados ayer-ronda siguen esperando a que PUL arranque.
 
 ## Peticiones a otras zonas
-- (PUL) tres cargas menores añadidas: contador README/badges (386→411, ojo al choque con el claim de IMP-2), decidir generate-visuals.mjs, y entrada duplicada de .agent-tmp en .gitignore.
-- (IMP-2) cuando publiques el inglés: cita hashes de main y la suite del árbol vigente (411), como acordado — el claim está bien documentado, sigue así.
-- (TODAS) los documentos nuevos ya tienen visto bueno condicionado de DIR: ARQUITECTURA/CONTRIBUTING/CHANGELOG pueden entrar cuando PUL arranque, sin pedir permiso de nuevo (condiciones en el ROADMAP).
+- (IMP-1) H-004 restante es el pendiente #1 de la persona «usuario torpe»: 400 si `scenarioId` no existe (el fallback aleatorio que quede EXPLÍCITO) y 400 en JSON malformado — el patrón acceptSeed es el precedente y el molde; cabe dentro de dificultad-adaptativa o justo después.
+- (IMP-2) cuando publiques el inglés: cita hashes de main y la suite del árbol vigente (411), como acordado.
+- (TEST) tu observación de observabilidad del claim (healthcheck ciego al esquema) ya es idea P3 en el ROADMAP (healthcheck-esquema-bd) — buena caza.
+- (PUL) contador README/badges: ojo al choque con el claim de IMP-2 (lo reescribe en EN con contador real).
 
 ## Métricas (semana del 2026-10-23)
 - Tareas cerradas desde la migración: 56 [x] / 147 abiertas. Por zona: SEG 20 · IMP 18 (IMP-2 11, IMP-1 7) · TEST 10 · DIR 6 · PUL 2.
-- Suite unitaria: 411/411 (última puerta DIR: 9ª pasada; esta ronda docs-only + re-ejecución de la suite de volumen) · canon vigente 15 casos. E2E: 8 suites deterministas (14+8+35+23+24+35+27+27).
-- Hallazgos: H-001 y H-005 resueltos verificados · H-002, H-003 y H-004 abiertos.
+- Suite unitaria: 411/411 (última puerta DIR: 11ª pasada, esta ronda) · canon vigente 15 casos. E2E: 8 suites deterministas (14+8+35+23+24+35+27+27) + 1 en reclamación (actualizacion-bd).
+- Hallazgos: H-001 y H-005 resueltos verificados · H-002, H-003 y H-004 abiertos (H-004 re-verificado hoy: vigente 2/3 casos).
 - Desviaciones de tick directo: 16 de 16 ratificadas. Correcciones de cita acumuladas: 5 a IMP-2 + 1 obsolescencia a IMP-1.
 
 ## Notas de proceso
