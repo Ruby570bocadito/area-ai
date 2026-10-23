@@ -18,6 +18,7 @@ import {
   Swords,
 } from 'lucide-react'
 import { normalizeText, csvEscapeCell, exportFilename } from '@/lib/text'
+import { useToast } from '@/hooks/use-toast'
 import { EmptyState } from './empty-state'
 import { downloadBlob } from '@/lib/download'
 import { buildAggregateReport } from '@/lib/aggregate-report'
@@ -181,6 +182,7 @@ export function HistoryPanel({
   const [result, setResult] = useState<ResultFilter>(initialResult)
   const [scenario, setScenario] = useState(initialScenario)
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle')
+  const { toast } = useToast()
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -244,8 +246,15 @@ export function HistoryPanel({
       copyTimer.current = setTimeout(() => setCopyState('idle'), 2000)
     } else {
       // Degradación honesta: si el entorno bloquea el portapapeles, el
-      // informe no se pierde — se descarga como el botón Informe.
+      // informe no se pierde — se descarga como el botón Informe. El aviso
+      // explica por qué el botón dice «Descargado» en lugar de «Copiado»
+      // (caso «exportación lista» de la política de toasts).
       exportMarkdown(filtered, filtersDesc)
+      toast({
+        title: 'Informe descargado como archivo',
+        description:
+          'El portapapeles no está disponible en este navegador, así que el informe agregado se ha descargado en Markdown.',
+      })
       setCopyState('error')
       if (copyTimer.current) clearTimeout(copyTimer.current)
       copyTimer.current = setTimeout(() => setCopyState('idle'), 2500)

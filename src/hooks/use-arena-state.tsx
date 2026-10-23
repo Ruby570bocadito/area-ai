@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { useToast } from '@/hooks/use-toast'
+import { useToast, toastError, RESULTADO_MS } from '@/hooks/use-toast'
 import { ToastAction } from '@/components/ui/toast'
 import { explainWinner } from '@/lib/victory'
 import type { StateResponse } from '@/lib/api-types'
@@ -67,6 +67,7 @@ export function useArenaState() {
               Ver historial
             </ToastAction>
           ),
+          duration: RESULTADO_MS,
         })
         return
       }
@@ -82,6 +83,7 @@ export function useArenaState() {
               Ver ficha
             </ToastAction>
           ),
+          duration: RESULTADO_MS,
         })
         return
       }
@@ -96,7 +98,7 @@ export function useArenaState() {
             Ver ficha
           </ToastAction>
         ),
-        duration: 12000,
+        duration: RESULTADO_MS,
       })
     },
     [router, toast]
@@ -164,11 +166,7 @@ export function useArenaState() {
         await load()
         router.push('/arena')
       } catch (e) {
-        toast({
-          title: 'No se pudo iniciar la campaña',
-          description: e instanceof Error ? e.message : 'Error desconocido',
-          variant: 'destructive',
-        })
+        toastError('No se pudo iniciar la campaña', e)
       }
     },
     [load, toast, router]
@@ -192,11 +190,7 @@ export function useArenaState() {
         })
         await load()
       } catch (e) {
-        toast({
-          title: 'No se pudo cambiar el modo',
-          description: e instanceof Error ? e.message : 'Error desconocido',
-          variant: 'destructive',
-        })
+        toastError('No se pudo cambiar el modo', e)
       }
     },
     [load, toast]

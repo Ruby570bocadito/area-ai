@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useToast } from '@/hooks/use-toast'
+import { useToast, toastError } from '@/hooks/use-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SiDeepseek, SiOllama, SiHuggingface } from 'react-icons/si'
 import { FaRobot, FaRocket, FaFire } from 'react-icons/fa6'
@@ -100,7 +100,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
 
   const fetchModels = async () => {
     if (!baseUrl.trim()) {
-      toast({ title: 'Falta la Base URL', description: 'Elige un proveedor o escribe la URL compatible OpenAI.', variant: 'destructive' })
+      toastError('Falta la Base URL', 'Elige un proveedor o escribe la URL compatible OpenAI.')
       return
     }
     setFetching(true)
@@ -122,11 +122,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
         description: 'Catálogo sincronizado con el proveedor. Selecciona un modelo.',
       })
     } catch (e) {
-      toast({
-        title: 'Error al descargar modelos',
-        description: e instanceof Error ? e.message : 'Error desconocido',
-        variant: 'destructive',
-      })
+      toastError('No se pudo descargar el catálogo', e)
     } finally {
       setFetching(false)
     }
@@ -134,11 +130,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
 
   const save = async () => {
     if (!baseUrl.trim() || !model.trim() || !(apiKey.trim() || settings?.hasApiKey)) {
-      toast({
-        title: 'Configuración incompleta',
-        description: 'Se necesitan Base URL, API key y un modelo seleccionado.',
-        variant: 'destructive',
-      })
+      toastError('Configuración incompleta', 'Se necesitan Base URL, API key y un modelo seleccionado.')
       return
     }
     setSaving(true)
@@ -158,11 +150,7 @@ export function ModelStudioPanel({ onSaved }: { onSaved?: () => void }) {
       await loadSettings()
       onSaved?.()
     } catch (e) {
-      toast({
-        title: 'Error al guardar',
-        description: e instanceof Error ? e.message : 'Error desconocido',
-        variant: 'destructive',
-      })
+      toastError('No se pudo guardar la configuración', e)
     } finally {
       setSaving(false)
     }

@@ -1,6 +1,18 @@
 "use client"
 
 // Inspired by react-hot-toast library
+//
+// ── Política de avisos (toasts-coherentes) ──────────────────────────────
+// · Duración por tipo — todo aviso se cierra solo; el `duration` explícito
+//   del llamador siempre gana sobre el valor por defecto.
+//   AVISO_MS (6 s): confirmaciones de acción (iniciada, autopiloto, guardado…).
+//   ERROR_MS (9 s): errores destructivos — tiempo extra para leer el detalle.
+//   RESULTADO_MS (12 s): fin de campaña — llevan puntuación y acción «Ver ficha».
+// · Copys: los errores usan título «No se pudo …» más el detalle real
+//   (mensaje del servidor o de la excepción); las acciones llevan altText
+//   «Abrir …» («Abrir la ficha de…», «Abrir el historial de…»).
+// · toastError() es la puerta única para los destructivos: aplica variante,
+//   duración ERROR_MS y convierte el detalle (string o Error) en descripción.
 import * as React from "react"
 
 import type {
@@ -10,6 +22,10 @@ import type {
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
+
+export const AVISO_MS = 6000
+export const ERROR_MS = 9000
+export const RESULTADO_MS = 12000
 
 type ToasterToast = ToastProps & {
   id: string
@@ -142,7 +158,7 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
-function toast({ ...props }: Toast) {
+function toast({ duration, variant, ...props }: Toast) {
   const id = genId()
 
   const update = (props: ToasterToast) =>
@@ -156,6 +172,11 @@ function toast({ ...props }: Toast) {
     type: "ADD_TOAST",
     toast: {
       ...props,
+      variant,
+      // Sin duración explícita el aviso se cierra solo según su tipo
+      // (antes vivía indefinidamente hasta ser sustituido o cerrado a mano).
+      duration:
+        duration ?? (variant === "destructive" ? ERROR_MS : AVISO_MS),
       id,
       open: true,
       onOpenChange: (open) => {
@@ -169,6 +190,24 @@ function toast({ ...props }: Toast) {
     dismiss,
     update,
   }
+}
+
+// Puerta única para avisos destructivos: variante, duración ERROR_MS y
+// descripción normalizada (string literal, mensaje de Error o texto estándar
+// de red si no hay nada legible). Los llamadores solo eligen el título.
+function toastError(titulo: string, detalle?: unknown) {
+  const descripcion =
+    typeof detalle === "string" && detalle.trim() !== ""
+      ? detalle.trim()
+      : detalle instanceof Error && detalle.message.trim() !== ""
+        ? detalle.message.trim()
+        : "Motivo desconocido; comprueba la conexión con el motor e inténtalo de nuevo."
+  toast({
+    title: titulo,
+    description: descripcion,
+    variant: "destructive",
+    duration: ERROR_MS,
+  })
 }
 
 function useToast() {
@@ -191,4 +230,4 @@ function useToast() {
   }
 }
 
-export { useToast, toast }
+export { useToast, toast, toastError }
