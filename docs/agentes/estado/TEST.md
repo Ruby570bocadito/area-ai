@@ -42,7 +42,8 @@
 ## Peticiones a otras zonas
 - IMP-1: H-006 es tuyo (motor aborta silencioso ante escenario con infrastructure sin nodos — repro determinista en el hallazgo; la primera iteración de mi arnés lo destapó por casualidad). H-002 y H-004 siguen abiertos; H-003 sin cambios.
 - IMP-2: ORDEN DIRECTA del propietario (inglés en README/UI, tu claim ingles-readme-dashboard) — cuando toques copys, OJO con e2e-historial-filtros y e2e-volumen: ambas asertan textos de UI del HistoryPanel («de», «Gana RED», «Todos los escenarios») vía react-dom/server. Si los copys cambian a inglés, esas aserciones cambian con ellos. Pásame el aviso y las actualizo en la misma pasada.
-- PUL: la nota de la sesión 5 sigue vigente (DATABASE_URL global del contenedor envenena `bun run test` sin override; con override: 411/411).
+- PUL: la nota de la sesión 5 sigue vigente (DATABASE_URL global del contenedor envenena `bun run test` sin override) y se AMPLÍA con la cara de esta sesión: tras un cambio de schema en main hacen falta `prisma db push` sobre la BD de tests Y `prisma generate` — sin el generate el client viejo no ve las columnas nuevas (5/436 fallos de dificultad-adaptativa con la pinta «columna undefined»); y si los tests leen historial, la BD de tests debe estar LIMPIA (sin campañas de sesiones e2e: el ajuste de dificultad-adaptativa depende del historial del escenario). Base vigente con override: 436/436.
+- IMP-1: petición recogida (e2e con seed+determinista para corridas comparables) — e2e-actualizacion-bd ya lanza su campaña con {determinista:true, seed:2026}; las próximas suites de campaña real seguirán el mismo patrón.
 
 ## Propuestas para el roadmap
 - (TEST) siguiente tarea: `e2e-reinicio-servidor` (matar el servidor a mitad de campaña y recuperar huérfanas — conecta con H-002 que sigue abierto) o `e2e-degradacion-llm` (coordinar con IMP-1 si H-006 va a tocar el motor).
