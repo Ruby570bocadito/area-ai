@@ -1,9 +1,26 @@
+// ─────────────────────────────────────────────────────────────
+// engine — orquestador del motor de campaña.
+//
+// Refactor-engine-fases: engine.ts se parte en módulos por
+// concepto SIN cambiar comportamiento:
+//   · engine-rng.ts     — RNG sembrable y semillas por campaña
+//   · engine-select.ts  — selección de agentes y nodos objetivo
+//   · engine-combate.ts — momentum RED, escalas, mapeos de fase
+//                         y fallbacks deterministas del combate
+//   · engine-cierre.ts  — cierre (finalizeCampaign) y fallback
+//                         de lecciones
+// Este fichero conserva la coordinación: arranque de campaña
+// (startCampaign), memoria institucional, bucle de rondas con
+// los ejecutores RED/BLUE contra el laboratorio real y la
+// recuperación de huérfanas. Re-exporta el contrato público
+// histórico para que consumidores y tests no cambien.
+// ─────────────────────────────────────────────────────────────
+
 import { db } from '@/lib/db'
 import { llmJson } from './llm'
 import { ensureSeed } from './seed'
-import { ensureProgressionMigration, levelForXp } from './progression'
+import { ensureProgressionMigration } from './progression'
 import { knowledgeScore } from './knowledge-score'
-import { normalizeLessonCategory, normalizeLessonTags } from './taxonomy'
 import { sanitizeForPrompt } from '@/lib/text'
 import { createLaunchGate } from './launch-lock'
 import {
@@ -12,17 +29,13 @@ import {
   CHAINABLE_PHASES,
   DEFAULT_SEVERITY_BY_PHASE,
   PARTIAL_IMPACT_FACTOR,
-  RED_CHAIN_ON_EXITO,
-  RED_CHAIN_ON_PARCIAL,
   RED_IMPACT_BY_SEVERITY,
 } from './pace'
-import { RED_AGENTS, BLUE_AGENTS } from './roster'
 import {
   PHASE_ORDER,
   PHASE_LABEL,
   type Phase,
   type EventDraft,
-  type LessonDraft,
   type RedDecision,
   type KnowledgeRef,
   type Infrastructure,
@@ -48,147 +61,38 @@ import {
   type OpOutcome,
 } from '@/lib/lab/ops'
 import { SIGNATURE_LABEL, type LabCampaignState, type Signature } from '@/lib/lab/types'
-import { clampProgress, resolveCampaignOutcome } from '@/lib/victory'
+import { clampProgress } from '@/lib/victory'
+import { setEngineSeed, engineRoll, rand, newCampaignSeed } from './engine-rng'
+import { pickAgentForPhase, pickAgentForOp, pickNodeForPhase, type AgentRow } from './engine-select'
+import {
+  accumulateProgress,
+  bestPatchTarget,
+  clamp,
+  defaultSignatureFor,
+  fallbackBlueDetail,
+  fallbackBlueName,
+  fallbackRed,
+  huntHypothesis,
+  redShouldChain,
+  segmentForPhase,
+  sleep,
+} from './engine-combate'
+import { finalizeCampaign } from './engine-cierre'
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
-const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))
+// ── Contrato público de engine.ts (compatibilidad) ─────────
+// Los consumidores (app/api/campaigns, app/api/state) y las
+// suites tests/engine.test.ts y tests/seed-determinista.test.ts
+// importan de aquí; las implementaciones viven en los módulos.
 
-// ─────────────────────────────────────────────────────────────
-// RNG sembrable y ayudantes puros del combate (contrato fijado
-// en tests/engine.test.ts).
-//
-// Sin semilla el motor se comporta exactamente igual que antes
-// (Math.random). Con setEngineSeed(n) todas las tiradas del
-// motor (elección de nodo, momentum RED, turno proactivo de
-// BLUE) pasan por un PRNG determinista: base de campañas
-// reproducibles (seed-determinista) y de esta red de seguridad
-// de tests. Los ayudantes puros se exportan para fijar su
-// contrato sin tener que arrancar una campaña completa.
-// ─────────────────────────────────────────────────────────────
-
-function mulberry32(seed: number): () => number {
-  let a = seed >>> 0
-  return () => {
-    a += 0x6d2b79f5
-    let t = a
-    t = Math.imul(t ^ (t >>> 15), t | 1)
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
-
-let rng: () => number = Math.random
-
-/** Fija la semilla del motor (sin argumento restaura Math.random). Para tests y campañas reproducibles. */
-export function setEngineSeed(seed?: number): void {
-  rng = seed === undefined ? Math.random : mulberry32(seed)
-}
-
-/** Tirada aleatoria del motor (sembrable con setEngineSeed). */
-function engineRoll(): number {
-  return rng()
-}
-
-/**
- * Sonda del RNG interno (seed-determinista): devuelve la tirada cruda
- * para fijar en tests el contrato de reproducibilidad (misma semilla →
- * misma secuencia). El flujo de producción no la consume.
- */
-export function engineRollProbe(): number {
-  return rng()
-}
-
-const rand = <T,>(arr: T[]): T => arr[Math.floor(engineRoll() * arr.length)]
-
-// ── Semilla por campaña (seed-determinista) ────────────────
-
-/** Tope de la semilla: entero positivo de 31 bits (rango seguro para SQLite e Int32). */
-export const SEED_MAX = 0x7fffffff
-
-/**
- * Genera la semilla de una campaña nueva. Inyectable para tests;
- * por defecto Math.random (NUNCA engineRoll: la semilla generada
- * con el RNG ya sembrado correlacionaría las campañas entre sí).
- */
-export function newCampaignSeed(rand: () => number = Math.random): number {
-  return Math.floor(rand() * SEED_MAX)
-}
-
-/**
- * Valida una semilla provista por el cliente (POST /api/campaigns).
- * Acepta enteros en [0, SEED_MAX]; devuelve null si no es usable —
- * el llamador responde 400 (validación de entradas, H-004) en vez
- * de silenciar la intención del usuario.
- */
-export function acceptSeed(value: unknown): number | null {
-  if (typeof value !== 'number' || !Number.isInteger(value)) return null
-  if (value < 0 || value > SEED_MAX) return null
-  return value
-}
-
-/**
- * Valida el interruptor determinista provisto por el cliente
- * (POST /api/campaigns). Solo booleanos; otro tipo → null y la ruta
- * responde 400 (mismo criterio que acceptSeed: no se silencia).
- */
-export function acceptDeterminista(value: unknown): boolean | null {
-  if (typeof value !== 'boolean') return null
-  return value
-}
-
-/** Acumulación de progreso en la escala cerrada [0, 100] (fuente única de la regla: victory.ts). */
-export function accumulateProgress(current: number, delta: number): number {
-  return clampProgress(current + delta)
-}
-
-type AgentRow = Awaited<ReturnType<typeof db.agent.findMany>>[number]
-
-const g = globalThis as unknown as { __aegisLLMAlive?: boolean | null }
-
-/** Mapa agentKey → fases en las que toma la iniciativa (definido en el roster) */
-const AGENT_PHASES = new Map<string, Phase[]>(
-  [...RED_AGENTS, ...BLUE_AGENTS].map((a) => [a.key, a.phases])
-)
-
-/** Especialistas BLUE por tipo de operación defensiva */
-const BLUE_OP_AGENTS: Record<string, string[]> = {
-  BLOCK: ['blue-bastion', 'blue-citadel'],
-  ISOLATE: ['blue-bastion'],
-  PATCH: ['blue-bastion', 'blue-citadel'],
-  MONITOR: ['blue-oracle', 'blue-argus'],
-  HUNT: ['blue-sentinel'],
-}
-
-/** Elige el agente de la fase, rotando entre los que comparten fase para que todos participen */
-export function pickAgentForPhase<T extends { key: string }>(agents: T[], phase: Phase, round: number): T {
-  const matches = agents.filter((a) => (AGENT_PHASES.get(a.key) ?? []).includes(phase))
-  if (matches.length === 0) return agents[0]
-  return matches[(round - 1) % matches.length]
-}
-
-export function pickAgentForOp<T extends { key: string }>(agents: T[], op: string, phase: Phase, round: number): T {
-  const prefs = BLUE_OP_AGENTS[op] ?? []
-  for (const key of prefs) {
-    const found = agents.find((a) => a.key === key)
-    if (found) return found
-  }
-  return pickAgentForPhase(agents, phase, round)
-}
-
-/**
- * Momentum RED: ¿encadena una segunda acción dentro de la fase?
- * ÉXITO encadena alto, PARCIAL moderado y FALLO nunca (constantes
- * en pace.ts). `roll` es la tirada [0, 1): con el RNG sembrado la
- * decisión es reproducible ronda a ronda.
- */
-export function redShouldChain(result: string | undefined, roll: number): boolean {
-  const chainP = result === 'EXITO' ? RED_CHAIN_ON_EXITO : result === 'PARCIAL' ? RED_CHAIN_ON_PARCIAL : 0
-  return chainP > 0 && roll < chainP
-}
+export { setEngineSeed, engineRollProbe, SEED_MAX, newCampaignSeed, acceptSeed, acceptDeterminista } from './engine-rng'
+export { pickAgentForPhase, pickAgentForOp, pickNodeForPhase } from './engine-select'
+export { accumulateProgress, redShouldChain, defaultSignatureFor, segmentForPhase, huntHypothesis, bestPatchTarget } from './engine-combate'
 
 // ─────────────────────────────────────────────────────────────
 // Arranque de campaña
 // ─────────────────────────────────────────────────────────────
+
+const g = globalThis as unknown as { __aegisLLMAlive?: boolean | null }
 
 const launchGate = createLaunchGate()
 
@@ -771,290 +675,25 @@ Contexto: fase ${PHASE_LABEL[phase]}, ronda ${round}.`,
   }
 
   // ─────────────────────────────────────────────────────────
-  // Cierre: ganador, narrativa, lecciones y evolución
+  // Cierre: ganador, narrativa, lecciones y evolución —
+  // delegado en engine-cierre.ts (finalizeCampaign). El estado
+  // mutable del bucle viaja explícito en el contrato; writeEvent
+  // sigue siendo el cierre del bucle (secuencia compartida).
   // ─────────────────────────────────────────────────────────
-  // Resolución canónica: regla de victoria aplicada sobre el progreso acotado
-  // (fuente única en src/lib/victory.ts, compartida con la UI; contrato fijado
-  // en tests/victory.test.ts).
-  const { winner } = resolveCampaignOutcome(redProgress, blueProgress)
-
-  const allEvents = await db.campaignEvent.findMany({ where: { campaignId }, orderBy: { seq: 'asc' } })
-  const compact = allEvents
-    .filter((e) => e.team !== 'SYSTEM')
-    .map((e) => `${e.team} ${e.agentCodename}: ${sanitizeForPrompt(e.action, 80)} sobre ${e.targetNode ?? '—'} → ${e.result} (impacto ${e.impact}). ${sanitizeForPrompt(e.detail, 240)}`)
-
-  const lessonsSchema = `Devuelve JSON estricto:
-{"narrative":"resumen de 4-6 frases de la campaña en español, con el arco de las 12 rondas y los puntos de giro",
- "red":[{"category":"TACTICA|TECNICA|LECCION|VULNERABILIDAD","title":"título corto","content":"2-3 frases del aprendizaje concreto y accionable","tags":["tag1","tag2"],"confidence":0.0-1.0}],
- "blue":[...igual, aprendizajes defensivos...]}`
-  const lessonsUser = `Campaña ${scenario.codename} sobre ${scenario.company}. Ganador: ${winner}. Progreso RED ${redProgress}/100, postura BLUE ${blueProgress}/100.
-Todo se ejecutó contra un laboratorio real (intercambios HTTP verificados). Eventos:
-${compact.join('\n')}
-
-Extrae 3 lecciones por equipo: qué funcionó, qué falló y cómo aplicarlo la próxima campaña. Sé específico.`
-
-  type LessonsOut = { narrative?: string; red?: LessonDraft[]; blue?: LessonDraft[] }
-  let lessons: LessonsOut | null = llmAlive ? await llmJson<LessonsOut>(lessonsSchema, lessonsUser, 30000) : null
-  if (!lessons || !Array.isArray(lessons.red) || !Array.isArray(lessons.blue)) {
-    lessons = fallbackLessons(winner, redProgress, blueProgress, scenario.redObjective, scenario.blueObjective)
-  }
-
-  const narrative =
-    (lessons.narrative ?? '').slice(0, 1200) ||
-    `Campaña finalizada. ${winner === 'RED' ? 'El RED TEAM' : winner === 'BLUE' ? 'El BLUE TEAM' : 'Ninguno de los equipos'} prevaleció (RED ${redProgress}/100 vs BLUE ${blueProgress}/100). Ambos equipos archivan el aprendizaje para la siguiente campaña.`
-
-  // Guardar lecciones
-  const saveLessons = async (team: 'RED' | 'BLUE', arr: LessonDraft[]) => {
-    for (const l of arr.slice(0, 3)) {
-      if (!l?.title || !l?.content) continue
-      await db.knowledge.create({
-        data: {
-          team,
-          campaignId,
-          category: normalizeLessonCategory(l.category),
-          title: String(l.title).slice(0, 140),
-          content: String(l.content).slice(0, 900),
-          tags: normalizeLessonTags(l.tags),
-          confidence: clamp(Number(l.confidence) || 0.55, 0.2, 0.95),
-        },
-      })
-    }
-  }
-  await saveLessons('RED', lessons.red ?? [])
-  await saveLessons('BLUE', lessons.blue ?? [])
-
-  // Actualizar estadísticas de conocimiento usado (bucle de evolución)
-  for (const [id, u] of knowledgeUsed) {
-    const k = await db.knowledge.findUnique({ where: { id } })
-    if (!k) continue
-    const used = k.timesUsed + u.used
-    const worked = k.timesWorked + u.worked
-    const ratio = worked / Math.max(1, used)
-    const confidence = clamp(0.3 + ratio * 0.6 + Math.min(1, used / 10) * 0.1, 0.2, 0.95)
-    await db.knowledge.update({ where: { id }, data: { timesUsed: used, timesWorked: worked, confidence } })
-  }
-
-  // Actualizar agentes (XP con curva realista, nivel derivado, victorias)
-  const allAgents = await db.agent.findMany()
-  for (const a of allAgents) {
-    const xp = a.xp + (xpDelta.get(a.key) ?? 0)
-    const isWinner = (winner === 'RED' && a.team === 'RED') || (winner === 'BLUE' && a.team === 'BLUE')
-    await db.agent.update({
-      where: { id: a.id },
-      data: {
-        xp,
-        level: levelForXp(xp),
-        campaigns: a.campaigns + 1,
-        victories: a.victories + (isWinner ? 1 : 0),
-      },
-    })
-  }
-
-  const totalExchanges = lab.journal.length
-  await writeEvent({
-    round: maxRounds,
-    phase: 'OBJETIVO',
-    team: 'SYSTEM',
-    action: `Fin de la campaña — victoria: ${winner === 'RED' ? 'RED TEAM' : winner === 'BLUE' ? 'BLUE TEAM' : 'EMPATE'}`,
-    detail: `${narrative} Telemetría real del laboratorio: ${totalExchanges} intercambios HTTP verificados, ${lab.sessions.size} sesiones creadas, ${lab.firewall.length} bloqueos y ${lab.exfiltrated.length} extracciones de datos. Lecciones archivadas: ${lessons.red?.length ?? 0} del RED, ${lessons.blue?.length ?? 0} del BLUE.`,
-    severity: 'INFO',
+  await finalizeCampaign({
+    campaignId,
+    scenario,
+    redProgress,
+    blueProgress,
+    redScore,
+    blueScore,
+    xpDelta,
+    knowledgeUsed,
+    lab,
+    maxRounds,
+    llmAlive,
+    writeEvent,
   })
-
-  await db.campaign.update({
-    where: { id: campaignId },
-    data: {
-      status: 'COMPLETED',
-      winner,
-      narrative,
-      // Defensa en profundidad: la fila final respeta la escala cerrada aunque
-      // un valor en memoria llegase desbordado (recomendación del reparto 19h31).
-      redProgress: clampProgress(redProgress),
-      blueProgress: clampProgress(blueProgress),
-      redScore,
-      blueScore,
-      endedAt: new Date(),
-    },
-  })
-}
-
-// ─────────────────────────────────────────────────────────────
-// Ayudantes de decisión BLUE sobre estado real del lab
-// ─────────────────────────────────────────────────────────────
-
-export function defaultSignatureFor(phase: Phase): Signature {
-  switch (phase) {
-    case 'RECON': return 'PORT_SCAN'
-    case 'ARMADO': return 'UNUSUAL_PATH'
-    case 'INTRUSION': return 'SQLI'
-    case 'ESCALADA': return 'PASS_THE_HASH'
-    case 'LATERAL': return 'LATERAL_SMB'
-    case 'OBJETIVO': return 'DATA_EXFIL'
-  }
-}
-
-export function segmentForPhase(phase: Phase): string {
-  switch (phase) {
-    case 'RECON': return 'DMZ'
-    case 'ARMADO': return 'DMZ'
-    case 'INTRUSION': return 'DMZ'
-    case 'ESCALADA': return 'CORE'
-    case 'LATERAL': return 'CORE'
-    case 'OBJETIVO': return 'CORE'
-  }
-}
-
-export function huntHypothesis(phase: Phase): string {
-  switch (phase) {
-    case 'RECON': return 'enumeración temprana de superficie'
-    case 'ARMADO': return 'preparación de payload en endpoints'
-    case 'INTRUSION': return 'acceso inicial anómalo en la DMZ'
-    case 'ESCALADA': return 'abuso de credenciales privilegiadas'
-    case 'LATERAL': return 'pivoting entre segmentos'
-    case 'OBJETIVO': return 'exfiltración masiva de datos'
-  }
-}
-
-/** Busca el mejor parche real: nodo comprometido o de mayor criticidad con vuln abierta */
-export function bestPatchTarget(lab: LabCampaignState, preferNodeId?: string): { nodeId?: string; vuln?: string } {
-  const candidates: Array<{ nodeId: string; vuln: string; crit: number }> = []
-  for (const n of lab.nodes.values()) {
-    for (const [vuln, st] of Object.entries(n.vulnerabilities)) {
-      if (st === 'OPEN') candidates.push({ nodeId: n.nodeId, vuln, crit: n.criticality + (n.compromised ? 10 : 0) })
-    }
-  }
-  if (preferNodeId) {
-    const preferred = candidates.filter((c) => c.nodeId === preferNodeId).sort((a, b) => b.crit - a.crit)[0]
-    if (preferred) return { nodeId: preferred.nodeId, vuln: preferred.vuln }
-  }
-  const best = candidates.sort((a, b) => b.crit - a.crit)[0]
-  return best ? { nodeId: best.nodeId, vuln: best.vuln } : {}
-}
-
-function fallbackBlueName(op: string, verdict: string): string {
-  const names: Record<string, string> = {
-    BLOCK: 'Bloqueo de sesión atacante',
-    ISOLATE: 'Aislamiento del host comprometido',
-    PATCH: 'Parcheo de vulnerabilidad explotada',
-    MONITOR: 'Despliegue de regla de monitorización',
-    HUNT: 'Threat hunting proactivo',
-  }
-  return names[op] ?? (verdict === 'IGNORADO' ? 'Barrido sin señales' : 'Acción defensiva')
-}
-
-function fallbackBlueDetail(op: string, outcome: OpOutcome, verdict: string): string {
-  const ev = outcome.evidence.exchanges[0]
-  const base: Record<string, string> = {
-    BLOCK: 'Regla de firewall aplicada en el laboratorio: la sesión atacante queda denegada para futuras conexiones.',
-    ISOLATE: 'El EDR aisló el host: sus sesiones se revocaron y el nodo deja de responder a la red.',
-    PATCH: 'Parche aplicado sobre la vulnerabilidad real del nodo; los siguientes intentos de explotación fallarán.',
-    MONITOR: 'Regla de correlación desplegada en el SIEM sobre el tráfico real del segmento.',
-    HUNT: 'Barrido forense sobre el diario real de tráfico del laboratorio.',
-  }
-  return `${base[op] ?? 'Operación defensiva ejecutada.'} ${ev ? `Verificación: ${ev.method} ${ev.path} → ${ev.status}.` : ''} Veredicto: ${verdict}.`
-}
-
-// ─────────────────────────────────────────────────────────────
-// Modelo de combate — constantes y utilidades
-// ─────────────────────────────────────────────────────────────
-
-export function pickNodeForPhase(nodes: InfraNode[], phase: Phase): InfraNode {
-  const pool =
-    phase === 'RECON' || phase === 'ARMADO'
-      ? nodes.filter((n) => n.segment === 'DMZ')
-      : phase === 'OBJETIVO'
-        ? nodes.filter((n) => n.criticality >= 4)
-        : nodes
-  const list = pool.length > 0 ? pool : nodes
-  return rand(list)
-}
-
-// ─────────────────────────────────────────────────────────────
-// Fallbacks deterministas (modo SIM) — siempre en español
-// ─────────────────────────────────────────────────────────────
-
-const RED_FALLBACK: Record<Phase, Array<{ action: string; detail: string; severity: RedDecision['severity'] }>> = {
-  RECON: [
-    { action: 'Enumeración de servicios expuestos', detail: 'Fingerprinting real de los servicios del nodo objetivo mediante peticiones HTTP directas al laboratorio.', severity: 'LOW' },
-    { action: 'Cartografía de la DMZ', detail: 'Consulta rutas públicas y ficheros de configuración expuestos para mapear el perímetro.', severity: 'LOW' },
-  ],
-  ARMADO: [
-    { action: 'Weaponización de exploit', detail: 'Genera un payload determinista y calcula su hash real para la cadena de intrusión.', severity: 'MEDIUM' },
-    { action: 'Preparación de infraestructura C2', detail: 'Configura el canal de mando y control para la fase de intrusión.', severity: 'MEDIUM' },
-  ],
-  INTRUSION: [
-    { action: 'Explotación del perímetro', detail: 'Ejecuta el exploit real contra la vulnerabilidad abierta del servicio expuesto.', severity: 'HIGH' },
-    { action: 'Phishing dirigido con payload', detail: 'Entrega el payload contra el endpoint objetivo y verifica la ejecución real.', severity: 'HIGH' },
-  ],
-  ESCALADA: [
-    { action: 'Escalada de privilegios local', detail: 'Abusa de la vulnerabilidad local sin parchear del host comprometido para obtener SYSTEM.', severity: 'HIGH' },
-    { action: 'Robo y abuso de credenciales', detail: 'Eleva privilegios reutilizando la sesión establecida en el host.', severity: 'CRITICAL' },
-  ],
-  LATERAL: [
-    { action: 'Movimiento lateral por SMB/WMI', detail: 'Pivota hacia el nodo objetivo reutilizando la sesión comprometida (ruta verificada por el laboratorio).', severity: 'HIGH' },
-    { action: 'Pivoting sobre jump host', detail: 'Salta al siguiente segmento desde la sesión existente y establece nuevo acceso.', severity: 'CRITICAL' },
-  ],
-  OBJETIVO: [
-    { action: 'Exfiltración de datos críticos', detail: 'Solicita los datos del activo crítico con la sesión privilegiada y verifica la respuesta real.', severity: 'CRITICAL' },
-    { action: 'Acceso al activo de misión', detail: 'Extrae la telemetría/documentación sensible del activo objetivo.', severity: 'CRITICAL' },
-  ],
-}
-
-function fallbackRed(phase: Phase, nodes: InfraNode[], round: number): RedDecision {
-  const t = RED_FALLBACK[phase][round % 2]
-  const node = pickNodeForPhase(nodes, phase)
-  return { action: t.action, detail: t.detail, targetNode: node.id, severity: t.severity }
-}
-
-function fallbackLessons(winner: string, redProgress: number, blueProgress: number, redObj: string, blueObj: string) {
-  return {
-    narrative: `La campaña terminó con ${winner === 'RED' ? 'victoria del RED TEAM' : winner === 'BLUE' ? 'victoria del BLUE TEAM' : 'un empate táctico'} (RED ${redProgress}/100 vs BLUE ${blueProgress}/100). Todos los comandos se verificaron contra el laboratorio real.`,
-    red: [
-      {
-        category: 'LECCION',
-        title: 'Ajustar la selección de objetivos por fase',
-        content: `El progreso alcanzado fue ${redProgress}/100. En próximas campañas conviene auditar antes los controles del nodo objetivo (${redObj.slice(0, 60)}…) y escalar solo tras confirmar la ruta lateral.`,
-        tags: ['planificacion', 'objetivos'],
-        confidence: 0.55,
-      },
-      {
-        category: 'TACTICA',
-        title: 'Reducir ruido entre fases',
-        content: 'Las transiciones entre fases generan telemetría real que el SIEM puede correlacionar. Introducir pausas (dwell time) reduce la probabilidad de detección.',
-        tags: ['opsec', 'stealth'],
-        confidence: 0.5,
-      },
-      {
-        category: 'TECNICA',
-        title: 'Diversificar objetivos dentro de cada fase',
-        content: 'Con dos rondas por fase, repetir nodo y técnica facilita que la defensa correlacione. Alternar vectores sobre activos distintos dispersa la respuesta azul.',
-        tags: ['planificacion', 'evasion'],
-        confidence: 0.5,
-      },
-    ],
-    blue: [
-      {
-        category: 'LECCION',
-        title: 'Desplegar visibilidad antes de que llegue el impacto',
-        content: `La postura defensiva terminó en ${blueProgress}/100. Desplegar reglas de correlación por segmento desde la fase de reconocimiento habría adelantado las detecciones (${blueObj.slice(0, 60)}…).`,
-        tags: ['visibilidad', 'siem'],
-        confidence: 0.55,
-      },
-      {
-        category: 'DEFENSA',
-        title: 'Contención más rápida ante éxito rojo',
-        content: 'Cuando el rojo consigue una sesión real, bloquearla inmediatamente y aislar el host limita la escalada de la siguiente fase.',
-        tags: ['respuesta', 'contencion'],
-        confidence: 0.5,
-      },
-      {
-        category: 'INTELIGENCIA',
-        title: 'Cerrar la ventana entre golpe y correlación',
-        content: 'Con el ritmo alto de las campañas largas, cada ronda sin regla nueva sobre el segmento golpeado es una exfiltración más. Automatizar la regla tras cada confirmado.',
-        tags: ['siem', 'duracion'],
-        confidence: 0.5,
-      },
-    ],
-  }
 }
 
 // ─────────────────────────────────────────────────────────────
