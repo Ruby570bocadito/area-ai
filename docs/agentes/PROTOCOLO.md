@@ -48,7 +48,7 @@ Excepción: un fallo que rompe el build para todos; arréglalo mínimo y menció
 ## 4. Higiene del repo
 - Borradores, volcados, logs y pruebas sueltas: SOLO en `.agent-tmp/` (ignorado por git). Nunca en la raíz ni en carpetas del proyecto.
 - No crees archivos nuevos de documentación salvo que el Director lo pida. Los informes viven en `estado/<ID>.md` (se sobrescriben).
-  `worklog.md` queda congelado: no se añaden entradas (el historial lo guarda git).
+  `worklog.md` fue retirado del repo (14ª pasada DIR, 2026-10-23): el historial lo guarda git; no se crean entradas nuevas ni se restaura el fichero.
 - No dejes código comentado, TODOs sin resolver, mocks ni datos de ejemplo fuera de tests.
 - Autoría: nada que identifique a un asistente como autor en commits, código, comentarios o docs (sin coautorías ni firmas de
   agente). El dominio del producto (agentes IA, LLM, proveedor OpenAI-compatible, `z-ai-web-dev-sdk`) es legítimo y se queda.
