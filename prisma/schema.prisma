@@ -73,6 +73,14 @@ model Campaign {
   // corre en SIM aunque haya proveedor LLM disponible (sin sonda).
   // Reproducibilidad exacta garantizada SOLO con determinista=true.
   determinista Boolean  @default(false)
+  // Dificultad adaptativa (dificultad-adaptativa): multiplicador de la
+  // fuerza defensiva CONGELADO al lanzar, calculado una sola vez sobre
+  // el historial de victorias del escenario (banda [0.85, 1.15] en
+  // pace.ts). 1 = neutra: muestra insuficiente, desactivada por campaña
+  // (POST {adaptativa:false}) o modo determinista — la reproducibilidad
+  // exacta no admite parámetros dependientes del estado del archivo.
+  adaptativa    Boolean @default(true)
+  ajusteDefensa Float   @default(1)
   startedAt    DateTime  @default(now())
   endedAt      DateTime?
 

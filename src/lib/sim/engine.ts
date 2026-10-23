@@ -24,12 +24,16 @@ import { knowledgeScore } from './knowledge-score'
 import { sanitizeForPrompt } from '@/lib/text'
 import { createLaunchGate } from './launch-lock'
 import {
-  BLUE_GAIN_BY_VERDICT,
   BLUE_HUNT_ROLL,
   CHAINABLE_PHASES,
   DEFAULT_SEVERITY_BY_PHASE,
   PARTIAL_IMPACT_FACTOR,
   RED_IMPACT_BY_SEVERITY,
+  ajusteDefensivo,
+  gananciaAzulAjustada,
+  impactoRedAjustado,
+  normalizarAjuste,
+  DEF_HISTORIAL_TOPE,
 } from './pace'
 import {
   PHASE_ORDER,
@@ -84,7 +88,7 @@ import { finalizeCampaign } from './engine-cierre'
 // suites tests/engine.test.ts y tests/seed-determinista.test.ts
 // importan de aquí; las implementaciones viven en los módulos.
 
-export { setEngineSeed, engineRollProbe, SEED_MAX, newCampaignSeed, acceptSeed, acceptDeterminista } from './engine-rng'
+export { setEngineSeed, engineRollProbe, SEED_MAX, newCampaignSeed, acceptSeed, acceptDeterminista, acceptAdaptativa } from './engine-rng'
 export { pickAgentForPhase, pickAgentForOp, pickNodeForPhase } from './engine-select'
 export { accumulateProgress, redShouldChain, defaultSignatureFor, segmentForPhase, huntHypothesis, bestPatchTarget } from './engine-combate'
 
@@ -96,7 +100,7 @@ const g = globalThis as unknown as { __aegisLLMAlive?: boolean | null }
 
 const launchGate = createLaunchGate()
 
-export async function startCampaign(scenarioId?: string, seed?: number, determinista?: boolean) {
+export async function startCampaign(scenarioId?: string, seed?: number, determinista?: boolean, adaptativa?: boolean) {
   await ensureSeed()
   await ensureProgressionMigration()
 
@@ -126,6 +130,26 @@ export async function startCampaign(scenarioId?: string, seed?: number, determin
       ? scenarios.find((s) => s.id === scenarioId) ?? rand(scenarios)
       : rand(scenarios)
 
+    // ── Dificultad adaptativa (dificultad-adaptativa) ──────
+    // Ajuste de la fuerza defensiva según el historial de victorias
+    // del escenario, con tope [0.85, 1.15] (pace.ts). Desactivable
+    // por campaña (POST {adaptativa:false}; por defecto activa) y
+    // neutra de serie en determinista: la reproducibilidad exacta de
+    // seed-determinista no admite parámetros que dependan del estado
+    // del archivo en el momento del lanzamiento. La fila guardada
+    // (adaptativa + ajusteDefensa) refleja lo EFECTIVO, no lo pedido.
+    const adaptativaEfectiva = (adaptativa ?? true) && !determinista
+    let ajusteDefensa = 1
+    if (adaptativaEfectiva) {
+      const historial = await db.campaign.findMany({
+        where: { scenarioId: scenario.id, status: 'COMPLETED' },
+        select: { winner: true },
+        orderBy: { startedAt: 'desc' },
+        take: DEF_HISTORIAL_TOPE,
+      })
+      ajusteDefensa = ajusteDefensivo(historial).ajuste
+    }
+
     const campaign = await db.campaign.create({
       data: {
         scenarioId: scenario.id,
@@ -139,6 +163,10 @@ export async function startCampaign(scenarioId?: string, seed?: number, determin
         // Modo determinista forzado: reproducibilidad exacta aunque
         // haya proveedor LLM disponible (runCampaign no sondará).
         determinista: determinista ?? false,
+        // Fuerza defensiva congelada (dificultad-adaptativa): el
+        // motor solo consume el valor de la fila, nunca recalcula.
+        adaptativa: adaptativaEfectiva,
+        ajusteDefensa,
       },
     })
 
@@ -267,6 +295,15 @@ async function runCampaign(campaignId: string) {
 
   await db.campaign.update({ where: { id: campaignId }, data: { engineMode } })
 
+  // ── Fuerza defensiva congelada (dificultad-adaptativa) ──
+  // El multiplicador se calculó UNA vez en startCampaign y viaja en
+  // la fila: re-ejecutar la campaña nunca re-sesga el balance con
+  // el archivo actual. Las escalas de pace.ts lo normalizan (banda
+  // [0.85, 1.15], no finitos → 1): con neutro el comportamiento es
+  // EXACTAMENTE el previo. Se declara ANTES del parte de arranque
+  // (evento 0), que lo anuncia cuando actúa.
+  const ajusteDefensa = normalizarAjuste(campaign.ajusteDefensa)
+
   const siemNode = findSiemNode(lab)
   await writeEvent({
     round: 0,
@@ -277,6 +314,11 @@ async function runCampaign(campaignId: string) {
       `Escenario: ${scenario.company} (${scenario.industry}, dificultad ${scenario.difficulty}/5). ` +
       `Laboratorio REAL desplegado: ${nodes.length} servicios HTTP en 127.0.0.1:${labPort ?? '—'} con política de red por segmentos; ` +
       (siemNode ? `SIEM operativo en ${siemNode.id} sin reglas de correlación iniciales. ` : '') +
+      // Dificultad adaptativa: se anuncia SOLO cuando actúa (ajuste ≠ 1
+      // y activa en la fila); en neutro el parte no añade ruido.
+      (campaign.adaptativa && ajusteDefensa !== 1
+        ? `Dificultad adaptativa: fuerza defensiva ×${ajusteDefensa.toFixed(2).replace('.', ',')} (${ajusteDefensa > 1 ? 'defensa reforzada' : 'defensa flexibilizada'} por el historial del escenario). `
+        : '') +
       `Los agentes ejecutarán comandos verificables contra el laboratorio. Objetivo RED: ${scenario.redObjective} Objetivo BLUE: ${scenario.blueObjective} Motor: ${engineMode === 'LLM' ? 'LLM activo' : 'simulación determinista (LLM no disponible)'}.`,
     severity: 'INFO',
   })
@@ -385,8 +427,12 @@ Elige el targetNode más lógico para la fase ${PHASE_LABEL[phase]}.`, 22000)
     const severity = (redDec.severity && ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(redDec.severity) ? redDec.severity : DEFAULT_SEVERITY_BY_PHASE[phase]) as string
     const critFactor = 0.7 + target.criticality / 10
     let impact = 0
-    if (outcome.result === 'EXITO') impact = Math.round(RED_IMPACT_BY_SEVERITY[severity] * critFactor * (1 - blueProgress / 160))
-    else if (outcome.result === 'PARCIAL') impact = Math.round(RED_IMPACT_BY_SEVERITY[severity] * PARTIAL_IMPACT_FACTOR)
+    // Dificultad adaptativa: el impacto ofensivo sale de las escalas
+    // de pace.ts escalado por la fuerza defensiva congelada
+    // (cero-suma: defensa ×1.15 ⇒ ofensiva ×0.85). Con ajuste 1 la
+    // fórmula es EXACTAMENTE la previa.
+    if (outcome.result === 'EXITO') impact = impactoRedAjustado(RED_IMPACT_BY_SEVERITY[severity] * critFactor * (1 - blueProgress / 160), ajusteDefensa)
+    else if (outcome.result === 'PARCIAL') impact = impactoRedAjustado(RED_IMPACT_BY_SEVERITY[severity] * PARTIAL_IMPACT_FACTOR, ajusteDefensa)
     impact = clamp(impact, 0, 20)
     // Escala cerrada [0, 100]: acumulación RED acotada en memoria (simétrica a
     // blueProgress más abajo), para que el ganador, la narrativa, las lecciones
@@ -532,7 +578,10 @@ Contexto: fase ${PHASE_LABEL[phase]}, ronda ${round}.`,
     if (!actionName) actionName = fallbackBlueName(op, verdict)
     if (!detail) detail = fallbackBlueDetail(op, outcome, verdict)
 
-    const defImpact = BLUE_GAIN_BY_VERDICT[verdict] ?? 1
+    // Dificultad adaptativa: la ganancia defensiva escala con la
+    // fuerza congelada en la fila; la ganancia fija de blindaje (+2)
+    // NO se toca — contrato documentado de la telemetría (pace.ts).
+    const defImpact = gananciaAzulAjustada(verdict, ajusteDefensa)
     blueProgress = accumulateProgress(blueProgress, defImpact + 2)
     blueScore += defImpact * 2
     trackKnowledge(blueTurnIds, verdict === 'BLOQUEADO' || verdict === 'DETECTADO' || verdict === 'CONTENIDO')

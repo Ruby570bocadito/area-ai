@@ -83,3 +83,14 @@ export function acceptDeterminista(value: unknown): boolean | null {
   if (typeof value !== 'boolean') return null
   return value
 }
+
+/**
+ * Valida el interruptor de dificultad adaptativa provisto por el
+ * cliente (POST /api/campaigns, dificultad-adaptativa). Solo
+ * booleanos; otro tipo → null y la ruta responde 400 (mismo
+ * criterio que acceptDeterminista: no se silencia la intención).
+ */
+export function acceptAdaptativa(value: unknown): boolean | null {
+  if (typeof value !== 'boolean') return null
+  return value
+}

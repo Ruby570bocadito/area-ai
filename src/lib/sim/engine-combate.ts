@@ -10,7 +10,7 @@
 // tarea tests-engine previa a esta refactorización).
 // ─────────────────────────────────────────────────────────────
 
-import { RED_CHAIN_ON_EXITO, RED_CHAIN_ON_PARCIAL } from './pace'
+import { PATCH_BONUS_COMPROMETIDO, RED_CHAIN_ON_EXITO, RED_CHAIN_ON_PARCIAL } from './pace'
 import type { Phase, RedDecision, InfraNode } from './types'
 import type { OpOutcome } from '@/lib/lab/ops'
 import type { LabCampaignState, Signature } from '@/lib/lab/types'
@@ -74,12 +74,18 @@ export function huntHypothesis(phase: Phase): string {
   }
 }
 
-/** Busca el mejor parche real: nodo comprometido o de mayor criticidad con vuln abierta */
+/**
+ * Busca el mejor parche real: nodo comprometido o de mayor criticidad
+ * con vuln abierta. La prioridad del nodo comprometido es el bonus
+ * táctico PATCH_BONUS_COMPROMETIDO (pace.ts, antes +10 hardcodeado):
+ * regla de ELECCIÓN de objetivo — no escala con el ajuste adaptativo
+ * de la fuerza defensiva (dificultad-adaptativa).
+ */
 export function bestPatchTarget(lab: LabCampaignState, preferNodeId?: string): { nodeId?: string; vuln?: string } {
   const candidates: Array<{ nodeId: string; vuln: string; crit: number }> = []
   for (const n of lab.nodes.values()) {
     for (const [vuln, st] of Object.entries(n.vulnerabilities)) {
-      if (st === 'OPEN') candidates.push({ nodeId: n.nodeId, vuln, crit: n.criticality + (n.compromised ? 10 : 0) })
+      if (st === 'OPEN') candidates.push({ nodeId: n.nodeId, vuln, crit: n.criticality + (n.compromised ? PATCH_BONUS_COMPROMETIDO : 0) })
     }
   }
   if (preferNodeId) {

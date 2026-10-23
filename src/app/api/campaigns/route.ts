@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { startCampaign, acceptSeed, acceptDeterminista } from '@/lib/sim/engine'
+import { startCampaign, acceptSeed, acceptDeterminista, acceptAdaptativa } from '@/lib/sim/engine'
 import { db } from '@/lib/db'
 import {
   isMutationAuthorized,
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
     // acota TAMBIÉN las peticiones chunked sin Content-Length (tarea
     // cuerpo-chunked del ROADMAP), leyendo el stream con tope. Tras el 401:
     // el orden canónico de barreras es 403→429→401→413 (HD4).
-    const parsed = await readJsonBody<{ scenarioId?: string; seed?: unknown; determinista?: unknown }>(req, 4096)
+    const parsed = await readJsonBody<{ scenarioId?: string; seed?: unknown; determinista?: unknown; adaptativa?: unknown }>(req, 4096)
     if (!parsed.ok) {
       if (parsed.reason === 'too-large') {
         return NextResponse.json({ ok: false, error: 'Cuerpo demasiado grande' }, { status: 413 })
@@ -138,6 +138,25 @@ export async function POST(req: NextRequest) {
       determinista = forzado
     }
 
+    // Interruptor de dificultad adaptativa (dificultad-adaptativa):
+    // activa por defecto; {adaptativa:false} lanza la campaña con la
+    // fuerza defensiva neutra. El booleano inválido se rechaza con 400
+    // (mismo criterio que seed/determinista — no se silencia). Nota:
+    // en modo determinista queda neutra de serie — la reproducibilidad
+    // exacta no admite parámetros dependientes del archivo al lanzar;
+    // la respuesta devuelve el ajuste EFECTIVO congelado en la fila.
+    let adaptativa: boolean | undefined
+    if (parsed.ok && parsed.body?.adaptativa !== undefined) {
+      const cambio = acceptAdaptativa(parsed.body.adaptativa)
+      if (cambio === null) {
+        return NextResponse.json(
+          { ok: false, error: 'adaptativa inválida: debe ser un booleano' },
+          { status: 400 }
+        )
+      }
+      adaptativa = cambio
+    }
+
     // Dedupe en servidor (idempotencia-lanzamiento: el cerrojo de
     // confirmacion-lanzamiento es solo cliente). Con Idempotency-Key
     // el replay dura 10 min; sin ella, el cuerpo idéntico se deduplica
@@ -155,8 +174,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const campaign = await startCampaign(scenarioId, seed, determinista)
-    const respuesta = { ok: true, campaignId: campaign.id, seed: campaign.seed, determinista: campaign.determinista }
+    const campaign = await startCampaign(scenarioId, seed, determinista, adaptativa)
+    const respuesta = { ok: true, campaignId: campaign.id, seed: campaign.seed, determinista: campaign.determinista, adaptativa: campaign.adaptativa, ajusteDefensa: campaign.ajusteDefensa }
     if (dedupeKey) recordLaunch(dedupeKey, 200, respuesta)
     return NextResponse.json(respuesta)
   } catch (error) {
