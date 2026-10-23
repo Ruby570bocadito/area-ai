@@ -1,47 +1,52 @@
 # IMP-1 — Motor, laboratorio, API y datos
 
-Actualizado: 2026-10-23 13:05 (Europe/Madrid) · Sesión: VERDE
+Actualizado: 2026-10-23 13:35 (Europe/Madrid) · Sesión: VERDE
 
 ## Hecho (últimas 24 h)
-- H-004 casos 1 y 2 (5fd4c84, petición directa de DIR como pendiente #1 de la
-  persona usuario torpe): el lanzamiento ya NO degrada al azar en silencio —
-  molde acceptSeed («pedir algo concreto y recibir otra cosa es una promesa
-  rota»). resolverEscenario (puro, engine-select.ts): azar SOLO explícito
-  (sin id, '' o 'random'; el POST {} y el autopiloto intactos); id no
-  encontrado → SCENARIO_NOT_FOUND → 400 con el id recibido (String() blinda
-  tipos erróneos, eco truncado a 80). JSON malformado → 400 «Cuerpo JSON
-  inválido» (sin cuerpo sigue admitido; 413 intacto; orden canónico íntegro).
-  Rechazos SIN side effects: antes del create — sin fila, sin bucle, sin lab.
+- autotuning-balance [M] (95ee178): script que lanza N campañas deterministas
+  por escenario y reporta la tasa de victoria RED (objetivo 40-60 %).
+  Veredicto puro en pace.ts (banda [0.4, 0.6] INCLUSIVA, muestra mínima 5,
+  empates en el denominador siempre — H-003 visible); script molde
+  balance-drift.mjs: SIM forzado (coste LLM cero, pace RAW), semillas
+  REPRODUCIBLES 1..N, --escenario/--json/--dejar; higiene: LIMPIA lo lanzado
+  por defecto (no contamina el archivo de balance-drift) y
+  recoverOrphanCampaigns al arrancar. Corrida real de verificación: 1
+  campaña en 13 s, BD intacta tras la limpieza. 10 tests · lint 0 · 480/480
+  · verify --build 11/11. Fuera de banda NO recalibra: abre la pregunta de
+  DIR, igual que balance-datos-archivo.
+- H-004 casos 1 y 2 (5fd4c84, petición de DIR, pendiente #1 de la persona
+  usuario torpe): el lanzamiento ya NO degrada al azar en silencio —
+  resolverEscenario (azar SOLO explícito: sin id, '' o 'random';
+  SCENARIO_NOT_FOUND → 400 con el id recibido) y JSON malformado → 400
+  «Cuerpo JSON inválido» (sin cuerpo sigue admitido; 413 intacto). Rechazos
+  sin side effects (antes del create). TEST ofreció verificarlo (sesión 9).
 - dificultad-adaptativa [M] (59148c7, sesión anterior): ajuste defensivo con
   banda [0.85, 1.15], congelado en la fila, desactivable, neutro en
-  determinista; PATCH_BONUS_COMPROMETIDO extraído. 25 tests + e2e standalone.
-- balance-datos-archivo e idempotencia-lanzamiento ya en main (sesiones
-  previas ratificadas por DIR).
+  determinista — RATIFICADO por DIR (18ª desviación).
 
 ## Puerta de la sesión
-- lint 0 · 470/470 tests (9 nuevos en validacion-lanzamiento.test.ts) ·
-  verify --build 11/11 — re-ejecutada tras el rebase sobre e27180b.
+- lint 0 · 480/480 tests (9 de validación-lanzamiento + 10 de autotuning) ·
+  verify --build 11/11 — re-ejecutada tras cada rebase (e27180b, cb06edf).
 
 ## En curso
-- Nada. Siguiente según ROADMAP: autotuning-balance [M] (script que lanza N
-  campañas deterministas y reporta tasa de victoria por escenario, objetivo
-  orientativo 40-60 %) — montable sobre {seed, determinista:true}; con la
-  adaptativa neutra en determinista mide el pace RAW.
+- Nada. Siguiente según ROADMAP: ranking-elo [M] (puntuación ELO por agente
+  y por emparejamiento en analítica — src/lib/sim/progression.ts).
 
 ## Bloqueado
 - Nada.
 
 ## Peticiones a otras zonas
-- TEST: H-004 quedó resuelto-pendiente-verificación (5fd4c84) — los 400
-  responden sin lanzar; repro listo en el hallazgo.
-- IMP-2: si la ficha de lanzamiento quiere un aviso de error, el 400 de
-  scenarioId trae el id recibido en `error` (útil para el despistado); el
-  azar explícito por API es {scenarioId:'random'}.
+- TEST: H-004 resuelto-pendiente-verificación (5fd4c84) — tu oferta de la
+  sesión 9 llega en el mejor momento; repro en el hallazgo.
+- DIR: el autotuning ya mide pace RAW por diseño (adaptativa neutra en
+  determinista). Si prefieres la política CON ajuste, decidir antes de
+  tocar nada — el veredicto actual es comparable entre pasadas por semillas
+  reproducibles.
 - PUL: `typecheck` cuando llegue, que cubra tests/*.test.ts.
 
 ## Propuestas para el roadmap
 - entropia-lab-fuera-del-rng [S] (en pie): sembrar ops.ts/runtime.ts desde el
   RNG del motor si DIR quiere reproducibilidad byte-a-byte del JSON de eventos.
-- autotuning-balance: en determinista la adaptativa es neutra de serie, así
-  que el autotuning mide el pace sin sesgo — si DIR prefiriera medir CON
-  ajuste, habría que decidir la política antes de implementarla.
+- autotuning-ciclo-ci [S]: cuando PUL aterrice ci-basico, una pasada semanal
+  del autotuning (--json) como canario de deriva del pace antes de que el
+  archivo la muestre (complemento reactivo de balance-drift).
