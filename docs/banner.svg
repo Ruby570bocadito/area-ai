@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-label="area·ai — Laboratorio adversarial de agentes IA: RED vs BLUE">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0c111d"/>
+      <stop offset="0.55" stop-color="#101828"/>
+      <stop offset="1" stop-color="#0f1a2a"/>
+    </linearGradient>
+    <radialGradient id="glowR" cx="0.08" cy="0.05" r="0.7">
+      <stop offset="0" stop-color="#d92d20" stop-opacity="0.20"/>
+      <stop offset="1" stop-color="#d92d20" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="0.92" cy="0.95" r="0.7">
+      <stop offset="0" stop-color="#0086c9" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#0086c9" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="title" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f97066"/>
+      <stop offset="0.45" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#53b1fd"/>
+    </linearGradient>
+    <linearGradient id="hair" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#d92d20"/>
+      <stop offset="0.5" stop-color="#475467"/>
+      <stop offset="1" stop-color="#0086c9"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#94a3b8" stroke-opacity="0.07" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="beamR" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#d92d20" stop-opacity="0"/>
+      <stop offset="0.55" stop-color="#f4536e" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#f4536e" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="beamB" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0" stop-color="#0086c9" stop-opacity="0"/>
+      <stop offset="0.55" stop-color="#41c0ef" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#41c0ef" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="300" fill="url(#bg)"/>
+  <rect width="1200" height="300" fill="url(#grid)"/>
+  <rect width="1200" height="300" fill="url(#glowR)"/>
+  <rect width="1200" height="300" fill="url(#glowB)"/>
+
+  <!-- haces RED y BLUE convergiendo en el nudo -->
+  <rect x="0" y="86" width="560" height="3" fill="url(#beamR)" transform="rotate(2 280 87)"/>
+  <rect x="640" y="212" width="560" height="3" fill="url(#beamB)" transform="rotate(-2 920 213)"/>
+  <circle cx="598" cy="150" r="26" fill="none" stroke="#f97066" stroke-opacity="0.65" stroke-width="1.4"/>
+  <circle cx="606" cy="150" r="26" fill="none" stroke="#41c0ef" stroke-opacity="0.65" stroke-width="1.4"/>
+  <circle cx="602" cy="150" r="7" fill="#e4e7ec"/>
+  <circle cx="352" cy="52" r="3.2" fill="#f97066" opacity="0.85"/>
+  <circle cx="866" cy="248" r="3.2" fill="#41c0ef" opacity="0.85"/>
+  <circle cx="1024" cy="74" r="2.4" fill="#98a2b3" opacity="0.6"/>
+  <circle cx="188" cy="246" r="2.4" fill="#98a2b3" opacity="0.6"/>
+
+  <!-- título y subtítulo -->
+  <text x="84" y="118" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="700" letter-spacing="6" fill="#98a2b3">LABORATORIO ADVERSARIAL DE AGENTES IA</text>
+  <text x="82" y="196" font-family="ui-sans-serif, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="84" font-weight="800" letter-spacing="-2" fill="url(#title)">area·ai</text>
+  <text x="86" y="234" font-family="ui-sans-serif, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="19" fill="#d0d5dd">Red Team vs Blue Team sobre un ciber range real: compromisos verificables,</text>
+  <text x="86" y="260" font-family="ui-sans-serif, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="19" fill="#d0d5dd">detección por tráfico real y conocimiento que evoluciona campaña tras campaña.</text>
+
+  <!-- chips -->
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="600" fill="#e4e7ec">
+    <rect x="86" y="272" width="122" height="0" fill="none"/>
+  </g>
+
+  <rect x="0" y="296" width="1200" height="4" fill="url(#hair)"/>
+</svg>
