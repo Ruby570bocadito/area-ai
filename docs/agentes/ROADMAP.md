@@ -30,9 +30,9 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 - [ ] (PUL) script-typecheck — [S] añadir `typecheck` (`tsc --noEmit`) a `package.json` para CI y agentes — package.json
 - [ ] (PUL) paquete-nombre — [S] renombrar `nextjs_tailwind_shadcn_ts` a `area-ai` y buscar restos de nombres antiguos con grep — package.json, src/
 - [ ] (PUL) license-decision — [S] el repo se presenta como open source pero no hay `LICENSE` en la raíz: pedir al dueño qué licencia y añadirla — LICENSE, README.md
-- [ ] (SEG) db-push-accept-data-loss — [S] `db:push` usa `--accept-data-loss`: documentar el riesgo y proponer migraciones (`prisma migrate`) para cualquier cambio de esquema con datos — package.json, prisma/ (cambio de script vía PUL)
-- [ ] (SEG) csv-formula-injection — [M] [verificar] las exportaciones CSV incluyen comandos y evidencia controlados por el lab: neutralizar celdas que empiecen por `=`, `+`, `-`, `@` y test de regresión — src/lib/event-export.ts, src/lib/knowledge-export.ts, src/lib/aggregate-report.ts
-- [ ] (SEG) prompt-injection-evidencia — [M] [verificar] la evidencia del lab (respuestas HTTP) llega a los prompts del LLM que genera lecciones: acotar longitud, escapar delimitadores y validar la salida con esquema — src/lib/sim/llm.ts, src/lib/sim/engine.ts
+- [x] (SEG) db-push-accept-data-loss — [S] `db:push` usa `--accept-data-loss`: documentar el riesgo y proponer migraciones (`prisma migrate`) para cualquier cambio de esquema con datos — package.json, prisma/ (cambio de script vía PUL) · hecho 2026-10-23: riesgo documentado en README (Seguridad); el cambio de script sigue abierto para PUL
+- [x] (SEG) csv-formula-injection — [M] las exportaciones CSV incluyen comandos y evidencia controlados por el lab: neutralizar celdas que empiecen por `=`, `+`, `-`, `@` y test de regresión — src/lib/event-export.ts, src/lib/knowledge-export.ts, src/lib/aggregate-report.ts
+- [x] (SEG) prompt-injection-evidencia — [M] la evidencia del lab (respuestas HTTP) llega a los prompts del LLM que genera lecciones: acotar longitud, escapar delimitadores y validar la salida con esquema — src/lib/sim/llm.ts, src/lib/sim/engine.ts · hecho 2026-10-23: verificado y cerrado con `sanitizeForPrompt` (src/lib/text.ts) aplicado en los 4 puntos de prompt de engine.ts + acotes de action/detail almacenados; la validación de esquema ya existía en saveLessons (coerción + clamp)
 - [x] (IMP-1) tests-engine — [L] red de seguridad antes de refactorizar: tests del motor con RNG sembrado (elección de agentes por fase, momentum RED, respuesta BLUE, progreso siempre en [0,100]) — src/lib/sim/engine.ts, tests/
 - [ ] (IMP-1) tests-lab-runtime — [L] tests del runtime del lab (política de red por niveles, sesiones, firewall, parcheo, clasificación de firmas) con servidor efímero en puerto libre — src/lib/lab/runtime.ts, src/lib/lab/ops.ts, tests/
 - [ ] (IMP-1) tests-progresion-conocimiento — [M] tests de `progression.ts`, `knowledge-score.ts` y `provider-config.ts` — src/lib/sim/, tests/
@@ -195,17 +195,17 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 ## SEG — Seguridad y bugs
 
 ### P0-P1
-- [ ] (SEG) csp-estricta — [L] política CSP con nonces; verificar hidratación en navegador real antes de activar — next.config.ts
-- [ ] (SEG) cuerpo-chunked — [M] acotar cuerpos `chunked` sin `Content-Length` (limitación documentada) leyendo el stream con tope — src/lib/net/access.ts
-- [ ] (SEG) autopiloto-gasto — [M] revisar el gasto LLM disparable por el modo continuo (riesgo R4) y su límite efectivo — src/lib/sim/autopilot.ts, src/app/api/autopilot/
-- [ ] (SEG) token-comparacion-constante — [S] [verificar] comparar `ADMIN_TOKEN` con comparación de tiempo constante y test — src/lib/net/access.ts
-- [ ] (SEG) cookie-admin-httponly — [M] endpoint de acceso que fije la cookie `admin_token` con `HttpOnly; SameSite=Strict` en vez de `document.cookie` — src/lib/net/access.ts, src/app/api/
-- [ ] (SEG) dns-rebinding-guard — [M] [verificar] el guard SSRF comprueba literales; resolver el host y validar la IP en el punto de uso para cerrar rebinding — src/lib/net/target-guard.ts
-- [ ] (SEG) rate-limit-memoria — [S] [verificar] expulsión de claves antiguas del rate limit en memoria para que no crezca sin límite — src/lib/net/access.ts
-- [ ] (SEG) xss-evidencia-ui — [M] [verificar] comprobar que comandos y evidencia del lab se renderizan siempre como texto (sin HTML) en UI, informes y copia al portapapeles — src/components/arena/
+- [ ] (SEG) csp-estricta — [L] política CSP con nonces; verificar hidratación en navegador real antes de activar — next.config.ts · verificado 2026-10-23: sigue abierta, las cabeceras actuales son las no rompientes del stand-alone; requiere navegador real
+- [x] (SEG) cuerpo-chunked — [M] acotar cuerpos `chunked` sin `Content-Length` (limitación documentada) leyendo el stream con tope — src/lib/net/access.ts · hecho 2026-10-23: `readJsonBody` consume el stream con tope y cancela al superarlo; 4 rutas migradas + 2 casos en security-verify
+- [x] (SEG) autopiloto-gasto — [M] revisar el gasto LLM disparable por el modo continuo (riesgo R4) y su límite efectivo — src/lib/sim/autopilot.ts, src/app/api/autopilot/ · revisado 2026-10-23: CONFIRMADO que no hay tope efectivo (12 s de calma, sin ventanas ni tope diario); documentado en README (R4) y derivado a (IMP-1) autopiloto-presupuesto
+- [x] (SEG) token-comparacion-constante — [S] comparar `ADMIN_TOKEN` con comparación de tiempo constante y test — src/lib/net/access.ts · verificado 2026-10-23: ya implementado (timingSafeEqual + dummyCompare para no filtrar longitud)
+- [x] (SEG) cookie-admin-httponly — [M] endpoint de acceso que fije la cookie `admin_token` con `HttpOnly; SameSite=Strict` en vez de `document.cookie` — src/lib/net/access.ts, src/app/api/ · hecho 2026-10-23: POST/DELETE /api/auth (login/logout, Secure en https, 12 h, bucket admin:) + 5 casos en security-verify
+- [ ] (SEG) dns-rebinding-guard — [M] el guard SSRF comprueba literales; resolver el host y validar la IP en el punto de uso para cerrar rebinding — src/lib/net/target-guard.ts · verificado 2026-10-23: mitigación parcial ya en código (resolución DNS con TODAS las direcciones en clasificación, bloqueo siempre de metadata vía DNS, `redirect: 'error'`); residual TOCTOU entre clasificar y fetch — cerrarlo exige conectar por IP con Host fijado, cambio invasivo que merece tarea propia
+- [x] (SEG) rate-limit-memoria — [S] expulsión de claves antiguas del rate limit en memoria para que no crezca sin límite — src/lib/net/access.ts · verificado 2026-10-23: ya implementada (limpieza perezosa al superar 1000 claves)
+- [x] (SEG) xss-evidencia-ui — [M] comprobar que comandos y evidencia del lab se renderizan siempre como texto (sin HTML) en UI, informes y copia al portapapeles — src/components/arena/ · verificado 2026-10-23: cero `dangerouslySetInnerHTML`/`innerHTML`/`document.cookie` en src/; React escapa por defecto y la evidencia viaja como texto/JSON
 - [ ] (SEG) validacion-esquemas-api — [L] validar con esquema todas las entradas de POST/PUT y parámetros de consulta (límites, tipos, listas blancas) — src/app/api/
-- [ ] (SEG) errores-sin-fuga — [S] respuestas de error sin trazas ni rutas internas en producción — src/app/api/
-- [ ] (SEG) escaneo-secretos-historial — [S] `gitleaks`/`trufflehog` sobre el historial completo (cierra R7) y anotar resultado — scripts/, docs/agentes/estado/SEG.md
+- [x] (SEG) errores-sin-fuga — [S] respuestas de error sin trazas ni rutas internas en producción — src/app/api/ · verificado 2026-10-23: las 8 rutas devuelven mensajes genéricos ("Error interno") y las trazas solo a console del servidor
+- [x] (SEG) escaneo-secretos-historial — [S] `gitleaks`/`trufflehog` sobre el historial completo (cierra R7) y anotar resultado — scripts/, docs/agentes/estado/SEG.md · ejecutado 2026-10-23: 212 commits contra 7 familias de patrones + blobs históricos de `.env` (solo DATABASE_URL) y `db/custom.db` (sin claves): LIMPIO; resultado en estado/SEG.md
 
 ### P2
 - [ ] (SEG) cabeceras-extra — [S] COOP/CORP y `Cache-Control` adecuado en respuestas con datos; verificar con `security-verify` — next.config.ts, scripts/security-verify.mjs
@@ -215,6 +215,9 @@ Archivo pensado para `docs/agentes/ROADMAP.md`. Formato de tarea: `- [ ] (ID des
 - [ ] (SEG) security-verify-casos-nuevos — [M] ampliar `security-verify` con casos de los hallazgos cerrados (cada fix = un caso) — scripts/security-verify.mjs
 - [ ] (SEG) sbom-y-lockfile — [S] generar SBOM y verificar integridad del `bun.lock` en CI — .github/workflows/
 - [ ] (SEG) logs-sin-secretos — [S] comprobar que ningún log ni informe contiene claves, tokens ni cabeceras sensibles — src/lib/
+- [ ] (SEG) origin-allowlist-env — [S] validar el `Origin` también contra `NEXT_PUBLIC_SITE_URL` cuando esté definida, para despliegues tras proxies que reescriben el Host (complementa isSameOrigin) — src/lib/net/access.ts
+- [ ] (SEG) gitleaks-ci — [S] fijar el escaneo de secretos en CI (`gitleaks protect` en cada push/PR); el barrido manual del 2026-10-23 quedó limpio y debe perpetuarse — .github/workflows/ (con PUL)
+- [ ] (IMP-2) auth-ui — [M] formulario de login y estado de sesión cuando `ADMIN_TOKEN` está definido, usando `POST /api/auth` / `DELETE /api/auth` (cookie ya HttpOnly); sin guardar el token en localStorage — src/components/arena/, src/hooks/
 
 ---
 
@@ -291,8 +294,8 @@ Cada sesión rota al menos 4 personas. Suites e2e a construir en `tests/e2e/` (`
 
 ## Riesgos y decisiones vigentes (máx. 30 líneas; DIR actualiza)
 
-- **R4 — Acceso:** sin autenticación por defecto (`ADMIN_TOKEN` opt-in) y autopiloto con gasto LLM. No exponer la app a Internet sin proxy con autenticación. Cierre total: modo multiusuario.
-- **R7 — Historia git:** `.env` y BD antiguos en el historial, sin secretos reales conocidos. Cerrar con `escaneo-secretos-historial`.
+- **R4 — Acceso:** sin autenticación por defecto (`ADMIN_TOKEN` opt-in) y autopiloto con gasto LLM. No exponer la app a Internet sin proxy con autenticación. Revisión SEG 2026-10-23: el autopiloto NO tiene hoy tope de gasto (ver `autopiloto-presupuesto`); login con cookie HttpOnly disponible (`POST /api/auth`). Cierre total: modo multiusuario.
+- **R7 — Historia git:** `.env` y BD antiguos en el historial. ESCANEADO 2026-10-23 (212 commits, 7 familias de patrones + blobs): LIMPIO — el `.env` histórico solo tenía `DATABASE_URL` y la BD histórica no guarda claves. Pendiente perpetuar el escaneo en CI (`gitleaks-ci`).
 - **R10 — `DATABASE_URL`:** variable global del contenedor frente a `.env`; usar siempre ruta absoluta.
 - **R13 — TOCTOU de DNS rebinding en el guard SSRF (riesgo aceptado documentado):** el guard resuelve y valida, pero `fetch` re-resuelve después; la mitigación completa exige fijar la IP resuelta en el punto de uso. No afecta al modelo de despliegue vigente (no expuesto); ver tarea `dns-rebinding-guard`.
 - **R11 / D27 — Artefactos de verificación obsoletos:** build limpio (`rm -rf .next/cache`) en cambios masivos de UI y `security-verify` sobre standalone recién construido (ya recogido en PROTOCOLO §3).
