@@ -179,7 +179,13 @@ export async function redArmado(campaignId: string, node: InfraNode): Promise<Op
 
 export async function redIntrusion(campaignId: string, node: InfraNode, agentKey: string): Promise<OpOutcome> {
   const lab = getLab(campaignId)
-  const open = (re: RegExp) => Object.entries(node.vulnerabilities).find(([n, s]) => re.test(n) && s === 'OPEN')
+  // Estado REAL del nodo en el laboratorio: los parches de BLUE se reflejan
+  // aquí en vivo. Leer las vulnerabilidades del InfraNode del escenario era
+  // código muerto (es una lista estática de nombres, nunca contiene el
+  // estado OPEN/PATCHED) y dejaba las ramas SQLI/BOLA sin efecto — hallazgo
+  // y fix mínimo de tests-lab-runtime.
+  const labNode = lab?.nodes.get(node.id)
+  const open = (re: RegExp) => Object.entries(labNode?.vulnerabilities ?? {}).find(([n, s]) => re.test(n) && s === 'OPEN')
 
   // Acceso inicial por phishing (vector de correo: alcanza cualquier host real)
   const phishFlow = async (): Promise<OpOutcome> => {
