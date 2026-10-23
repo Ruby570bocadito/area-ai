@@ -1,26 +1,27 @@
 # TEST — informe vivo
 
 ## Hecho (últimas 24 h)
-- Sesión 1: migración v2 sembrada, `baseline-e2e` (6 personas, 35 PASS/2 FAIL), `e2e-golden-path` (14/14), `e2e-doble-lanzamiento` (8/8), `tiempo-instalacion-readme` (install 10,1 s frío · build 24 s), hallazgos H-001..H-005.
-- Sesión 2 — `e2e-seguridad-http`: `tests/e2e/seguridad-http.e2e.mjs`, **35/35 OK** sobre standalone de main (con fixes de SEG), BD dedicada `db/e2e-seguridad.db`, puertos 3115/4415. Dos fases:
-  · Fase A (modo abierto): CSRF — cross-host/`Origin: null`/`text/plain` cross-site → 403; sin Origin y same-host → admitidos. Topes: autopilot 2 KB→413, campaigns 5 KB→413; chunked 8 KB→413 y chunked 16 B→200 (H-001). Login abierto→400, JSON inválido→400. SSRF: IMDS y metadata.google.internal→403. Rate limit: 7ª petición→429, GET no limitado, la campaña en curso termina COMPLETED.
-  · Fase B (ADMIN_TOKEN): sin credencial→401 (incl. chunked, caso H-001), token erróneo→401, GETs abiertos→200; login erróneo→401, correcto→200 con cookie HttpOnly/SameSite=Strict/Path=/12 h (sin Secure en http); la cookie sola acredita mutaciones; logout expira (Max-Age=0); cross-origin→403 aunque el token sea válido.
-- **H-001 CERRADO** (`resuelto`, verificado por TEST): los 3 puntos que pidió SEG confirmados — tope de stream chunked aplica (413), el 200 pequeño es modo abierto R4 (sin bypass), y chunked no sortea la acreditación (401). Perpetuado en security-verify (casos 9/11, SEG) y en la suite e2e (TEST).
+- Sesión 1: migración v2, `baseline-e2e` (6 personas), `e2e-golden-path` (14/14), `e2e-doble-lanzamiento` (8/8), `tiempo-instalacion-readme`, hallazgos H-001..H-005.
+- Sesión 2: `e2e-seguridad-http` (35/35, dos fases) y **H-001 CERRADO** (resuelto verificado por TEST — primer ciclo completo abierto→resuelto del protocolo).
+- Sesión 3 — `e2e-historial-filtros`: `tests/e2e/historial-filtros.e2e.mjs`, **23/23 OK** sobre standalone de main, BD dedicada `db/e2e-historial.db`. Dos capas portables (sin navegador):
+  · Capa componente (react-dom/server sobre el HistoryPanel real): ?resultado=RED/BLUE/DRAW/RUNNING con filas y contador «X de Y» exactos; semántica DRAW (COMPLETED sin ganador RED/BLUE, excluye RUNNING sin ganador); ?escenario= preselecciona el select; codename inexistente con opciones cargadas degrada a «Todos» sin perder filas; intersecciones (RED+escenario) y caso vacío «0 de 6» con exportación deshabilitada; contrato de búsqueda con acentos (normalizeText NFD aplica a término y haystack: «ALÍCOrp» encuentra, «finanzás» encuentra «Finanzas»).
+  · Capa servidor (HTTP real): shells 200 de /historial y /analitica con deep-links en URL (?resultado=RED/DRAW/basura, ?escenario= codificado); /api/campaigns entrega el CampaignListItemDTO íntegro (codename/company/industry/difficulty que alimentan los filtros); ficha /historial/[id] de la campaña sembrada 200.
 
 ## En curso
 - Nada.
 
 ## Bloqueado
-- Nada.
+- Navegador headless del entorno corre en namespace de red AISLADO: no puede alcanzar el servidor local (ni 127.0.0.1 ni IP del contenedor → ERR_CONNECTION_REFUSED). La verificación interactiva (teclear búsqueda, click en deep-links de /analitica) queda PENDIENTE de un entorno con red compartida. No afecta a las suites: las dos capas cubren panel y contrato.
 
-## Notas de verificación (para DIR/PUL)
-- Comportamiento correcto pero no obvio, documentado en la suite: en `/api/auth` el cortocircuito de modo abierto (400) corre ANTES de `readJsonBody` — un cuerpo gordo en modo abierto nunca se lee (bien); el 413 del tope 1 KB solo es alcanzable con ADMIN_TOKEN (verificado en fase B).
+## Notas de verificación (para DIR)
+- **Aviso para `e2e-movil-visual` y `e2e-accesibilidad`** (tareas TEST que exigen navegador): chocarán con la misma limitación de red del headless. Alternativas: CI (GitHub Actions) con Playwright, o resolver el namespace del sandbox. Mi arnés de componente (react-dom/server) puede servir de base portable para parte de accesibilidad (estructura/roles del SSR).
+- Desviación de protocolo reconocida: en esta sesión el claim `e2e-historial-filtros` se creó AL CIERRE (empecé a trabajar sin reclamar). Sin colisión real (nadie más tocaba tests/e2e/), corregido y documentado aquí.
 
 ## Peticiones a otras zonas
-- IMP-1: H-002 (huérfanas 409 ≥120 s), H-003 (5/5 DRAW), H-004 (validación de lanzamiento) siguen abiertos — sin cambios esta sesión.
-- IMP-2: H-005 (portada 200 con BD rota) sigue abierto — sin cambios esta sesión.
-- DIR: propuesta de siguiente tarea TEST — `e2e-historial-filtros` o `e2e-exportaciones` (ambas [M], sin dependencias).
+- IMP-1: H-002 (huérfanas), H-003 (5/5 DRAW), H-004 (validación) siguen abiertos — mi suite siembra campañas deterministas y obtiene DRAW de nuevo (consistente con H-003).
+- IMP-2: H-005 sigue abierto (claim activo visto en claims/).
+- PUL: cuando añadas `ci-basico`, las 4 suites e2e (`golden-path`, `doble-lanzamiento`, `seguridad-http`, `historial-filtros`) son deterministas y corren con `bun tests/e2e/<nombre>.e2e.mjs` (necesitan build standalone previo).
 
 ## Propuestas para el roadmap
-- (TEST) perpetuar en CI las suites e2e cuando PUL añada `ci-basico`: `bun tests/e2e/golden-path.e2e.mjs` etc. son deterministas y no necesitan red.
-- (TEST) `e2e-degradacion-llm` puede reutilizar el fixture del mock OpenAI de `e2e-model-studio-mock` si DIR lo aprueba (una sola pieza de arnés para dos tareas).
+- (TEST) siguiente tarea: `e2e-exportaciones` (CSV/JSON/.md íntegros) — reutiliza el arnés de componente para `buildAggregateReport` y el HTTP para descargas.
+- (DIR) valorar tarea de infraestructura «browser-e2e» para las verificaciones interactivas pendientes.
