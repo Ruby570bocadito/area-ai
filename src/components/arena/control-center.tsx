@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { Play, Loader2, RadioTower, Building2, Cpu, ShieldAlert, Swords, Check, Infinity as InfinityIcon } from 'lucide-react'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import type { ScenarioDTO } from '@/lib/api-types'
 
@@ -55,12 +56,18 @@ export function ControlCenter({
 }) {
   const [selected, setSelected] = useState<string | null>(null)
   const [starting, setStarting] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
+  const selectedScenario = selected ? (scenarios.find((s) => s.id === selected) ?? null) : null
+
+  // Cerrojo de doble clic: el botón principal abre la confirmación ligera
+  // y el lanzamiento real solo ocurre desde el diálogo, con el mismo lock.
   const handleStart = async () => {
     if (disabled || starting) return
     setStarting(true)
     try {
       await onStart(selected ?? undefined)
+      setConfirmOpen(false)
     } finally {
       setStarting(false)
     }
@@ -224,7 +231,7 @@ export function ControlCenter({
           type="button"
           whileHover={{ scale: disabled ? 1 : 1.02 }}
           whileTap={{ scale: disabled ? 1 : 0.98 }}
-          onClick={handleStart}
+          onClick={() => setConfirmOpen(true)}
           disabled={disabled || starting}
           className={cn(
             'shine-sweep relative flex items-center gap-2.5 rounded-lg px-8 py-3.5 text-sm font-semibold transition-all',
@@ -253,6 +260,63 @@ export function ControlCenter({
           automáticamente y se inyecta en las próximas campañas.
         </p>
       </div>
+
+      {/* Confirmación ligera antes de lanzar: evita arranques accidentales
+          sin fricción extra (un solo paso más, con el escenario visible). */}
+      <Dialog open={confirmOpen} onOpenChange={(open) => !starting && setConfirmOpen(open)}>
+        <DialogContent className="max-w-sm rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-display text-base font-bold text-ink-900">
+              ¿Lanzamos la campaña?
+            </DialogTitle>
+            <DialogDescription className="text-[12.5px] leading-relaxed text-ink-500">
+              {selectedScenario ? (
+                <>
+                  Infraestructura objetivo: <span className="font-semibold text-ink-700">{selectedScenario.codename}</span>{' '}
+                  — {selectedScenario.company}.
+                </>
+              ) : (
+                'Escenario aleatorio: el motor elegirá la infraestructura objetivo.'
+              )}{' '}
+              Se jugarán 8 rondas reales Red vs Blue contra el laboratorio local.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-wrap items-center gap-2 font-mono-tight text-[10px] text-ink-500">
+            <span className="flex items-center gap-1.5 rounded-full border border-surface-200 bg-surface-50 px-2.5 py-1">
+              <Cpu className="h-3 w-3 text-[#0086c9]" /> Motor: <span className="font-semibold text-ink-700">{provider}</span>
+            </span>
+            <span className="flex items-center gap-1.5 rounded-full border border-surface-200 bg-surface-50 px-2.5 py-1">
+              <Swords className="h-3 w-3 text-ink-400" /> 8 rondas
+            </span>
+          </div>
+          <DialogFooter className="gap-2">
+            <button
+              type="button"
+              onClick={() => setConfirmOpen(false)}
+              disabled={starting}
+              className="rounded-lg border border-surface-200 bg-white px-4 py-2 text-[13px] font-semibold text-ink-700 transition-colors hover:bg-surface-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleStart()}
+              disabled={disabled || starting}
+              className="flex items-center gap-2 rounded-lg bg-ink-900 px-4 py-2 text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-[#182230] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {starting ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Iniciando…
+                </>
+              ) : (
+                <>
+                  <Play className="h-3.5 w-3.5" /> Lanzar campaña
+                </>
+              )}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
