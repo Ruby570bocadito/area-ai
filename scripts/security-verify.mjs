@@ -17,12 +17,16 @@
 //      la cookie acreditada sirve para mutar (UI sin cabeceras); logout DELETE expira.
 //
 // Uso: bun scripts/security-verify.mjs   (requiere .next/standalone ya construido)
+// Puerto: SECURITY_VERIFY_PORT (defecto 3105; tarea security-verify-puerto del
+// ROADMAP, acordada con PUL) — cada agente puede pasar su puerto de la sección 6
+// del protocolo (p. ej. SECURITY_VERIFY_PORT=3113 para SEG) sin pisar a nadie.
 import { spawn } from 'node:child_process'
 import { request as httpRequest } from 'node:http'
 import { resolve } from 'node:path'
 
 const ROOT = resolve(import.meta.dir, '..')
-const PORT = 3105
+const parsedPort = Number(process.env.SECURITY_VERIFY_PORT)
+const PORT = Number.isInteger(parsedPort) && parsedPort > 0 && parsedPort < 65536 ? parsedPort : 3105
 const BASE = `http://127.0.0.1:${PORT}`
 const TOKEN = 'token-verificacion-ronda-11'
 
@@ -51,6 +55,8 @@ const check = (name, ok, extra = '') => {
   console.log(`${ok ? 'PASS' : 'FAIL'} · ${name}${extra ? ' · ' + extra : ''}`)
   if (!ok) failures++
 }
+
+console.log('puerto de verificación:', PORT, PORT === 3105 ? '(defecto)' : '(SECURITY_VERIFY_PORT)')
 
 // 1 ── Cabeceras de seguridad
 for (const path of ['/', '/api/state']) {
