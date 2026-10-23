@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-label="area·ai — Laboratorio adversarial de agentes IA: RED vs BLUE">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-label="area·ai — Adversarial laboratory of AI agents: RED vs BLUE">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#0c111d"/>
@@ -55,10 +55,10 @@
   <circle cx="188" cy="246" r="2.4" fill="#98a2b3" opacity="0.6"/>
 
   <!-- título y subtítulo -->
-  <text x="84" y="118" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="700" letter-spacing="6" fill="#98a2b3">LABORATORIO ADVERSARIAL DE AGENTES IA</text>
+  <text x="84" y="118" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="700" letter-spacing="6" fill="#98a2b3">ADVERSARIAL LABORATORY OF AI AGENTS</text>
   <text x="82" y="196" font-family="ui-sans-serif, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="84" font-weight="800" letter-spacing="-2" fill="url(#title)">area·ai</text>
-  <text x="86" y="234" font-family="ui-sans-serif, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="19" fill="#d0d5dd">Red Team vs Blue Team sobre un ciber range real: compromisos verificables,</text>
-  <text x="86" y="260" font-family="ui-sans-serif, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="19" fill="#d0d5dd">detección por tráfico real y conocimiento que evoluciona campaña tras campaña.</text>
+  <text x="86" y="234" font-family="ui-sans-serif, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="19" fill="#d0d5dd">Red Team vs Blue Team on a real cyber range: verifiable compromises,</text>
+  <text x="86" y="260" font-family="ui-sans-serif, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="19" fill="#d0d5dd">detection from real traffic and knowledge that evolves campaign after campaign.</text>
 
   <!-- chips -->
   <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" font-weight="600" fill="#e4e7ec">

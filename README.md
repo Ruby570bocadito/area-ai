@@ -1,189 +1,189 @@
-# area·ai — Laboratorio Adversarial de Agentes IA
+# area·ai — Adversarial AI Agent Laboratory
 
-![area·ai — Laboratorio adversarial de agentes IA](docs/banner.svg)
+![area·ai — Adversarial AI agent laboratory](docs/banner.svg)
 
 ![Next.js 16](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs&logoColor=white)
 ![React 19](https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=black)
 ![Bun ≥1.1](https://img.shields.io/badge/Bun-%E2%89%A51.1-f47f1b?logo=bun&logoColor=white)
 ![Prisma + SQLite](https://img.shields.io/badge/Prisma-SQLite-2d3748?logo=prisma&logoColor=white)
-![tests 386 en verde](https://img.shields.io/badge/tests-386_en_verde-12b76a)
-![desarrollo multiagente v2](https://img.shields.io/badge/desarrollo-multiagente_v2-8b5cf6)
+![tests 411 green](https://img.shields.io/badge/tests-411_green-12b76a)
+![multi-agent development v2](https://img.shields.io/badge/development-multi--agent_v2-8b5cf6)
 
-Sandbox de autoevolución **Red Team vs Blue Team**: agentes de IA ejecutan campañas de ciberseguridad contra un **laboratorio real** (servicios HTTP desplegados en localhost), archivan el conocimiento aprendido y evolucionan campaña tras campaña. Nada está simulado con dados: los compromisos son sesiones verificables, las detecciones son correlaciones de tráfico real y la evidencia (método, ruta, status, respuesta) se guarda en cada evento.
+A **Red Team vs Blue Team** self-evolution sandbox: AI agents run cybersecurity campaigns against a **real laboratory** (HTTP services deployed on localhost), archive the knowledge they learn, and evolve campaign after campaign. Nothing is simulated with dice: compromises are verifiable sessions, detections are correlations of real traffic, and the evidence (method, route, status, response) is stored on every event.
 
-| Panel de mando | Operaciones en vivo |
+| Command deck | Live operations |
 |---|---|
-| ![Panel de mando](docs/screenshots/panel-de-mando.png) | ![Operaciones en vivo](docs/screenshots/operaciones-mapa.png) |
+| ![Command deck](docs/screenshots/panel-de-mando.png) | ![Live operations](docs/screenshots/operaciones-mapa.png) |
 
-**Campaña en vivo (vídeo)** — RED exfiltra datos con comandos reales mientras BLUE parchea y detecta; mapa, feed de eventos, marcador y laboratorio actualizándose en tiempo real durante una campaña auténtica de 12 rondas:
+**Live campaign (video)** — RED exfiltrates data with real commands while BLUE patches and detects; map, event feed, scoreboard and laboratory updating in real time during an authentic 12-round campaign:
 
-![Campaña en vivo](docs/screenshots/campana-en-vivo.gif)
+![Live campaign](docs/screenshots/campana-en-vivo.gif)
 
-## Galería
+## Gallery
 
 | | |
 |---|---|
-| ![Ficha de detalle](docs/screenshots/ficha-detalle.png) | ![Archivo de campañas](docs/screenshots/historial-archivo.png) |
-| **Ficha de detalle** — telemetría íntegra, comandos reales con evidencia HTTP, evolución ronda a ronda e informe `.md` | **Archivo de campañas** — búsqueda tolerante a acentos, filtros con deep-links, exportación CSV e informe agregado en Markdown |
-| ![Memoria de conocimiento](docs/screenshots/memoria-conocimiento.png) | ![Analítica](docs/screenshots/analitica-balance.png) |
-| **Memoria del sistema** — lecciones archivadas por RED/BLUE con confianza dinámica, uso y exportación CSV/JSON | **Analítica** — balance por escenario, evolución del conocimiento y ranking XP con deep-links al archivo |
-| ![Roster de agentes](docs/screenshots/roster-agentes.png) | ![Model Studio](docs/screenshots/model-studio.png) |
-| **Roster de agentes** — fichas con XP, niveles y actividad real por operador | **Model Studio** — conexión a cualquier proveedor compatible OpenAI con descarga real del catálogo |
-| ![Atajos de teclado](docs/screenshots/atajos-teclado.png) | ![Responsive en móvil](docs/screenshots/vista-movil.png) |
-| **Atajos de teclado** — ayuda con `?`, salto de sección con `g`+tecla y paleta de comandos `⌘K` | **Responsive** — la app completa es usable en móvil (el panel Sistema incluido) |
+| ![Campaign detail](docs/screenshots/ficha-detalle.png) | ![Campaign archive](docs/screenshots/historial-archivo.png) |
+| **Campaign detail** — full telemetry, real commands with HTTP evidence, round-by-round evolution and a `.md` report | **Campaign archive** — accent-tolerant search, deep-linked filters, CSV export and an aggregated Markdown report |
+| ![Knowledge memory](docs/screenshots/memoria-conocimiento.png) | ![Analytics](docs/screenshots/analitica-balance.png) |
+| **System memory** — lessons archived by RED/BLUE with dynamic confidence, usage and CSV/JSON export | **Analytics** — per-scenario balance, knowledge evolution and the XP leaderboard with deep links into the archive |
+| ![Agent roster](docs/screenshots/roster-agentes.png) | ![Model Studio](docs/screenshots/model-studio.png) |
+| **Agent roster** — cards with XP, levels and real activity per operator | **Model Studio** — connect to any OpenAI-compatible provider with a real catalog download |
+| ![Keyboard shortcuts](docs/screenshots/atajos-teclado.png) | ![Mobile responsive](docs/screenshots/vista-movil.png) |
+| **Keyboard shortcuts** — help with `?`, section jump with `g`+key and the `⌘K` command palette | **Responsive** — the full app is usable on mobile (System panel included) |
 
-## Características
+## Features
 
-- **Motor de campañas**: 10 agentes (5 RED / 5 BLUE), 6 escenarios con infraestructura real (e-commerce, sanidad, SaaS, banca, energía/OT, defensa) y campañas LARGAS de **12 rondas — 2 por cada fase MITRE** (RECON → ARMADO → INTRUSIÓN → ESCALADA → LATERAL → OBJETIVO) con cadencia intensa de 3-6 acciones por ronda: RED encadena con el momentum (0.65 tras éxito, 0.35 tras parcial), BLUE responde siempre (detección SIEM, corte de sesión, parcheo o caza proactiva) y los impactos están recalibrados (`src/lib/sim/pace.ts`) para que el arco de progreso [0,100] conserve tensión hasta el final.
-- **Laboratorio real**: runtime HTTP en `127.0.0.1:4403` que sirve servicios por nodo (WEB/APP/API/VPN/AD/DB/OT/BACKUP/SIEM/ENDPOINT/CDN) con política de red por niveles, sesiones con privilegios, firewall, parcheo y clasificación de firmas (SQLI, PORT_SCAN, BOLA_ENUM, PASS_THE_HASH, DATA_EXFIL, RCE…).
-- **Evidencia verificable**: cada acción RED/BLUE es una petición HTTP real contra el lab; el resultado se deriva de códigos de estado y artefactos reales, y se guarda en `CampaignEvent` (`command` + `evidence`).
-- **Histórico completo**: ficha de detalle por campaña (`/historial/[id]`) con telemetría íntegra, comandos reales, **evolución ronda a ronda** (acciones, impacto, aciertos y liderato agregados por fase, con puntos de giro) y **comparativa con las otras campañas del mismo escenario** (medias del escenario y hermanas enlazadas), más informe `.md` y **exportación de la telemetría en CSV/JSON** (comandos y evidencia íntegros; el JSON conserva el detalle completo para análisis post-campaña); archivo con búsqueda tolerante a acentos, filtros por resultado/escenario (deep-links `?resultado=…` / `?escenario=…`), exportación **CSV**, **informe agregado `.md`** de la selección filtrada (resumen ejecutivo + una sección por campaña), copiable al portapapeles con un clic, y accesos directos desde la analítica (la curva de evolución y las filas del balance enlazan al archivo con el filtro aplicado, más un **balance por escenario** en `/analitica` con deep-links a `/historial?escenario=…`); memoria de conocimiento completa con búsqueda, categorías y ordenación por fuerza, con **exportación CSV/JSON** de la selección filtrada de ambos equipos.
-- **Bucle de evolución**: las lecciones generadas por LLM se archivan como `Knowledge` con confianza dinámica, categoría y tags normalizados contra la taxonomía del esquema, y se reinyectan en campañas siguientes; los agentes ganan XP/niveles con curva rebalanceada. La chispa de conocimiento del panel consulta solo la ventana de 14 días, de modo que su coste no crece con el archivo.
-- **Operación continua (autopiloto)**: con un interruptor, el motor encadena campañas reales en segundo plano mientras el motor está ocioso.
-- **UI profesional multi-página**: panel de mando, operaciones con mapa de red interactivo y clicables, fichas de agente con actividad real, conocimiento, historial, analítica y gestión de modelos LLM. Héroe con **campo de partículas RED/BLUE y textos animados** (componentes React Bits integrados sin dependencias nuevas), **arte procedural SVG** por escenario (cada uno con una red distinta y determinista), panel **Sistema** permanente (BD, laboratorio, motor LLM y aviso de modo determinista), paleta de comandos con `⌘K`, **atajos de teclado** (`?` para la ayuda, `g`+tecla para saltar de sección), estados de carga/error/vacío cuidados, exportación de informes `.md` y aviso (toast) al terminar una campaña, con el resultado y acceso directo a la ficha.
-- **Motor LLM configurable**: por defecto usa `z-ai-web-dev-sdk`; se puede conectar cualquier proveedor compatible OpenAI (DeepSeek, Ollama, OpenRouter…) desde `/modelos`, con descarga real del catálogo `/v1/models`. Si el proveedor no responde o falla, el motor **degrada a modo determinista** y la campaña continúa en lugar de abortarse.
-- **SEO mínimo**: sitemap dinámico (`/sitemap.xml` con rutas estáticas y fichas de campañas completadas) y `robots.txt` servidos por la propia app, con degradación sin base de datos.
+- **Campaign engine**: 10 agents (5 RED / 5 BLUE), 6 scenarios with real infrastructure (e-commerce, healthcare, SaaS, banking, energy/OT, defense) and LONG campaigns of **12 rounds — 2 per MITRE phase** (RECON → ARMING → INTRUSION → ESCALATION → LATERAL → OBJECTIVE) with an intense cadence of 3-6 actions per round: RED chains with momentum (0.65 after success, 0.35 after partial), BLUE always responds (SIEM detection, session kill, patching or proactive hunting) and impacts are recalibrated (`src/lib/sim/pace.ts`) so the [0,100] progress arc keeps tension until the very end.
+- **Real laboratory**: an HTTP runtime on `127.0.0.1:4403` serving per-node services (WEB/APP/API/VPN/AD/DB/OT/BACKUP/SIEM/ENDPOINT/CDN) with tiered network policy, privileged sessions, firewall, patching and signature classification (SQLI, PORT_SCAN, BOLA_ENUM, PASS_THE_HASH, DATA_EXFIL, RCE…).
+- **Verifiable evidence**: every RED/BLUE action is a real HTTP request against the lab; the outcome is derived from status codes and real artifacts, and it is stored in `CampaignEvent` (`command` + `evidence`).
+- **Complete history**: a per-campaign detail page (`/historial/[id]`) with full telemetry, real commands, **round-by-round evolution** (actions, impact, hits and lead aggregated per phase, with turning points) and **comparison against the other campaigns of the same scenario** (scenario averages and linked siblings), plus a `.md` report and **CSV/JSON telemetry export** (full commands and evidence; the JSON keeps the complete detail for post-campaign analysis); an archive with accent-tolerant search, filters by outcome/scenario (deep links `?resultado=…` / `?escenario=…`), **CSV** export, an **aggregate `.md` report** of the filtered selection (executive summary + one section per campaign), copyable to the clipboard with one click, plus direct access from analytics (the evolution curve and the balance rows link into the archive with the filter applied, and a **per-scenario balance** lives in `/analitica` with deep links to `/historial?escenario=…`); a complete knowledge memory with search, categories and sorting by strength, with **CSV/JSON export** of the filtered selection of both teams.
+- **Evolution loop**: lessons generated by the LLM are archived as `Knowledge` with dynamic confidence, category and tags normalized against the schema taxonomy, and are re-injected into later campaigns; agents earn XP/levels with a rebalanced curve. The dashboard's knowledge spark queries only the 14-day window, so its cost does not grow with the archive.
+- **Continuous operation (autopilot)**: with one switch, the engine chains real campaigns in the background while the engine is idle.
+- **Professional multi-page UI**: command deck, live operations with an interactive, clickable network map, agent pages with real activity, knowledge, history, analytics and LLM model management. Hero with a **RED/BLUE particle field and animated text** (bundled React Bits components, no new dependencies), **procedural SVG art** per scenario (each with its own distinct deterministic network), a permanent **System** panel (DB, lab, LLM engine and the deterministic-mode notice), a `⌘K` command palette, **keyboard shortcuts** (`?` for help, `g`+key to jump between sections), carefully crafted loading/error/empty states, `.md` report export and a toast when a campaign finishes, with the outcome and a direct link to the detail page.
+- **Configurable LLM engine**: uses the bundled `z-ai-web-dev-sdk` by default; any OpenAI-compatible provider (DeepSeek, Ollama, OpenRouter…) can be connected from `/modelos`, with a real download of the `/v1/models` catalog. If the provider is unreachable or fails, the engine **degrades to deterministic mode** and the campaign continues instead of aborting.
+- **Minimal SEO**: dynamic sitemap (`/sitemap.xml` with static routes and finished campaign pages) and `robots.txt` served by the app itself, degrading gracefully without a database.
 
-## Arquitectura
+## Architecture
 
-**Flujo de una campaña** (todo ocurre en local, con evidencia verificable):
+**Campaign flow** (everything happens locally, with verifiable evidence):
 
 ```mermaid
 flowchart LR
-    U["Usuario / Autopiloto"] -->|"POST /api/campaigns"| M["Motor de campañas<br/>src/lib/sim/engine.ts"]
-    M -->|"elige agentes y fases<br/>según alcanzabilidad"| L["Laboratorio HTTP real<br/>src/lib/lab/runtime.ts<br/>127.0.0.1"]
-    L -->|"resultado real + evidencia<br/>método · ruta · status"| M
-    M -->|"diario del laboratorio"| S["SOC BLUE<br/>correlación y respuesta"]
-    S -->|"bloqueo · parche · aislamiento · caza"| L
-    M -->|"eventos + comandos"| D[("SQLite · Prisma")]
-    D --> K["Conocimiento archivado<br/>confianza dinámica"]
-    K -->|"reinyección en campañas<br/>siguientes"| M
-    D --> V["UI multi-página<br/>panel · arena · historial · analítica"]
+    U["User / Autopilot"] -->|"POST /api/campaigns"| M["Campaign engine<br/>src/lib/sim/engine.ts"]
+    M -->|"picks agents and phases<br/>by real reachability"| L["Real HTTP laboratory<br/>src/lib/lab/runtime.ts<br/>127.0.0.1"]
+    L -->|"real outcome + evidence<br/>method · route · status"| M
+    M -->|"lab journal"| S["BLUE SOC<br/>correlation and response"]
+    S -->|"block · patch · isolate · hunt"| L
+    M -->|"events + commands"| D[("SQLite · Prisma")]
+    D --> K["Archived knowledge<br/>dynamic confidence"]
+    K -->|"re-injection into<br/>later campaigns"| M
+    D --> V["Multi-page UI<br/>deck · arena · history · analytics"]
 ```
 
 ```
 src/
 ├── app/                    # App Router (Next.js 16)
-│   ├── page.tsx            # Panel de mando
-│   ├── arena/              # Operaciones en vivo (mapa, feed, marcador)
-│   ├── agentes/            # Roster + fichas con actividad real
-│   ├── conocimiento/       # Lecciones archivadas y confianza
-│   ├── historial/          # Archivo de campañas
-│   ├── analitica/          # Balance, evolución, ranking XP
-│   ├── modelos/            # Gestión del proveedor LLM
-│   ├── sitemap.ts/robots.ts # SEO mínimo: sitemap dinámico + robots servidos por la app
+│   ├── page.tsx            # Command deck
+│   ├── arena/              # Live operations (map, feed, scoreboard)
+│   ├── agentes/            # Roster + agent pages with real activity
+│   ├── conocimiento/       # Archived lessons and confidence
+│   ├── historial/          # Campaign archive
+│   ├── analitica/          # Balance, evolution, XP ranking
+│   ├── modelos/            # LLM provider management
+│   ├── sitemap.ts/robots.ts # Minimal SEO: dynamic sitemap + robots served by the app
 │   └── api/                # state, campaigns (GET/POST + [id]), knowledge, autopilot, settings, models, agents/[key]/activity
-├── components/arena/       # UI del producto (mapa, feed, roster, analítica; campaign-analysis.tsx: evolución y comparativa de la ficha; reactbits/: componentes de React Bits integrados con atribución)
+├── components/arena/       # Product UI (map, feed, roster, analytics; campaign-analysis.tsx: detail evolution and comparison; reactbits/: bundled React Bits components with attribution)
 ├── lib/
-│   ├── sim/                # engine.ts (motor), roster.ts, seed.ts, llm.ts, progression.ts, pace.ts (ritmo e intensidad: impactos por ronda, cadencia y encadenamiento RED), autopilot.ts, knowledge-score.ts (fuerza del conocimiento), taxonomy.ts (normalización de categorías/tags de lecciones), provider-config.ts (configuración del proveedor LLM), types.ts (tipos compartidos del motor)
-│   ├── lab/                # runtime.ts (servidor HTTP del lab), ops.ts (acciones RED/BLUE), store.ts, types.ts (tipos del lab)
-│   ├── net/                # target-guard.ts (SSRF), access.ts (token opcional, rate limits, same-origin de mutaciones y topes de cuerpo)
-│   └── *.ts                # módulos de raíz de lib/: victory.ts (regla de victoria, fuente única), round-progression.ts (evolución por rondas), aggregate-report.ts (informe agregado), text.ts (texto, duraciones y fechas), knowledge-export.ts (exportación CSV/JSON de la memoria), event-export.ts (exportación CSV/JSON de la telemetría de una campaña), scenario-stats.ts (balance por escenario), arena-colors.ts (tokens de color RED/BLUE), api-types.ts (contratos API), download.ts (descarga de ficheros al navegador), db.ts (cliente Prisma), utils.ts (helper de clases)
-└── hooks/use-arena-state.tsx  # Sondeo único de /api/state compartido por toda la app (más salud de BD clasificada con el healthcheck)
+│   ├── sim/                # engine.ts (engine), roster.ts, seed.ts, llm.ts, progression.ts, pace.ts (pace and intensity: impacts per round, cadence and RED chaining), autopilot.ts, knowledge-score.ts (knowledge strength), taxonomy.ts (lesson category/tag normalization), provider-config.ts (LLM provider configuration), types.ts (shared engine types)
+│   ├── lab/                # runtime.ts (lab HTTP server), ops.ts (RED/BLUE actions), store.ts, types.ts (lab types)
+│   ├── net/                # target-guard.ts (SSRF), access.ts (optional token, rate limits, same-origin for mutations and body caps)
+│   └── *.ts                # lib root modules: victory.ts (victory rule, single source), round-progression.ts (per-round evolution), aggregate-report.ts (aggregate report), text.ts (text, durations and dates), knowledge-export.ts (memory CSV/JSON export), event-export.ts (campaign telemetry CSV/JSON export), scenario-stats.ts (per-scenario balance), arena-colors.ts (RED/BLUE color tokens), api-types.ts (API contracts), download.ts (browser file download), db.ts (Prisma client), utils.ts (class helper)
+└── hooks/use-arena-state.tsx  # Single polling of /api/state shared by the whole app (plus DB health classified via the healthcheck)
 ```
 
-**Esquema de datos (Prisma + SQLite)**: `Agent`, `Scenario`, `Campaign`, `CampaignEvent`, `Knowledge`, `Setting`.
+**Data schema (Prisma + SQLite)**: `Agent`, `Scenario`, `Campaign`, `CampaignEvent`, `Knowledge`, `Setting`.
 
-**Flujo de una campaña**: el usuario (o el autopiloto) lanza una campaña → el motor elige agentes y fases según alcanzabilidad real → cada acción ejecuta una operación HTTP contra el laboratorio (`src/lib/lab/ops.ts`) → el SOC (BLUE) detecta por correlación del diario del lab y responde (bloqueo, parcheo, aislamiento, hunting) → las lecciones se archivan y la confianza del conocimiento evoluciona.
+**Campaign flow**: the user (or the autopilot) launches a campaign → the engine picks agents and phases by real reachability → each action performs an HTTP operation against the laboratory (`src/lib/lab/ops.ts`) → the SOC (BLUE) detects by correlating the lab journal and responds (blocking, patching, isolation, hunting) → lessons are archived and knowledge confidence evolves.
 
-### Convenciones de desarrollo
+### Development conventions
 
-- **Lectura de filtros de URL (`Suspense` + `useSearchParams` — ratificada como D6):** toda página nueva que lea filtros de la URL debe hacerlo en un componente propio y envolverlo en `<Suspense>` con un fallback coherente con la página — `useSearchParams` exige la frontera de Suspense para no degradar el prerender estático de la página completa. El valor leído se valida siempre contra la lista blanca de valores admitidos. Referencia canónica: `src/app/historial/page.tsx` (`FilteredHistoryPanel` envuelto en `Suspense`, que soporta los deep-links `?resultado=` de la analítica).
+- **Reading URL filters (`Suspense` + `useSearchParams` — ratified as D6):** every new page that reads URL filters must do so in its own component wrapped in `<Suspense>` with a fallback consistent with the page — `useSearchParams` requires the Suspense boundary so the static prerender of the whole page does not degrade. The value read is always validated against the whitelist of accepted values. Canonical reference: `src/app/historial/page.tsx` (`FilteredHistoryPanel` wrapped in `Suspense`, which supports the `?resultado=` deep links from analytics).
 
-## Requisitos
+## Requirements
 
-- [Bun](https://bun.sh) ≥ 1.1 (o Node.js ≥ 20 con npm/pnpm)
-- No necesita servicios externos: la base de datos es SQLite y el laboratorio corre en localhost.
+- [Bun](https://bun.sh) ≥ 1.1 (or Node.js ≥ 20 with npm/pnpm)
+- No external services needed: the database is SQLite and the laboratory runs on localhost.
 
-## Instalación
+## Installation
 
 ```bash
-# 1. Clonar e instalar dependencias
+# 1. Clone and install dependencies
 git clone https://github.com/Ruby570bocadito/area-ai.git
 cd area-ai
 bun install
 
-# 2. Configurar entorno
-cp .env.example .env          # ajusta DATABASE_URL si lo necesitas
+# 2. Set up the environment
+cp .env.example .env          # adjust DATABASE_URL if needed
 
-# 3. Base de datos (SQLite)
+# 3. Database (SQLite)
 bunx prisma generate
-bun run db:push               # crea el esquema; el seed es idempotente al arrancar
+bun run db:push               # creates the schema; the seed is idempotent at startup
 
-# 4. Arrancar en desarrollo
+# 4. Run in development
 bun run dev                   # http://localhost:3000
 ```
 
-### Scripts disponibles
+### Available scripts
 
-| Script | Descripción |
+| Script | Description |
 |---|---|
-| `bun run dev` | Servidor de desarrollo en el puerto 3000 |
-| `bun run build` | Build de producción (standalone) |
-| `bun run start` | Servir el build de producción |
+| `bun run dev` | Development server on port 3000 |
+| `bun run build` | Production build (standalone) |
+| `bun run start` | Serve the production build |
 | `bun run lint` | ESLint |
-| `bun run test` | Tests unitarios en `tests/` (runner nativo de bun): guard de destinos SSRF (`target-guard`), control de acceso/rate limit (`access`), resiliencia del motor LLM (`llm-resilience`, `llm-creation`), contrato del informe agregado (`aggregate-report`), utilidades de texto/duraciones/fechas (`text`), evolución por rondas de la ficha (`round-progression`), exportación de la memoria (`knowledge-export`), exportación de la telemetría de eventos (`event-export`), balance por escenario (`scenario-stats`), regla de victoria acotada (`victory`), taxonomía de lecciones (`taxonomy`), ritmo/intensidad de campaña (`sim/pace`) y límites del puerto del laboratorio (`lab-port`) — 386 tests |
-| `bun run verify` | **Verificación de cierre de ronda**: tipos (`tsc`) → unidades → entorno → servidor de producción → golden path (healthcheck `/api`, `/api/state` con seed, `/api/campaigns`, `/api/knowledge`, página principal, `sitemap.xml` y `robots.txt`). Delega en `tests/smoke.mjs` (canon único, 17 comprobaciones) y usa una BD de verificación dedicada, no toca tus datos. El canon verifica SIEMPRE, sin necesidad de campaña, que el progreso del archivo completo esté dentro de la escala cerrada [0,100] (Fase 4). `--build` fuerza rebuild; flags opt-in: `SMOKE_START_CAMPAIGN=1` lanza una campaña real end-to-end (la Fase 5 valida la estructura de las lecciones archivadas, las cruza con la ficha, comprueba su taxonomía/tags contra el esquema y coteja el progreso de la campaña en la escala cerrada en ficha — el lado del archivo lo re-verifica reutilizando el ayudante siempre-on de la Fase 4), `SMOKE_CAMPAIGN_TIMEOUT=<seg>` fija el techo de espera de esa campaña (defecto 600 para las campañas largas de 12 rondas; mínimo 30; valores inferiores o no numéricos caen al defecto), `SMOKE_SKIP_UNIT=1` y `SMOKE_SKIP_TSC=1` omiten fases |
-| `bun run smoke` | Alias directo del test de humo: `bun tests/smoke.mjs` (mismo canon que `verify`, sin envoltorio de shell) |
-| `bun run db:push` | Sincronizar el esquema Prisma con SQLite |
-| `bun run db:generate` | Generar el cliente Prisma |
-| `bun run db:migrate` | Migraciones en desarrollo |
-| `bun run db:reset` | Resetear la base de datos |
-| `bun scripts/checkdb.mjs` | Utilidad de diagnóstico: conteo de registros por modelo (agentes, campañas, lecciones…) |
-| `bun scripts/security-verify.mjs` | Verificación de seguridad end-to-end sobre el build standalone (cabeceras, 401/429/413, guard SSRF con literales IPv6): requiere `bun run build` antes |
-| `bun scripts/repair-progress-scale.mjs` | Reparación idempotente de filas históricas de progreso fuera de la escala [0,100] (dry-run por defecto; decisión D18) |
+| `bun run test` | Unit tests in `tests/` (bun's native runner): SSRF target guard (`target-guard`), access control/rate limit (`access`), LLM engine resilience (`llm-resilience`, `llm-creation`), aggregate report contract (`aggregate-report`), text/duration/date utilities (`text`), detail round progression (`round-progression`), memory export (`knowledge-export`), event telemetry export (`event-export`), per-scenario balance (`scenario-stats`), bounded victory rule (`victory`), lesson taxonomy (`taxonomy`), campaign pace/intensity (`sim/pace`) and laboratory port limits (`lab-port`) — 411 tests |
+| `bun run verify` | **End-of-round verification**: types (`tsc`) → units → environment → production server → golden path (healthcheck `/api`, `/api/state` with seed, `/api/campaigns`, `/api/knowledge`, home page, `sitemap.xml` and `robots.txt`). Delegates to `tests/smoke.mjs` (single canon, 17 checks) and uses a dedicated verification DB, never touching your data. The canon ALWAYS verifies, with no campaign needed, that the progress of the full archive stays inside the closed [0,100] scale (Phase 4). `--build` forces a rebuild; opt-in flags: `SMOKE_START_CAMPAIGN=1` launches a real end-to-end campaign (Phase 5 validates the structure of the archived lessons, cross-checks them with the detail page, checks their taxonomy/tags against the schema and re-checks the campaign progress on the closed scale in the detail page — the archive side is re-verified by reusing the always-on Phase 4 helper), `SMOKE_CAMPAIGN_TIMEOUT=<sec>` sets the wait ceiling for that campaign (default 600 for the long 12-round campaigns; minimum 30; lower or non-numeric values fall back to the default), `SMOKE_SKIP_UNIT=1` and `SMOKE_SKIP_TSC=1` skip phases |
+| `bun run smoke` | Direct alias of the smoke test: `bun tests/smoke.mjs` (same canon as `verify`, without the shell wrapper) |
+| `bun run db:push` | Sync the Prisma schema with SQLite |
+| `bun run db:generate` | Generate the Prisma client |
+| `bun run db:migrate` | Migrations in development |
+| `bun run db:reset` | Reset the database |
+| `bun scripts/checkdb.mjs` | Diagnostic utility: record count per model (agents, campaigns, lessons…) |
+| `bun scripts/security-verify.mjs` | End-to-end security verification over the standalone build (headers, 401/429/413, SSRF guard with IPv6 literals): requires `bun run build` first |
+| `bun scripts/repair-progress-scale.mjs` | Idempotent repair of historical progress rows outside the [0,100] scale (dry-run by default; decision D18) |
 
-## Configurar el motor LLM
+## Configuring the LLM engine
 
-El sistema funciona sin configuración (usa `z-ai-web-dev-sdk` integrado). Para usar un proveedor propio:
+The system works with zero configuration (it uses the bundled `z-ai-web-dev-sdk`). To use your own provider:
 
-1. Abre la página **Modelos** (`/modelos`) o pulsa `⌘K` → "Model Studio".
-2. Elige un preset (DeepSeek, Ollama, HuggingFace…), introduce la **Base URL** y la **API key**.
-3. Pulsa **Descargar modelos** para sincronizar el catálogo real del proveedor y selecciona el modelo.
-4. La siguiente campaña usará ese motor. La configuración se persiste en la BD (la key solo se devuelve enmascarada).
+1. Open the **Models** page (`/modelos`) or press `⌘K` → "Model Studio".
+2. Pick a preset (DeepSeek, Ollama, HuggingFace…), enter the **Base URL** and the **API key**.
+3. Press **Download models** to sync the provider's real catalog and select the model.
+4. The next campaign will use that engine. The configuration is persisted in the DB (the key is only ever returned masked).
 
-También es posible configurarlo por variables de entorno — o directamente en `.env` (ver `.env.example`):
+It can also be configured via environment variables — or directly in `.env` (see `.env.example`):
 
-| Variable | Obligatoria | Descripción |
+| Variable | Required | Description |
 |---|---|---|
-| `DATABASE_URL` | Sí | Ruta de la base de datos SQLite — usa **ruta absoluta** (p. ej. `file:/ruta/a/area-ai/db/custom.db`); las relativas se resuelven de forma distinta entre la CLI de Prisma y el runtime |
-| `LAB_PORT` | No | Puerto del laboratorio HTTP (por defecto `4403`, bind en `127.0.0.1`); valores no enteros o fuera de 1-65535 caen al defecto |
-| `OPENAI_API_KEY` | No | API key del proveedor LLM (alternativa a la configuración desde `/modelos`) |
-| `OPENAI_BASE_URL` | No | Endpoint compatible con la API de OpenAI |
-| `OPENAI_MODEL` | No | Modelo a utilizar |
-| `NEXT_PUBLIC_SITE_URL` | No | URL pública del sitio para Open Graph/Twitter (solo en despliegue; por defecto `http://localhost:3000`) |
-| `TRUST_PROXY` | No | Solo detrás de un proxy de confianza (p. ej. el Caddyfile del repo): con `1`, la clave del rate limit usa `X-Forwarded-For`; sin él, esa cabecera se ignora (es suplantable) y el límite es global por proceso |
-| `SMOKE_CAMPAIGN_TIMEOUT` | No | Techo de espera en segundos de la campaña real de la Fase 5 del canon de humo (solo verificación, no afecta al runtime): defecto `600` (campañas largas de 12 rondas), mínimo `30`; valores inferiores a 30 o no numéricos caen al defecto |
+| `DATABASE_URL` | Yes | Path to the SQLite database — use an **absolute path** (e.g. `file:/path/to/area-ai/db/custom.db`); relative paths resolve differently between the Prisma CLI and the runtime |
+| `LAB_PORT` | No | Port of the HTTP laboratory (default `4403`, bound to `127.0.0.1`); non-integer or out-of-range values (outside 1-65535) fall back to the default |
+| `OPENAI_API_KEY` | No | API key of the LLM provider (alternative to configuring it from `/modelos`) |
+| `OPENAI_BASE_URL` | No | OpenAI-API-compatible endpoint |
+| `OPENAI_MODEL` | No | Model to use |
+| `NEXT_PUBLIC_SITE_URL` | No | Public site URL for Open Graph/Twitter (deployment only; defaults to `http://localhost:3000`) |
+| `TRUST_PROXY` | No | Only behind a trusted proxy (e.g. the repo's Caddyfile): with `1`, the rate-limit key uses `X-Forwarded-For`; without it, that header is ignored (it is spoofable) and the limit is global per process |
+| `SMOKE_CAMPAIGN_TIMEOUT` | No | Wait ceiling in seconds for the real Phase-5 campaign of the smoke canon (verification only, does not affect the runtime): default `600` (long 12-round campaigns), minimum `30`; values below 30 or non-numeric fall back to the default |
 
-## Seguridad
+## Security
 
-- El laboratorio hace bind **exclusivamente en `127.0.0.1`** y está pensado para ejecutarse en local. El puerto (`LAB_PORT`, defecto `4403`) se valida al leerse: cualquier valor no entero o fuera de 1-65535 cae al defecto en lugar de romper la primera campaña.
-- **Barrera SSRF en las URL de proveedor** (guard `src/lib/net/target-guard.ts`): se aplica al guardar (`POST /api/models` y `POST /api/settings`) y **en el punto de uso** (cada llamada del motor), bloqueando destinos de red interna (loopback, RFC1918, link-local) y endpoints de metadata de nube para conexiones no locales. Los `fetch` a URL de usuario abortan ante redirecciones (`redirect: 'error'`), cerrando el vector `302 → red interna`.
-- **Token opcional de administración** (`ADMIN_TOKEN` en `.env`): si se define, los endpoints que mutan estado (`POST /api/campaigns`, `/api/autopilot`, `/api/settings`, `/api/models`) exigen el token vía cabecera `X-Admin-Token` o cookie `admin_token`. Para usar la UI sin cabeceras, acredítate una vez con `POST /api/auth` (`{"token": "<tu-token>"}`): el servidor fija la cookie `admin_token` con `HttpOnly; SameSite=Strict` (y `Secure` en https), caduca en 12 h y `DELETE /api/auth` cierra la sesión — JavaScript de la página nunca maneja el token. Sin `ADMIN_TOKEN`, la app queda en modo local abierto.
-- **Rate limit** en `POST /api/campaigns` (6 lanzamientos/minuto por cliente) para frenar bucles de gasto de créditos LLM. La clave de cliente usa `X-Forwarded-For` **solo si defines `TRUST_PROXY=1`** (detrás de un proxy de confianza que la fije con la IP real); sin él, la cabecera se ignora porque cualquier cliente podría suplantarla y rotar la clave para anular el límite — el límite pasa a ser global por proceso.
-- **Rate limit de mutaciones admin**: los endpoints que acreditan el token (`POST /api/settings`, `POST /api/models`, `POST /api/autopilot`) llevan su propio bucket de **30 intentos/minuto** (compartido entre los tres, clave `admin:`), aplicado **antes** de verificar el token, para frenar la fuerza bruta de `ADMIN_TOKEN`; los intentos fallidos no consumen el bucket de campañas. El de `/api/autopilot` cierra el hueco del tercer endpoint que dispara gasto LLM (el interruptor del modo continuo).
-- **CSRF same-origin en las mutaciones** (`isSameOrigin` en `src/lib/net/access.ts`): las 4 mutaciones (`POST /api/campaigns`, `/api/autopilot`, `/api/settings`, `/api/models`) rechazan con 403 los POST cross-site «simples» (`text/plain` sin preflight) antes de cualquier otra comprobación — el vector permitía lanzar campañas o activar el modo continuo desde una página ajena, y redirigir el proveedor LLM para exfiltrar la API key. Semántica compatible con clientes no-navegador: sin cabecera `Origin` se permite (humo, curl, scripts), `Origin: null` se rechaza y se compara el host del `Origin` con el `Host` de la petición — comparación válida tras el Caddyfile del repo, que lo preserva. La activación del autopiloto, además, exige el booleano `true` explícito (la cadena `"false"` ya no activa el modo continuo).
-- **Tope de cuerpo pre-parse en las mutaciones** (413): con `Content-Length` presente, el cuerpo se rechaza antes de parsear si supera el tope del endpoint (1024 bytes en `/api/autopilot`, 4096 en `/api/campaigns`, 16384 en `/api/settings` y `/api/models`) — un POST gigante ya no puede agotar la memoria del proceso único. Las peticiones `chunked` sin `Content-Length` también quedan acotadas: la lectura del stream se corta en cuanto se supera el tope (`readJsonBody`), con lo que un cuerpo de gigas ya no puede agotar la memoria del proceso único.
-- **Cabeceras de seguridad en todas las respuestas** (`next.config.ts`): `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin` y `Permissions-Policy` restrictiva (cámara, micro y geolocalización desactivadas). Una CSP estricta queda como paso siguiente: exige verificación de hidratación en navegador real.
-- **Saneado de las entradas de los prompts del LLM** (`sanitizeForPrompt` en `src/lib/text.ts`): la evidencia JSON del laboratorio, los detalles de eventos y la memoria institucional que entran en los prompts del motor llegan colapsados a una línea y acotados por presupuesto, y las `action`/`detail` que devuelve el modelo se almacenan con techo — el contenido del lab o de un proveedor desconfigurado no puede forjar líneas del prompt ni inflar los tokens de campañas siguientes (tarea `prompt-injection-evidencia`).
-- **Modo continuo sin tope de gasto (riesgo R4, vigente)**: el autopiloto lanza campañas reales en bucle (12 s de calma entre ellas) sin ventanas horarias ni tope diario de llamadas LLM; si configuras un proveedor de pago, actívalo solo en local o vigila el consumo (el tope presupuestario es la tarea `autopiloto-presupuesto` del roadmap).
-- **`bun run db:push` usa `--accept-data-loss`**: ante un cambio de esquema con datos reales, `db push` puede descartar filas o columnas; migra con `bun run db:migrate` (Prisma Migrate) para conservar el histórico y usa `db:push` solo en desarrollo desechable.
-- `GET /api` es un healthcheck que verifica el servicio y la base de datos.
-- **Sin autenticación por defecto**: cualquier usuario con acceso a la app puede leer datos de simulación y (sin `ADMIN_TOKEN`) lanzar campañas. **No expongas la aplicación a Internet** sin auth en el proxy o sin definir `ADMIN_TOKEN`.
-- El `Caddyfile` incluido **solo proxifica al puerto de la app** (el antiguo handle `XTransformPort`, que permitía alcanzar cualquier puerto local bypasando el guard y el token, fue eliminado en la Ronda 6 — decisión documentada en el propio fichero).
-- Las claves del proveedor se guardan en la BD local y la API solo las devuelve enmascaradas.
-- La base de datos debe apuntarse con una **ruta absoluta** en `DATABASE_URL` (las relativas se resuelven distinto entre la CLI de Prisma y el runtime).
-- **Tests versionados**: 386 tests en `tests/` (`bun run test`) cubren el guard SSRF (`target-guard`), el token/rate limit (`access`), la resiliencia del motor LLM (degradación ante proveedor caído y creación colgada), el contrato del informe agregado, las utilidades de texto/duraciones/fechas, la evolución por rondas (`round-progression`), la exportación de la memoria (`knowledge-export`), la exportación de la telemetría de eventos (`event-export`), el balance por escenario (`scenario-stats`), la regla de victoria acotada (`victory`), la taxonomía de lecciones (`taxonomy`), el ritmo/intensidad de campaña (`sim/pace`) y los límites del puerto del laboratorio (`lab-port`).
+- The laboratory binds **exclusively to `127.0.0.1`** and is meant to run locally. The port (`LAB_PORT`, default `4403`) is validated on read: any non-integer or out-of-range value (outside 1-65535) falls back to the default instead of breaking the first campaign.
+- **SSRF barrier on provider URLs** (guard `src/lib/net/target-guard.ts`): applied when saving (`POST /api/models` and `POST /api/settings`) and **at the point of use** (every engine call), blocking internal network destinations (loopback, RFC1918, link-local) and cloud metadata endpoints for non-local connections. `fetch` calls to user URLs abort on redirects (`redirect: 'error'`), closing the `302 → internal network` vector.
+- **Optional admin token** (`ADMIN_TOKEN` in `.env`): if defined, state-mutating endpoints (`POST /api/campaigns`, `/api/autopilot`, `/api/settings`, `/api/models`) require the token via the `X-Admin-Token` header or the `admin_token` cookie. To use the UI without headers, authenticate once with `POST /api/auth` (`{"token": "<your-token>"}`): the server sets the `admin_token` cookie with `HttpOnly; SameSite=Strict` (and `Secure` on https), it expires after 12 h and `DELETE /api/auth` signs out — page JavaScript never handles the token. Without `ADMIN_TOKEN`, the app stays in open local mode.
+- **Rate limit on `POST /api/campaigns`** (6 launches/minute per client) to curb LLM credit-burning loops. The client key uses `X-Forwarded-For` **only if you define `TRUST_PROXY=1`** (behind a trusted proxy that sets it with the real IP); without it, the header is ignored because any client could spoof it and rotate the key to void the limit — the limit becomes global per process.
+- **Admin mutation rate limit**: the endpoints that verify the token (`POST /api/settings`, `POST /api/models`, `POST /api/autopilot`) carry their own bucket of **30 attempts/minute** (shared among the three, key `admin:`), applied **before** verifying the token, to curb brute-forcing of `ADMIN_TOKEN`; failed attempts do not consume the campaigns bucket. The one on `/api/autopilot` closes the gap of the third endpoint that triggers LLM spend (the continuous-mode switch).
+- **Same-origin CSRF on mutations** (`isSameOrigin` in `src/lib/net/access.ts`): all 4 mutations (`POST /api/campaigns`, `/api/autopilot`, `/api/settings`, `/api/models`) reject "simple" cross-site POSTs (`text/plain` without preflight) with 403 before any other check — the vector allowed launching campaigns or enabling continuous mode from a foreign page, and redirecting the LLM provider to exfiltrate the API key. Semantics compatible with non-browser clients: no `Origin` header is allowed (smoke, curl, scripts), `Origin: null` is rejected, and the `Origin` host is compared with the request `Host` — a comparison that stays valid behind the repo's Caddyfile, which preserves it. Enabling the autopilot additionally requires the explicit boolean `true` (the string `"false"` no longer enables continuous mode).
+- **Pre-parse body cap on mutations** (413): when `Content-Length` is present, the body is rejected before parsing if it exceeds the endpoint cap (1024 bytes on `/api/autopilot`, 4096 on `/api/campaigns`, 16384 on `/api/settings` and `/api/models`) — a giant POST can no longer exhaust the single process's memory. Chunked requests without `Content-Length` are also bounded: the stream read is cut as soon as the cap is exceeded (`readJsonBody`), so a gigabyte body can no longer exhaust the single process's memory.
+- **Security headers on every response** (`next.config.ts`): `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin` and a restrictive `Permissions-Policy` (camera, microphone and geolocation disabled). A strict CSP remains the next step: it requires hydration verification in a real browser.
+- **Sanitization of LLM prompt inputs** (`sanitizeForPrompt` in `src/lib/text.ts`): lab evidence JSON, event details and institutional memory entering the engine's prompts arrive collapsed to one line and bounded by budget, and the `action`/`detail` returned by the model are stored with a cap — lab content or a misconfigured provider cannot forge prompt lines or inflate the tokens of later campaigns (task `prompt-injection-evidencia`).
+- **Continuous mode with no spend cap (risk R4, open)**: the autopilot launches real campaigns in a loop (12 s of calm between them) with no hourly windows or daily LLM call cap; if you configure a paid provider, run it locally only or watch your consumption (the budget cap is the `autopiloto-presupuesto` roadmap task).
+- **`bun run db:push` uses `--accept-data-loss`**: on a schema change with real data, `db push` may drop rows or columns; migrate with `bun run db:migrate` (Prisma Migrate) to keep history and use `db:push` only in disposable development.
+- `GET /api` is a healthcheck that verifies the service and the database.
+- **No authentication by default**: any user with access to the app can read simulation data and (without `ADMIN_TOKEN`) launch campaigns. **Do not expose the application to the Internet** without proxy auth or without defining `ADMIN_TOKEN`.
+- The bundled `Caddyfile` **only proxies to the app port** (the old `XTransformPort` handle, which allowed reaching any local port bypassing the guard and the token, was removed in Round 6 — decision documented in the file itself).
+- Provider keys are stored in the local DB and the API only ever returns them masked.
+- The database must be pointed to with an **absolute path** in `DATABASE_URL` (relative paths resolve differently between the Prisma CLI and the runtime).
+- **Versioned tests**: 411 tests in `tests/` (`bun run test`) cover the SSRF guard (`target-guard`), the token/rate limit (`access`), LLM engine resilience (degradation on a downed provider and hung creation), the aggregate report contract, text/duration/date utilities, round progression (`round-progression`), memory export (`knowledge-export`), event telemetry export (`event-export`), per-scenario balance (`scenario-stats`), the bounded victory rule (`victory`), lesson taxonomy (`taxonomy`), campaign pace/intensity (`sim/pace`) and laboratory port limits (`lab-port`).
 
-## Agentes del proyecto
+## Project agents
 
-Este repositorio se desarrolla con un **sistema multiagente v2** (protocolo completo en [`docs/agentes/PROTOCOLO.md`](docs/agentes/PROTOCOLO.md)): trabajo sin rondas mediante claims como bloqueo real, zonas de código por rol (`docs/agentes/OWNERSHIP.md`), puerta de calidad antes de cada push, hallazgos dirigidos y estados vivos por agente (`docs/agentes/estado/`), con el roadmap de tareas en [`docs/agentes/ROADMAP.md`](docs/agentes/ROADMAP.md).
+This repository is developed with a **multi-agent system v2** (full protocol in [`docs/agentes/PROTOCOLO.md`](docs/agentes/PROTOCOLO.md)): work without rounds using claims as real locking, per-role code zones (`docs/agentes/OWNERSHIP.md`), a quality gate before every push, directed findings and live per-agent status pages (`docs/agentes/estado/`), with the task roadmap in [`docs/agentes/ROADMAP.md`](docs/agentes/ROADMAP.md).
 
-| Rol | Informe vivo | Función |
+| Role | Live report | Function |
 |---|---|---|
-| DIR — Director | `docs/agentes/estado/DIR.md` | Roadmap, ratificación, gobierno y prioridades |
-| IMP-1 — Motor y API | `docs/agentes/estado/IMP-1.md` | Motor de campañas, laboratorio, API y datos |
-| IMP-2 — Frontend/UX | `docs/agentes/estado/IMP-2.md` | UI, diseño, accesibilidad y experiencia |
-| PUL — Pulimiento | *(informe por crear)* | README, dependencias, CI, limpieza y deuda técnica |
-| SEG — Seguridad | `docs/agentes/estado/SEG.md` | Seguridad por defecto, headers, red y bugs de seguridad |
-| TEST — Calidad | `docs/agentes/estado/TEST.md` | E2E por personas, hallazgos reproducibles y verificación |
+| DIR — Director | `docs/agentes/estado/DIR.md` | Roadmap, ratification, governance and priorities |
+| IMP-1 — Engine & API | `docs/agentes/estado/IMP-1.md` | Campaign engine, laboratory, API and data |
+| IMP-2 — Frontend/UX | `docs/agentes/estado/IMP-2.md` | UI, design, accessibility and experience |
+| PUL — Polish | *(report to be created)* | README, dependencies, CI, cleanup and technical debt |
+| SEG — Security | `docs/agentes/estado/SEG.md` | Security by default, headers, network and security bugs |
+| TEST — Quality | `docs/agentes/estado/TEST.md` | Persona-driven E2E, reproducible findings and verification |
